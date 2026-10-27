@@ -17,12 +17,14 @@
 #include "evk1029_source.h"
 #include "command_event.h"
 #include "deterministic_clock.h"
-#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
+#include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
+#include <boost/thread/thread.hpp>  // for boost::this_thread::interruption_requested
 #include <gnuradio/io_signature.h>
 #include <gnuradio/math.h>
 #include <volk/volk.h>
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <cstdint>
@@ -52,6 +54,10 @@ constexpr std::size_t kReadChunkBytes = 1 << 20;  // 1 MiB
 // sampling frequency so the same target holds at other rates.
 constexpr double kOutputMultipleTargetSeconds = 0.0007;
 constexpr int kOutputMultipleFallback = 131072;  // used if sampling_frequency is unavailable/invalid
+
+// How often work() checks whether the flowgraph is being stopped while it
+// waits for the decode worker
+constexpr std::chrono::milliseconds kStopCheckInterval(100);
 
 int output_multiple_from_sampling_frequency(double sampling_frequency)
 {
@@ -233,8 +239,8 @@ Evk1029Source::~Evk1029Source()
         }
     if (decode_worker_)
         {
-            // reader_->read() can block indefinitely on a live stream;
-            // wake it first so the join() below can actually complete.
+            // A live stream with nothing new keeps the decode worker
+            // polling reader_->read(); end it so the join() below completes.
             if (reader_)
                 {
                     reader_->request_stop();
@@ -260,6 +266,17 @@ std::size_t Evk1029Source::decode_into_buffer(std::size_t decoded_needed, std::v
                     buffer_pos_ = 0;
                     if (buffer_valid_ == 0)
                         {
+                            if (!reader_->end_of_stream())
+                                {
+                                    // Nothing new from a live stream yet. GNU Radio stops
+                                    // a flowgraph by interrupting the threads of its blocks:
+                                    // on work()'s own thread, give up then.
+                                    if (boost::this_thread::interruption_requested())
+                                        {
+                                            reader_->request_stop();
+                                        }
+                                    continue;
+                                }
                             eof_ = true;
                             return produced;
                         }
@@ -406,7 +423,7 @@ int Evk1029Source::work(int noutput_items,
             int produced = 0;
             bool eof = false;
 
-            // Each byte unpacks to two samples; only a zero-byte read is EOF.
+            // Each byte unpacks to two samples; a zero-byte read is EOF only at the end of the stream.
             while (produced + 1 < noutput_items)
                 {
                     if (buffer_pos_ >= buffer_valid_)
@@ -415,7 +432,9 @@ int Evk1029Source::work(int noutput_items,
                             buffer_pos_ = 0;
                             if (buffer_valid_ == 0)
                                 {
-                                    eof = true;
+                                    // Otherwise a live stream had nothing new yet: return
+                                    // what we have, so that the flowgraph can be stopped
+                                    eof = reader_->end_of_stream();
                                     break;
                                 }
                         }
@@ -479,7 +498,14 @@ int Evk1029Source::work(int noutput_items,
     else
         {
             std::unique_lock<std::mutex> lock(decode_worker_->mutex);
-            decode_worker_->cv.wait(lock, [this] { return decode_worker_->finished; });
+            while (!decode_worker_->cv.wait_for(lock, kStopCheckInterval, [this] { return decode_worker_->finished; }))
+                {
+                    // The decode worker may be waiting for a live stream
+                    if (boost::this_thread::interruption_requested())
+                        {
+                            reader_->request_stop();
+                        }
+                }
             std::size_t produced = decode_worker_->produced;
             lock.unlock();
             decode_worker_has_pending_result_ = false;

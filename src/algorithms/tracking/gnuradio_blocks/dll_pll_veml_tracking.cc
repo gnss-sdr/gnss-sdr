@@ -457,13 +457,22 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_symbols_per_bit = BEIDOU_B2A_SYMBOLS_PER_BIT;
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_secondary = false;
-                    d_trk_parameters.track_pilot = false;
                     d_trk_parameters.slope = 1.0;
                     d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
                     d_trk_parameters.y_intercept = 1.0;
-                    d_secondary_code_length = 0;
-                    d_data_secondary_code_length = 0;
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            d_secondary = true;
+                            d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2A_PILOT_SECONDARY_CODE_LENGTH);
+                            d_signal_pretty_name = d_signal_pretty_name + "P";
+                            d_interchange_iq = true;
+                        }
+                    else
+                        {
+                            d_secondary = false;
+                            d_signal_pretty_name = d_signal_pretty_name + "D";
+                            d_secondary_code_length = 0;
+                        }
                 }
             else if (d_signal_type == "B3")
                 {
@@ -1101,7 +1110,20 @@ void dll_pll_veml_tracking::start_tracking()
 
     else if (d_systemName == "Beidou" && d_signal_type == "5D")
         {
-            beidou_b2a_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+            if (d_trk_parameters.track_pilot)
+                {
+                    beidou_b2a_pilot_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+                    beidou_b2a_data_code_gen_float(d_data_code, d_acquisition_gnss_synchro->PRN, 0);
+                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    d_multicorrelator_cpu.set_data_code_and_prompt_tap(
+                        d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                    d_secondary_code_string = beidou_b2a_pilot_secondary_code(d_acquisition_gnss_synchro->PRN);
+                    d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2A_PILOT_SECONDARY_CODE_LENGTH);
+                }
+            else
+                {
+                    beidou_b2a_data_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
+                }
         }
 
     else if (d_systemName == "Beidou" && d_signal_type == "B3")
@@ -2564,9 +2586,10 @@ int dll_pll_veml_tracking::process_input(int noutput_items __attribute__((unused
                         // 5 ms coded symbol. Default pull-in is 5 s,
                         // which can leave a short file with only one frame.
                         // Forward Prompt during wide tracking so B-CNAV2 can lock.
+                        // When tracking the pilot, *d_Prompt is the pilot correlator.
                         if (d_systemName == "Beidou" && d_signal_type == "5D")
                             {
-                                d_P_data_accu = *d_Prompt;
+                                d_P_data_accu = d_trk_parameters.track_pilot ? d_Prompt_Data[0] : *d_Prompt;
                                 current_synchro_data = *d_acquisition_gnss_synchro;
                                 assign_correlators_to_synchro(current_synchro_data);
                                 current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;

@@ -20,12 +20,17 @@
 #include "obs_conf.h"
 #include "stream_batcher_limits.h"
 #include <gnuradio/blocks/null_sink.h>
-#include <gnuradio/blocks/vector_source.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <cstdint>
 #include <vector>
+
+#ifdef GR_GREATER_38
+#include <gnuradio/blocks/vector_source.h>
+#else
+#include <gnuradio/blocks/vector_source_b.h>
+#endif
 
 
 class DeterministicObservablesTest : public ::testing::Test

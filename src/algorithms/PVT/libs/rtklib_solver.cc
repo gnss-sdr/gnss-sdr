@@ -41,6 +41,7 @@
 #include "matlab_writter_helper.h"
 #include "ntrip_rtcm_client.h"
 #include "ntrip_rtk_signals.h"
+#include "rtklib_pntpos.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
 #include "signal_enabled_flags.h"
@@ -3135,11 +3136,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     // USED SATELLITES: per-satellite azimuth/elevation and which
                     // signal(s) contributed to this fix. Signals are listed
-                    // individually (one entry per satellite per signal); a
-                    // satellite whose signals were combined (e.g. Galileo E1+E5a
-                    // iono-free combination -- see the "dual-frequency" branch of
-                    // prange() in rtklib_pntpos.cc) gets one entry per signal, all
-                    // flagged combined = true.
+                    // individually (one entry per satellite per signal); the two
+                    // signals of an iono-free pair (e.g. Galileo E1+E5a -- see the
+                    // "dual-frequency" branch of prange() in rtklib_pntpos.cc) are
+                    // both flagged combined = true, and a third band of the same
+                    // satellite is not.
                     //
                     // pntpos() fills ssat[].azel for every observation; only
                     // ssat[].vs is gated by PVT.elevation_mask / RAIM FDE. A
@@ -3150,6 +3151,27 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // NaN az/el (corrupt ephemeris/almanac) is deliberately
                     // reported as-is for consumers to handle; rescode()
                     // already keeps NaN out of the position solve.
+                    //
+                    // combined/used below come from d_obs_data's own record, not from configuration.
+                    // Bounded to rover_observation_count to skip any base-station entries past it.
+                    // Which bands entered the fix depends on the estimator that produced it:
+                    // pntpos()/prange() for a single-point fix, relpos() for DGPS/RTK.
+                    // pntpos() forces the broadcast iono model when it runs as the pre-pass
+                    // of a precise mode, so a single-point fix there never combines bands.
+                    const bool spp_solution = d_rtk.opt.mode == PMODE_SINGLE ||
+                                              pvt_sol.stat == SOLQ_SINGLE || pvt_sol.stat == SOLQ_SBAS;
+                    const bool relative_solution = !spp_solution && d_rtk.opt.mode <= PMODE_FIXED;
+                    const int spp_ionoopt = (d_rtk.opt.mode == PMODE_SINGLE || use_single_fallback) ? d_rtk.opt.ionoopt : IONOOPT_BRDC;
+                    std::array<int, MAXSAT> sat_to_obs_index{};
+                    sat_to_obs_index.fill(-1);
+                    for (int obs_idx = 0; obs_idx < rover_observation_count; obs_idx++)
+                        {
+                            const int sat = d_obs_data[obs_idx].sat;
+                            if (sat > 0 && sat <= MAXSAT)
+                                {
+                                    sat_to_obs_index[sat - 1] = obs_idx;
+                                }
+                        }
                     d_monitor_pvt.tracked_satellites.clear();
                     for (int sat_idx = 0; sat_idx < MAXSAT; sat_idx++)
                         {
@@ -3194,7 +3216,20 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             contributing_signals.push_back(&synchro);
                                         }
                                 }
-                            const bool combined = contributing_signals.size() > 1;
+                            // Band pair prange() itself reads for this satellite this epoch.
+                            int prange_i = 0;
+                            int prange_j = 1;
+                            bool both_bands_present = false;
+                            int picked_slot = -1;
+                            const int obs_idx = sat_to_obs_index[sat_idx];
+                            const obsd_t *obs_record = obs_idx >= 0 ? &d_obs_data[obs_idx] : nullptr;
+                            if (obs_record != nullptr)
+                                {
+                                    prange_band_pair(obs_record, &prange_i, &prange_j);
+                                    both_bands_present = prange_i != prange_j &&
+                                                         obs_record->P[prange_i] != 0.0 && obs_record->P[prange_j] != 0.0;
+                                    picked_slot = obs_record->code[prange_i] != CODE_NONE ? prange_i : prange_j;
+                                }
                             // satazel() (rtklib_rtkcmn.cc) returns azimuth in [0, 2*pi); wrap to
                             // (-180, 180] deg, the convention expected downstream (monitor sky plot).
                             double az_deg = pvt_ssat[sat_idx].azel[0] * R2D;
@@ -3210,8 +3245,47 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     info.signal = std::string(synchro->Signal, 2);
                                     info.azimuth_deg = az_deg;
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
-                                    info.combined = combined;
-                                    info.used = used;
+                                    const auto band_it = d_rtklib_band_index.find(info.signal);
+                                    const int signal_slot = band_it != d_rtklib_band_index.cend() ? band_it->second : -1;
+                                    // The slot must hold this signal's own code: a signal left out of the
+                                    // solver input (B1I next to B1C, the non-selected E5, E6 per
+                                    // PVT.use_e6_for_pvt) or dropped by the fixed-base path fails this.
+                                    const bool in_record = obs_record != nullptr && signal_slot >= 0 && signal_slot < NFREQ &&
+                                                           obs_record->code[signal_slot] == rtklib_obs_code(sys_char, info.signal, signal_slot);
+                                    info.combined = false;
+                                    info.used = false;
+                                    if (in_record && spp_solution)
+                                        {
+                                            if (spp_ionoopt == IONOOPT_IFLC)
+                                                {
+                                                    info.combined = used && both_bands_present &&
+                                                                    (signal_slot == prange_i || signal_slot == prange_j);
+                                                    info.used = info.combined;
+                                                }
+                                            else
+                                                {
+                                                    info.used = used && signal_slot == picked_slot;
+                                                }
+                                        }
+                                    else if (in_record && relative_solution)
+                                        {
+                                            // relpos() flags each band it differenced in vsat[]; with
+                                            // Iono-Free-LC it differences one L1/L2 combination, flagged in vsat[0].
+                                            if (d_rtk.opt.ionoopt == IONOOPT_IFLC)
+                                                {
+                                                    info.combined = pvt_ssat[sat_idx].vsat[0] != 0 && signal_slot <= 1;
+                                                    info.used = info.combined;
+                                                }
+                                            else
+                                                {
+                                                    info.used = pvt_ssat[sat_idx].vsat[signal_slot] != 0;
+                                                }
+                                        }
+                                    else if (in_record)
+                                        {
+                                            // PPP: its band pairing (ifmeas()) is not modelled here.
+                                            info.used = used;
+                                        }
                                     // Broadcast health of this signal, as reported by the
                                     // navigation message that carries it (true when no health
                                     // information is available). Independent of `used`.

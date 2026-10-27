@@ -289,6 +289,36 @@ double getiscl5q(int sat, const nav_t *nav)
     return 0.0;
 }
 
+/* band pair read by prange() for a satellite --------------------------------*/
+void prange_band_pair(const obsd_t *obs, int *i, int *j)
+{
+    *i = 0;
+    *j = 1;
+    const int sys = satsys(obs->sat, nullptr);
+
+    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS;
+     * BDS: select from the measured bands, preferring B2a as the IF partner. */
+    if (sys == SYS_GAL || sys == SYS_SBS)
+        {
+            *j = 2;
+        }
+    else if (sys == SYS_BDS)
+        {
+            bds_observation_slots(obs, i, j);
+        }
+    else if (sys == SYS_GPS || sys == SYS_GLO || sys == SYS_QZS)
+        {
+            if (obs->code[1] != CODE_NONE)
+                {
+                    *j = 1;
+                }
+            else if (obs->code[2] != CODE_NONE)
+                {
+                    *j = 2;
+                }
+        }
+}
+
 /* psendorange with code bias correction -------------------------------------
  * iono_scale (O) is the multiplier the caller must apply to the modeled L1
  * ionospheric delay so that it is consistent with the returned pseudorange:
@@ -323,27 +353,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             return 0.0;
         }
 
-    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS;
-     * BDS: select from the measured bands, preferring B2a as the IF partner. */
-    if (sys == SYS_GAL || sys == SYS_SBS)
-        {
-            j = 2;
-        }
-    else if (sys == SYS_BDS)
-        {
-            bds_observation_slots(obs, &i, &j);
-        }
-    else if (sys == SYS_GPS || sys == SYS_GLO || sys == SYS_QZS)
-        {
-            if (obs->code[1] != CODE_NONE)
-                {
-                    j = 1;
-                }
-            else if (obs->code[2] != CODE_NONE)
-                {
-                    j = 2;
-                }
-        }
+    prange_band_pair(obs, &i, &j);
 
     if (lam[i] == 0.0 || lam[j] == 0.0)
         {

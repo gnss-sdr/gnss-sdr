@@ -56,8 +56,14 @@ message MonitorPvt {
   // One tracked satellite/signal with its azimuth/elevation, whether it was
   // combined with another signal of the same satellite (e.g. Galileo E1+E5a
   // iono-free combination), and whether it was actually used in this fix.
-  // Signals are listed individually, not merged: a combined satellite
-  // appears as two entries, both with combined = true. A satellite can have
+  // Signals are listed individually, not merged, and combined/used are set
+  // per signal. In a single-point fix with PVT.iono_model=Iono-Free-LC, the
+  // two signals of the iono-free pair have combined = used = true, and any
+  // other band of the same satellite has used = false; with any other iono
+  // model, only the one signal that enters the solution has used = true.
+  // In a DGPS/RTK fix, used marks each band the relative solution
+  // differenced. In a PPP fix, every signal carries the satellite-level used
+  // flag and combined = false. A satellite can have
   // azimuth_deg/elevation_deg populated with used = false when it was
   // tracked and had az/el computed but excluded from the fix itself (e.g.
   // below PVT.elevation_mask, or by RAIM FDE). The healthy flag carries the

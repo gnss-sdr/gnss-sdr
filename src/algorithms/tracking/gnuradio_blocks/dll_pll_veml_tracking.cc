@@ -2806,9 +2806,13 @@ int dll_pll_veml_tracking::process_input(int noutput_items __attribute__((unused
                 do_correlation_step(in);
                 save_correlation_results();
                 update_tracking_vars();
-                if (d_current_data_symbol == 0)
+                // dump_every_code_period also logs the code periods inside a symbol
+                if (d_current_data_symbol == 0 || d_trk_parameters.dump_every_code_period)
                     {
                         log_data();
+                    }
+                if (d_current_data_symbol == 0)
+                    {
                         // ########### Output the tracking results to Telemetry block ##########
                         // Fill the acquisition data
                         current_synchro_data = *d_acquisition_gnss_synchro;
@@ -2848,10 +2852,14 @@ int dll_pll_veml_tracking::process_input(int noutput_items __attribute__((unused
                         run_dll_pll();
                         update_tracking_vars();
                         check_carrier_phase_coherent_initialization();
+                        // enable write dump file this cycle (valid DLL/PLL cycle);
+                        // dump_every_code_period also logs the code periods inside a symbol
+                        if (d_current_data_symbol == 0 || d_trk_parameters.dump_every_code_period)
+                            {
+                                log_data();
+                            }
                         if (d_current_data_symbol == 0)
                             {
-                                // enable write dump file this cycle (valid DLL/PLL cycle)
-                                log_data();
                                 // ########### Output the tracking results to Telemetry block ##########
                                 // Fill the acquisition data
                                 current_synchro_data = *d_acquisition_gnss_synchro;

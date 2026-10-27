@@ -128,6 +128,7 @@ char *code2obs(unsigned char code, int *freq);
 bool is_bds_b1c_code(unsigned char code);
 bool is_bds_b2a_code(unsigned char code);
 void bds_observation_slots(const obsd_t *obs, int *primary, int *secondary);
+void prange_band_pair(const obsd_t *obs, int *i, int *j);
 void setcodepri(int sys, int freq, const char *pri);
 int getcodepri(int sys, unsigned char code, const char *opt);
 unsigned int getbitu(const unsigned char *buff, int pos, int len);

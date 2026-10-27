@@ -19,6 +19,11 @@
 #include <iostream>
 #include <utility>
 
+Tracking_Dump_Reader::Tracking_Dump_Reader(Tracking_Dump_Layout layout) : d_layout(layout)
+{
+}
+
+
 bool Tracking_Dump_Reader::read_binary_obs()
 {
     try
@@ -31,12 +36,21 @@ bool Tracking_Dump_Reader::read_binary_obs()
             d_dump_file.read(reinterpret_cast<char *>(&prompt_I), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count), sizeof(uint64_t));
-            d_dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad), sizeof(float));
+            d_dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&carrier_doppler_rate_hz_s), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&code_freq_chips), sizeof(float));
-            d_dump_file.read(reinterpret_cast<char *>(&code_freq_rate_chips), sizeof(float));
-            d_dump_file.read(reinterpret_cast<char *>(&carr_error_hz), sizeof(float));
+            if (d_layout == Tracking_Dump_Layout::GPS_L1_CA_GAUSSIAN)
+                {
+                    // no code frequency rate, and the carrier noise variance follows the carrier error
+                    d_dump_file.read(reinterpret_cast<char *>(&carr_error_hz), sizeof(float));
+                    d_dump_file.read(reinterpret_cast<char *>(&carr_noise_sigma2), sizeof(float));
+                }
+            else
+                {
+                    d_dump_file.read(reinterpret_cast<char *>(&code_freq_rate_chips), sizeof(float));
+                    d_dump_file.read(reinterpret_cast<char *>(&carr_error_hz), sizeof(float));
+                }
             d_dump_file.read(reinterpret_cast<char *>(&carr_error_filt_hz), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&code_error_chips), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&code_error_filt_chips), sizeof(float));
@@ -45,8 +59,11 @@ bool Tracking_Dump_Reader::read_binary_obs()
             d_dump_file.read(reinterpret_cast<char *>(&aux1), sizeof(float));
             d_dump_file.read(reinterpret_cast<char *>(&aux2), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&PRN), sizeof(unsigned int));
-            d_dump_file.read(reinterpret_cast<char *>(&TOW_ms), sizeof(uint64_t));
-            d_dump_file.read(reinterpret_cast<char *>(&WN), sizeof(int32_t));
+            if (d_layout == Tracking_Dump_Layout::DLL_PLL_VEML)
+                {
+                    d_dump_file.read(reinterpret_cast<char *>(&TOW_ms), sizeof(uint64_t));
+                    d_dump_file.read(reinterpret_cast<char *>(&WN), sizeof(int32_t));
+                }
         }
     catch (const std::ifstream::failure &e)
         {
@@ -71,11 +88,12 @@ bool Tracking_Dump_Reader::restart()
 int64_t Tracking_Dump_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
-    int number_of_double_vars = 1;
-    int number_of_float_vars = 19;
-    int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                           sizeof(float) * number_of_float_vars + sizeof(unsigned int) +
-                           sizeof(uint64_t) + sizeof(int32_t);
+    const int number_of_double_vars = 2;
+    const int number_of_float_vars = 18;
+    const int tow_wn_size_bytes = (d_layout == Tracking_Dump_Layout::DLL_PLL_VEML) ? sizeof(uint64_t) + sizeof(int32_t) : 0;
+    const int epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
+                                 sizeof(float) * number_of_float_vars + sizeof(unsigned int) +
+                                 tow_wn_size_bytes;
     std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {

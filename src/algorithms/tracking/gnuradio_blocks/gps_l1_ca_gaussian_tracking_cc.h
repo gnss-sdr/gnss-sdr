@@ -38,6 +38,7 @@
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include <armadillo>
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <fstream>
@@ -117,6 +118,7 @@ private:
         int32_t bce_kappa);
 
     int32_t save_matfile();
+    bool acquire_bit_sync();
 
     // tracking configuration vars
     uint32_t d_order;
@@ -206,6 +208,13 @@ private:
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
     int32_t d_carrier_lock_fail_counter;
+
+    // navigation data bit synchronization (the telemetry decoder takes 20 ms bits)
+    boost::circular_buffer<float> d_Prompt_I_history;
+    gr_complex d_P_bit_accu;
+    int32_t d_current_bit_symbol;
+    bool d_bit_synchronized;
+    bool d_Flag_PLL_180_deg_phase_locked;
 
     // control vars
     bool d_enable_tracking;

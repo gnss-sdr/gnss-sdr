@@ -1216,7 +1216,7 @@ TEST_F(TrackingPullInTestFpga, ValidationOfResults)
 #endif
                                 {
                                     // load the measured values
-                                    Tracking_Dump_Reader trk_dump;
+                                    Tracking_Dump_Reader trk_dump(Tracking_Dump_Layout::DLL_PLL_VEML_FPGA);
                                     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
                                         << "Failure opening tracking dump file";
 

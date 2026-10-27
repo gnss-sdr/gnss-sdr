@@ -181,6 +181,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   week, so that channels are reported as soon as tracking locks. This also lets
   the secondary-band acquisition assistance start once the primary-band signal
   is locked, instead of after its time of week is decoded.
+- The accumulated carrier phase is now stored as a `double` in the tracking
+  dumps (binary and `.mat`) of all tracking implementations, instead of a
+  `float` whose resolution drops to 0.0625 rad at 10^6 rad. Each binary record
+  is now 4 bytes longer, and the MATLAB and Python readers in `utils/` are
+  updated accordingly.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

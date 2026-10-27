@@ -352,7 +352,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             // New code Doppler frequency estimation
             d_code_freq_chips = GALILEO_E1_CODE_CHIP_RATE_CPS + ((d_carrier_doppler_hz * GALILEO_E1_CODE_CHIP_RATE_CPS) / GALILEO_E1_FREQ_HZ);
             // carrier phase accumulator for (K) doppler estimation
-            d_acc_carrier_phase_rad -= static_cast<float>(TWO_PI * d_carrier_doppler_hz * GALILEO_E1_CODE_PERIOD_S);
+            d_acc_carrier_phase_rad -= TWO_PI * d_carrier_doppler_hz * GALILEO_E1_CODE_PERIOD_S;
             // remnant carrier phase to prevent overflow in the code NCO
             d_rem_carr_phase_rad = d_rem_carr_phase_rad + static_cast<float>(TWO_PI * d_carrier_doppler_hz * GALILEO_E1_CODE_PERIOD_S);
             d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, TWO_PI);
@@ -480,6 +480,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             float tmp_VE = 0.0;
             float tmp_VL = 0.0;
             float tmp_float;
+            double tmp_double;
             prompt_I = d_correlator_outs[1].real();
             prompt_Q = d_correlator_outs[1].imag();
             tmp_E = std::abs<float>(d_correlator_outs[0]);
@@ -498,9 +499,9 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
                     d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
-                    // accumulated carrier phase
-                    tmp_float = static_cast<float>(d_acc_carrier_phase_rad);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // accumulated carrier phase (double, since it grows without bound)
+                    tmp_double = d_acc_carrier_phase_rad;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // carrier and code frequency
                     tmp_float = static_cast<float>(d_carrier_doppler_hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
@@ -524,7 +525,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     // AUX vars (for debug purposes)
                     tmp_float = 0.0;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    auto tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
+                    tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;

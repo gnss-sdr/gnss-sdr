@@ -19,24 +19,17 @@ function [GNSS_tracking] = gps_l1_ca_kf_read_tracking_dump (filename, count)
 m = nargchk (1,2,nargin);
 
 num_float_vars = 18;
-num_unsigned_long_int_vars = 1;
+num_unsigned_int64_vars = 1;
 num_double_vars = 2;
 num_unsigned_int_vars = 1;
 
-if(~isempty(strfind(computer('arch'), '64')))
-    % 64-bit computer
-    double_size_bytes = 8;
-    unsigned_long_int_size_bytes = 8;
-    float_size_bytes = 4;
-    unsigned_int_size_bytes = 4;
-else
-    double_size_bytes = 8;
-    unsigned_long_int_size_bytes = 4;
-    float_size_bytes = 4;
-    unsigned_int_size_bytes = 4;
-end
+double_size_bytes = 8;
+% The writer stores the sample counter as uint64_t on every platform.
+unsigned_int64_size_bytes = 8;
+float_size_bytes = 4;
+unsigned_int_size_bytes = 4;
 
-skip_bytes_each_read = float_size_bytes * num_float_vars + unsigned_long_int_size_bytes * num_unsigned_long_int_vars + ...
+skip_bytes_each_read = float_size_bytes * num_float_vars + unsigned_int64_size_bytes * num_unsigned_int64_vars + ...
     double_size_bytes * num_double_vars + num_unsigned_int_vars*unsigned_int_size_bytes;
 
 bytes_shift = 0;
@@ -73,8 +66,8 @@ else
     v7 = fread (f, count, 'float', skip_bytes_each_read - float_size_bytes);
     bytes_shift = bytes_shift + float_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next interleaved float
-    v8 = fread (f, count, 'long', skip_bytes_each_read - unsigned_long_int_size_bytes);
-    bytes_shift = bytes_shift + unsigned_long_int_size_bytes;
+    v8 = fread (f, count, 'uint64', skip_bytes_each_read - unsigned_int64_size_bytes);
+    bytes_shift = bytes_shift + unsigned_int64_size_bytes;
     fseek(f,bytes_shift,'bof'); % move to next double
     v9 = fread (f, count, 'double', skip_bytes_each_read - double_size_bytes);
     bytes_shift = bytes_shift + double_size_bytes;

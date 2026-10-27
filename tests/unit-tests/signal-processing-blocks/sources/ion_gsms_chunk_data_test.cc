@@ -20,7 +20,6 @@
 #include "ion_gsms.h"
 #include "ion_gsms_chunk_data.h"
 #include "ion_gsms_signal_source.h"
-#include <gnuradio/blocks/vector_sink.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
@@ -31,6 +30,13 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#ifdef GR_GREATER_38
+#include <gnuradio/blocks/vector_sink.h>
+#else
+#include <gnuradio/blocks/vector_sink_b.h>
+#include <gnuradio/blocks/vector_sink_c.h>
+#endif
 
 namespace
 {

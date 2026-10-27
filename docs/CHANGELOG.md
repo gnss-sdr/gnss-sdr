@@ -181,6 +181,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   week, so that channels are reported as soon as tracking locks. This also lets
   the secondary-band acquisition assistance start once the primary-band signal
   is locked, instead of after its time of week is decoded.
+- `EVK1029_Signal_Source` can now read directly from a live shared-memory stream
+  published by EVK1029_CtrlApp, instead of only a recorded capture file. Set
+  `SignalSource.input=shared_memory` and, optionally, `SignalSource.shm_name`
+  (default `/evk1029_stream`). The stream ends if EVK1029_CtrlApp publishes
+  nothing for `SignalSource.shm_stall_timeout_s` seconds (default 5, 0 waits
+  forever) and, with `SignalSource.shm_stop_on_buffer_overflow=true`, when it
+  reports a buffer overflow. Linux only. Contributed by @joebre.
 - The accumulated carrier phase is now stored as a `double` in the tracking
   dumps (binary and `.mat`) of all tracking implementations, instead of a
   `float` whose resolution drops to 0.0625 rad at 10^6 rad. Each binary record

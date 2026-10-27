@@ -29,12 +29,12 @@
 
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
+#include "raw_stream_reader.h"
 #include <gnuradio/sync_decimator.h>
 #include <pmt/pmt.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <condition_variable>
 #include <cstdint>
-#include <fstream>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -63,15 +63,14 @@ struct Evk1029FreqXlatingBand
     bool use_cuda = false;    // only takes effect when built with -DENABLE_CUDA=ON; see evk1029_source.cc
 };
 
-// bytes_to_skip is rounded up to the next 64-bit word, matching the
-// capture's native packing, so a jumped-to run stays comparable to a
-// from-the-start one at the word level. freq_xlating_bands: see above.
-Evk1029Source_sptr evk1029_make_source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip = 0,
+// reader: the raw EVK1029 byte source, constructed by the caller (see
+// raw_stream_reader.h). freq_xlating_bands: see above.
+Evk1029Source_sptr evk1029_make_source(std::unique_ptr<RawStreamReader> reader, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency,
     const std::vector<Evk1029FreqXlatingBand>& freq_xlating_bands = {});
 
 /*!
- * \brief Reads a continuous, header-less EVK1029 raw capture file and
- * unpacks its OBA-encoded 4-bit samples (two per byte, low nibble first).
+ * \brief Unpacks a continuous stream of OBA-encoded 4-bit EVK1029 samples
+ * (two per byte, low nibble first), read through a RawStreamReader.
  */
 class Evk1029Source : public gr::sync_decimator
 {
@@ -79,9 +78,9 @@ public:
     ~Evk1029Source() override;
 
 private:
-    friend Evk1029Source_sptr evk1029_make_source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip,
+    friend Evk1029Source_sptr evk1029_make_source(std::unique_ptr<RawStreamReader> reader, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency,
         const std::vector<Evk1029FreqXlatingBand>& freq_xlating_bands);
-    Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip,
+    Evk1029Source(std::unique_ptr<RawStreamReader> reader, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency,
         const std::vector<Evk1029FreqXlatingBand>& freq_xlating_bands);
 
     int work(int noutput_items,
@@ -140,7 +139,7 @@ private:
     void worker_loop(std::size_t band_index, BandWorker* w);
     std::vector<std::unique_ptr<BandWorker>> workers_;
 
-    std::ifstream binary_input_file_;
+    std::unique_ptr<RawStreamReader> reader_;
     Concurrent_Queue<pmt::pmt_t>* queue_;
     std::vector<uint8_t> buffer_;
     std::size_t buffer_valid_;  // number of valid bytes currently in buffer_

@@ -17,12 +17,14 @@
 #include "evk1029_source.h"
 #include "command_event.h"
 #include "deterministic_clock.h"
-#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
+#include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
+#include <boost/thread/thread.hpp>  // for boost::this_thread::interruption_requested
 #include <gnuradio/io_signature.h>
 #include <gnuradio/math.h>
 #include <volk/volk.h>
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <cstdint>
@@ -52,6 +54,10 @@ constexpr std::size_t kReadChunkBytes = 1 << 20;  // 1 MiB
 // sampling frequency so the same target holds at other rates.
 constexpr double kOutputMultipleTargetSeconds = 0.0007;
 constexpr int kOutputMultipleFallback = 131072;  // used if sampling_frequency is unavailable/invalid
+
+// How often work() checks whether the flowgraph is being stopped while it
+// waits for the decode worker
+constexpr std::chrono::milliseconds kStopCheckInterval(100);
 
 int output_multiple_from_sampling_frequency(double sampling_frequency)
 {
@@ -109,19 +115,20 @@ void name_current_thread(const std::string& name)
 }  // namespace
 
 
-Evk1029Source_sptr evk1029_make_source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip,
+Evk1029Source_sptr evk1029_make_source(std::unique_ptr<RawStreamReader> reader, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency,
     const std::vector<Evk1029FreqXlatingBand>& freq_xlating_bands)
 {
-    return Evk1029Source_sptr(new Evk1029Source(filename, queue, sampling_frequency, bytes_to_skip, freq_xlating_bands));
+    return Evk1029Source_sptr(new Evk1029Source(std::move(reader), queue, sampling_frequency, freq_xlating_bands));
 }
 
 
-Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency, uint64_t bytes_to_skip,
+Evk1029Source::Evk1029Source(std::unique_ptr<RawStreamReader> reader, Concurrent_Queue<pmt::pmt_t>* queue, double sampling_frequency,
     const std::vector<Evk1029FreqXlatingBand>& freq_xlating_bands)
     : gr::sync_decimator("evk1029_source",
           gr::io_signature::make(0, 0, 0),
           freq_xlating_bands.empty() ? gr::io_signature::make(1, 1, sizeof(int8_t)) : gr::io_signature::make(static_cast<int>(freq_xlating_bands.size()), static_cast<int>(freq_xlating_bands.size()), sizeof(gr_complex)),
           freq_xlating_bands.empty() ? 1 : freq_xlating_bands.front().decimation_factor),
+      reader_(std::move(reader)),
       queue_(queue),
       buffer_(kReadChunkBytes),
       buffer_valid_(0),
@@ -201,39 +208,6 @@ Evk1029Source::Evk1029Source(const std::string& filename, Concurrent_Queue<pmt::
     decoded_b_.resize(history_len_);
     converted_b_.resize(history_len_);
 
-    binary_input_file_.open(filename.c_str(), std::ios::in | std::ios::binary);
-    if (binary_input_file_.is_open())
-        {
-            std::cout << "EVK1029_Source: file '" << filename << "' successfully opened.\n";
-        }
-    else
-        {
-            std::cerr << "EVK1029_Source: failed to open file: " << filename << '\n';
-            exit(1);
-        }
-
-    if (bytes_to_skip > 0)
-        {
-            // Round up to the next 64-bit (8-byte) word boundary -- see this
-            // parameter's doc comment in the header for why.
-            constexpr uint64_t kWordBytes = 8;
-            const uint64_t aligned_offset = ((bytes_to_skip + kWordBytes - 1) / kWordBytes) * kWordBytes;
-
-            binary_input_file_.seekg(0, std::ios::end);
-            const auto file_size = static_cast<uint64_t>(binary_input_file_.tellg());
-            if (aligned_offset >= file_size)
-                {
-                    std::cerr << "EVK1029_Source: seconds_to_skip lands at byte " << aligned_offset
-                              << " (rounded up to a 64-bit word), at or beyond the end of '" << filename
-                              << "' (" << file_size << " bytes) -- nothing to read.\n";
-                    exit(1);
-                }
-
-            binary_input_file_.seekg(static_cast<std::streamoff>(aligned_offset), std::ios::beg);
-            std::cout << "EVK1029_Source: skipping the first " << aligned_offset << " bytes of the capture (requested "
-                      << bytes_to_skip << ", rounded up to a 64-bit word boundary)" << std::endl;
-        }
-
     // One persistent FIR worker per band: work()'s own calling thread only
     // dispatches and waits.
     for (std::size_t b = 0; b < bands_.size(); b++)
@@ -265,28 +239,18 @@ Evk1029Source::~Evk1029Source()
         }
     if (decode_worker_)
         {
+            // A live stream with nothing new keeps the decode worker
+            // polling reader_->read(); end it so the join() below completes.
+            if (reader_)
+                {
+                    reader_->request_stop();
+                }
             {
                 std::lock_guard<std::mutex> lock(decode_worker_->mutex);
                 decode_worker_->stop = true;
             }
             decode_worker_->cv.notify_all();
             decode_worker_->thread.join();
-        }
-
-    try
-        {
-            if (binary_input_file_.is_open())
-                {
-                    binary_input_file_.close();
-                }
-        }
-    catch (const std::ifstream::failure& e)
-        {
-            std::cerr << "EVK1029_Source: problem closing input file.\n";
-        }
-    catch (const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
         }
 }
 
@@ -298,11 +262,21 @@ std::size_t Evk1029Source::decode_into_buffer(std::size_t decoded_needed, std::v
         {
             if (buffer_pos_ >= buffer_valid_)
                 {
-                    binary_input_file_.read(reinterpret_cast<char*>(buffer_.data()), static_cast<std::streamsize>(buffer_.size()));
-                    buffer_valid_ = static_cast<std::size_t>(binary_input_file_.gcount());
+                    buffer_valid_ = reader_->read(buffer_.data(), buffer_.size());
                     buffer_pos_ = 0;
                     if (buffer_valid_ == 0)
                         {
+                            if (!reader_->end_of_stream())
+                                {
+                                    // Nothing new from a live stream yet. GNU Radio stops
+                                    // a flowgraph by interrupting the threads of its blocks:
+                                    // on work()'s own thread, give up then.
+                                    if (boost::this_thread::interruption_requested())
+                                        {
+                                            reader_->request_stop();
+                                        }
+                                    continue;
+                                }
                             eof_ = true;
                             return produced;
                         }
@@ -449,17 +423,18 @@ int Evk1029Source::work(int noutput_items,
             int produced = 0;
             bool eof = false;
 
-            // Each byte unpacks to two samples; only a zero-byte read is EOF.
+            // Each byte unpacks to two samples; a zero-byte read is EOF only at the end of the stream.
             while (produced + 1 < noutput_items)
                 {
                     if (buffer_pos_ >= buffer_valid_)
                         {
-                            binary_input_file_.read(reinterpret_cast<char*>(buffer_.data()), static_cast<std::streamsize>(buffer_.size()));
-                            buffer_valid_ = static_cast<std::size_t>(binary_input_file_.gcount());
+                            buffer_valid_ = reader_->read(buffer_.data(), buffer_.size());
                             buffer_pos_ = 0;
                             if (buffer_valid_ == 0)
                                 {
-                                    eof = true;
+                                    // Otherwise a live stream had nothing new yet: return
+                                    // what we have, so that the flowgraph can be stopped
+                                    eof = reader_->end_of_stream();
                                     break;
                                 }
                         }
@@ -523,7 +498,14 @@ int Evk1029Source::work(int noutput_items,
     else
         {
             std::unique_lock<std::mutex> lock(decode_worker_->mutex);
-            decode_worker_->cv.wait(lock, [this] { return decode_worker_->finished; });
+            while (!decode_worker_->cv.wait_for(lock, kStopCheckInterval, [this] { return decode_worker_->finished; }))
+                {
+                    // The decode worker may be waiting for a live stream
+                    if (boost::this_thread::interruption_requested())
+                        {
+                            reader_->request_stop();
+                        }
+                }
             std::size_t produced = decode_worker_->produced;
             lock.unlock();
             decode_worker_has_pending_result_ = false;

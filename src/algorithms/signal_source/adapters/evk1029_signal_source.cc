@@ -15,8 +15,14 @@
 
 #include "evk1029_signal_source.h"
 #include "configuration_interface.h"
+#include "file_stream_reader.h"
+#include "gnss_sdr_make_unique.h"
+#ifdef EVK1029_SHM_INPUT
+#include "shared_memory_stream_reader.h"
+#endif
 #include <gnuradio/filter/firdes.h>
 #include <cmath>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -113,7 +119,10 @@ Evk1029SignalSource::Evk1029SignalSource(
       item_size_(sizeof(int8_t)),
       rf_channels_(static_cast<unsigned int>(getRfChannels())),
       enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false)),
-      enable_freq_xlating_(configuration->property(role + ".enable_freq_xlating"s, false))
+      enable_freq_xlating_(configuration->property(role + ".enable_freq_xlating"s, false)),
+      // Backward compatible: a configuration that only ever set ".filename"
+      // (every existing one) implicitly means file mode.
+      shared_memory_input_(configuration->property(role + ".input"s, "file"s) == "shared_memory"s)
 {
     const std::string filename = configuration->property(role + ".filename"s, "data.bin"s);
     // NOTE: this must be the RAW (pre-decimation) ADC sample rate of the capture
@@ -124,9 +133,27 @@ Evk1029SignalSource::Evk1029SignalSource(
     const int64_t default_fs = configuration->property("GNSS-SDR.internal_fs_sps"s, int64_t(0));
     const int64_t fs = configuration->property(role + ".sampling_frequency"s, default_fs);
 
+    const std::string input_mode = configuration->property(role + ".input"s, "file"s);
+    if (!shared_memory_input_ && input_mode != "file"s)
+        {
+            throw std::invalid_argument(role + ".input='" + input_mode + "' is not 'file' or 'shared_memory'");
+        }
+#ifndef EVK1029_SHM_INPUT
+    if (shared_memory_input_)
+        {
+            throw std::invalid_argument(role + ".input='shared_memory' requires Linux (shm_open/mmap/futex); this build was configured without it");
+        }
+#endif
+    const std::string shm_name = configuration->property(role + ".shm_name"s, "/evk1029_stream"s);
+
     const double seconds_to_skip = configuration->property(role + ".seconds_to_skip"s, 0.0);
     uint64_t bytes_to_skip = 0;
-    if (seconds_to_skip > 0.0 && fs > 0)
+    if (seconds_to_skip > 0.0 && shared_memory_input_)
+        {
+            LOG(WARNING) << role << ".seconds_to_skip has no meaning in shared_memory mode (there is no recorded "
+                         << "position to seek to in a live stream); ignoring it.";
+        }
+    else if (seconds_to_skip > 0.0 && fs > 0)
         {
             bytes_to_skip = static_cast<uint64_t>(std::llround(seconds_to_skip * static_cast<double>(fs) / 2.0));
             if (!configuration->is_present(role + ".sampling_frequency"s))
@@ -143,7 +170,15 @@ Evk1029SignalSource::Evk1029SignalSource(
             rf_channels_ = 1;
         }
 
-    DLOG(INFO) << "EVK1029 Signal Source: filename=" << filename << ", fs=" << fs << ", item_size=" << item_size_
+    if (shared_memory_input_ && enable_throttle_control_)
+        {
+            LOG(WARNING) << role << ": enable_throttle_control has no meaning in shared_memory mode (the live "
+                         << "producer already paces the data); ignoring it.";
+            enable_throttle_control_ = false;
+        }
+
+    DLOG(INFO) << "EVK1029 Signal Source: input=" << input_mode << " ("
+               << (shared_memory_input_ ? shm_name : filename) << "), fs=" << fs << ", item_size=" << item_size_
                << ", RF_channels=" << rf_channels_ << ", seconds_to_skip=" << seconds_to_skip;
 
     std::vector<Evk1029FreqXlatingBand> freq_xlating_bands;
@@ -200,7 +235,20 @@ Evk1029SignalSource::Evk1029SignalSource(
                 }
         }
 
-    evk1029_source_ = evk1029_make_source(filename, queue, static_cast<double>(fs), bytes_to_skip, freq_xlating_bands);
+    std::unique_ptr<RawStreamReader> reader;
+    if (shared_memory_input_)
+        {
+#ifdef EVK1029_SHM_INPUT
+            const bool shm_stop_on_buffer_overflow = configuration->property(role + ".shm_stop_on_buffer_overflow"s, false);
+            const double shm_stall_timeout_s = configuration->property(role + ".shm_stall_timeout_s"s, 5.0);
+            reader = std::make_unique<SharedMemoryStreamReader>(shm_name, 30.0, shm_stop_on_buffer_overflow, shm_stall_timeout_s);
+#endif
+        }
+    else
+        {
+            reader = std::make_unique<FileStreamReader>(filename, bytes_to_skip);
+        }
+    evk1029_source_ = evk1029_make_source(std::move(reader), queue, static_cast<double>(fs), freq_xlating_bands);
 
     if (enable_throttle_control_)
         {

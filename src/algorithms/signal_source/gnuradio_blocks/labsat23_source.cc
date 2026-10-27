@@ -21,6 +21,7 @@
 #include "labsat23_source.h"
 #include "INIReader.h"
 #include "command_event.h"
+#include "deterministic_clock.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include <set>
@@ -35,6 +36,20 @@
 #else
 #include <absl/log/log.h>
 #endif
+
+namespace
+{
+// At the end of the file. With GNSS-SDR.deterministic=true, the receiver
+// stops once the samples have gone through the flowgraph instead.
+void request_receiver_stop(Concurrent_Queue<pmt::pmt_t> *queue)
+{
+    if (!DeterministicClock::instance().enabled())
+        {
+            queue->push(pmt::make_any(command_event_make(200, 0)));
+        }
+}
+}  // namespace
+
 
 labsat23_source_sptr labsat23_make_source_sptr(
     const char *signal_file_basename,
@@ -1255,7 +1270,7 @@ int labsat23_source::parse_ls23_data(int noutput_items, std::vector<gr_complex *
                                     std::cout << "End of file reached, LabSat source stop\n";
                                 }
 
-                            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                            request_receiver_stop(d_queue);
                             return -1;
                         }
                     else
@@ -1310,7 +1325,7 @@ int labsat23_source::parse_ls23_data(int noutput_items, std::vector<gr_complex *
                                         std::cout << "End of file reached, LabSat source stop\n";
                                     }
 
-                                d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                                request_receiver_stop(d_queue);
                                 return -1;
                             }
                         else
@@ -1359,7 +1374,7 @@ int labsat23_source::parse_ls23_data(int noutput_items, std::vector<gr_complex *
                                 {
                                     std::cout << "End of file reached, LabSat source stop\n";
                                 }
-                            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                            request_receiver_stop(d_queue);
                             return -1;
                         }
                     else
@@ -1405,7 +1420,7 @@ int labsat23_source::parse_ls23_data(int noutput_items, std::vector<gr_complex *
                                 }
 
                             std::cout << "Last file reached, LabSat source stop\n";
-                            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                            request_receiver_stop(d_queue);
                             return -1;
                         }
                     else
@@ -1446,7 +1461,7 @@ int labsat23_source::parse_ls3w_data(int noutput_items, std::vector<gr_complex *
                     else
                         {
                             std::cout << "End of file reached, LabSat source stop.\n";
-                            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                            request_receiver_stop(d_queue);
                             return -1;
                         }
                 }
@@ -1455,7 +1470,7 @@ int labsat23_source::parse_ls3w_data(int noutput_items, std::vector<gr_complex *
     else
         {
             std::cout << "End of file reached, LabSat source stop.\n";
-            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+            request_receiver_stop(d_queue);
             return -1;
         }
 }
@@ -1489,7 +1504,7 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
                             if (!read_ls4_data())
                                 {
                                     std::cout << "End of file reached, LabSat source stop.\n";
-                                    d_queue->push(pmt::make_any(command_event_make(200, 0)));
+                                    request_receiver_stop(d_queue);
                                     return -1;
                                 }
 
@@ -1520,7 +1535,7 @@ int labsat23_source::parse_ls4_data(int noutput_items, std::vector<gr_complex *>
     else
         {
             std::cout << "End of file reached, LabSat source stop.\n";
-            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+            request_receiver_stop(d_queue);
             return -1;
         }
 }

@@ -34,6 +34,8 @@ public:
     ~StreamBatcherDeadline();
     StreamBatcherDeadline(const StreamBatcherDeadline&) = delete;
     StreamBatcherDeadline& operator=(const StreamBatcherDeadline&) = delete;
+    StreamBatcherDeadline(StreamBatcherDeadline&&) = delete;
+    StreamBatcherDeadline& operator=(StreamBatcherDeadline&&) = delete;
 
     uint64_t add(std::function<void(uint64_t)> notify);
     void remove(uint64_t id);

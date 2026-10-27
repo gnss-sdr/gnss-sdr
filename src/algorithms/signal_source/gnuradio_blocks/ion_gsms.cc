@@ -21,6 +21,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 
 #if USE_GLOG_AND_GFLAGS
@@ -135,6 +136,20 @@ IONGSMSFileSource::IONGSMSFileSource(
                 {
                     throw std::runtime_error("ION_GSMS_Signal_Source requested stream is not present in source segments");
                 }
+        }
+
+    // work() decodes whole chunk cycles only. Without an output multiple, the
+    // scheduler can offer less room than one cycle; a source that then
+    // produces nothing is polled again only after a 250 ms timeout. Room for
+    // the largest cycle is sufficient: work() leaves any unused space for
+    // the next call, so no common multiple of the segment sizes is needed.
+    if (maximum_item_rate_ > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        {
+            throw std::runtime_error("ION_GSMS_Signal_Source chunk cycle exceeds GNU Radio's output item limit");
+        }
+    if (maximum_item_rate_ > 1)
+        {
+            set_output_multiple(static_cast<int>(maximum_item_rate_));
         }
 
     current_segment_index_ = 0;

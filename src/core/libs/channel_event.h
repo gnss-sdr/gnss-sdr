@@ -17,6 +17,8 @@
 #ifndef GNSS_SDR_CHANNEL_EVENT_H
 #define GNSS_SDR_CHANNEL_EVENT_H
 
+#include <cstdint>
+#include <limits>
 #include <memory>
 
 /** \addtogroup Core
@@ -29,17 +31,23 @@ class Channel_Event;
 
 using channel_event_sptr = std::shared_ptr<Channel_Event>;
 
-channel_event_sptr channel_event_make(int channel_id, int event_type);
+/*!
+ * \brief Makes a channel event. \p sample_stamp is the input sample at which
+ * the event happened, used to order events in deterministic processing.
+ */
+channel_event_sptr channel_event_make(int channel_id, int event_type,
+    uint64_t sample_stamp = std::numeric_limits<uint64_t>::max());
 
 class Channel_Event
 {
 public:
     int channel_id;
     int event_type;
+    uint64_t sample_stamp;
 
 private:
-    friend channel_event_sptr channel_event_make(int channel_id, int event_type);
-    Channel_Event(int channel_id_, int event_type_);
+    friend channel_event_sptr channel_event_make(int channel_id, int event_type, uint64_t sample_stamp);
+    Channel_Event(int channel_id_, int event_type_, uint64_t sample_stamp_);
 };
 
 

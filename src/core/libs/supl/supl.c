@@ -15,6 +15,7 @@
  */
 
 #include "supl.h"
+#include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -55,18 +56,23 @@ int EXPORT supl_ulp_decode(supl_ulp_t *pdu)
     asn_codec_ctx_t ctx;
     asn_dec_rval_t rval;
 
-    ulp = calloc(1, sizeof(ULP_PDU_t));
-    pdu->pdu = ulp;
-
-    ctx.max_stack_size = 0;
-    rval = uper_decode_complete(&ctx, &asn_DEF_ULP_PDU, (void **)&ulp, pdu->buffer, pdu->size);
-    if (rval.code == RC_OK)
+    pdu->pdu = 0;
+    if (pdu->size < 2 || pdu->size > sizeof(pdu->buffer))
         {
+            return E_SUPL_DECODE;
+        }
+    ulp = 0;
+    ctx.max_stack_size = 65536;
+    rval = uper_decode_complete(&ctx, &asn_DEF_ULP_PDU, (void **)&ulp, pdu->buffer, pdu->size);
+    if (rval.code == RC_OK && rval.consumed == pdu->size &&
+        ulp->length == (long)pdu->size &&
+        asn_check_constraints(&asn_DEF_ULP_PDU, ulp, 0, 0) == 0)
+        {
+            pdu->pdu = ulp;
             return 0;
         }
 
-    free(ulp);
-    pdu->pdu = 0;
+    ASN_STRUCT_FREE(asn_DEF_ULP_PDU, ulp);
 
     return E_SUPL_DECODE;
 }
@@ -104,7 +110,8 @@ int EXPORT supl_ulp_encode(supl_ulp_t *pdu)
 
 void EXPORT supl_ulp_free(supl_ulp_t *pdu)
 {
-    asn_DEF_ULP_PDU.free_struct(&asn_DEF_ULP_PDU, pdu->pdu, 0);
+    ASN_STRUCT_FREE(asn_DEF_ULP_PDU, pdu->pdu);
+    pdu->pdu = 0;
 }
 
 
@@ -120,13 +127,19 @@ int EXPORT supl_ulp_send(supl_ctx_t *ctx, supl_ulp_t *pdu)
         }
 #endif
 
-    err = SSL_write(ctx->ssl, pdu->buffer, pdu->size);
-    if (err <= 0)
+    size_t sent = 0;
+    if (pdu->size == 0 || pdu->size > sizeof(pdu->buffer))
         {
-#if SUPL_DEBUG
-            if (debug.debug) fprintf(debug.log, "Error: SSL_write error: %s\n", strerror(errno));
-#endif
             return E_SUPL_WRITE;
+        }
+    while (sent < pdu->size)
+        {
+            err = SSL_write(ctx->ssl, pdu->buffer + sent, (int)(pdu->size - sent));
+            if (err <= 0)
+                {
+                    return E_SUPL_WRITE;
+                }
+            sent += err;
         }
 
 #ifdef SUPL_DEBUG
@@ -140,46 +153,31 @@ int EXPORT supl_ulp_send(supl_ctx_t *ctx, supl_ulp_t *pdu)
 
 int EXPORT supl_ulp_recv(supl_ctx_t *ctx, supl_ulp_t *pdu)
 {
-    int64_t err;
-    int64_t n;
-    asn_dec_rval_t rval;
-    ULP_PDU_t *length;
+    size_t received = 0;
+    size_t length = 2;
 
-    err = SSL_read(ctx->ssl, pdu->buffer, sizeof(pdu->buffer));
-    if (err <= 0)
+    pdu->pdu = 0;
+    pdu->size = 0;
+    /* ULP starts with a 16-bit length, including the length field itself.
+     * Read exactly one frame, even when TLS splits or coalesces messages. */
+    while (received < length)
         {
-#ifdef SUPL_DEBUG
-            if (debug.debug) fprintf(debug.log, "Error: SSL_read error: %s\n", strerror(errno));
-#endif
-            return E_SUPL_READ;
-        }
-    n = err;
-
-    length = calloc(1, sizeof(ULP_PDU_t));
-    // decode the very first bytes of the ULP_PDU message, just enough to the get message length
-    rval = uper_decode_complete(0, &asn_DEF_ULP_PDU, (void **)&length, pdu->buffer, n < 6 ? n : 6);
-    if (rval.code == RC_WMORE)
-        {
-            // read the missing data
-            for (n = err; n < length->length; n += err)
+            int err = SSL_read(ctx->ssl, pdu->buffer + received, (int)(length - received));
+            if (err <= 0)
                 {
-#ifdef SUPL_DEBUG
-                    if (debug.debug) fprintf(debug.log, "SSL_read got %u bytes (total %lu)\n", n, length->length);
-#endif
-                    err = SSL_read(ctx->ssl, &pdu->buffer[n], sizeof(pdu->buffer) - n);
-                    if (err <= 0)
+                    return E_SUPL_READ;
+                }
+            received += err;
+            if (received == 2)
+                {
+                    length = ((size_t)pdu->buffer[0] << 8) | pdu->buffer[1];
+                    if (length <= 2 || length > sizeof(pdu->buffer))
                         {
-#ifdef SUPL_DEBUG
-                            if (debug.debug) fprintf(debug.log, "Error: SSL_read (again) error: %s\n", strerror(errno));
-#endif
-                            return E_SUPL_READ;
+                            return E_SUPL_DECODE;
                         }
                 }
         }
-
-    asn_DEF_ULP_PDU.free_struct(&asn_DEF_ULP_PDU, length, 0);
-
-    pdu->size = n;
+    pdu->size = received;
 
     if (supl_ulp_decode(pdu))
         {
@@ -195,7 +193,7 @@ int EXPORT supl_ulp_recv(supl_ctx_t *ctx, supl_ulp_t *pdu)
 #endif
 
 #ifdef SUPL_DEBUG
-    debug.recv += err;
+    debug.recv += pdu->size;
     debug.in_msg++;
 #endif
 
@@ -210,103 +208,135 @@ int EXPORT supl_decode_rrlp(supl_ulp_t *ulp_pdu, PDU_t **ret_rrlp)
     PDU_t *rrlp;
     ULP_PDU_t *ulp;
 
+    *ret_rrlp = 0;
     ulp = ulp_pdu->pdu;
-
-    if (!(ulp->message.present == UlpMessage_PR_msSUPLPOS &&
-            ulp->message.choice.msSUPLPOS.posPayLoad.present == PosPayLoad_PR_rrlpPayload))
+    if (!ulp || ulp->message.present != UlpMessage_PR_msSUPLPOS ||
+        ulp->message.choice.msSUPLPOS.posPayLoad.present != PosPayLoad_PR_rrlpPayload)
         {
-            return 0;
+            return E_SUPL_DECODE_RRLP;
         }
     rrlp_pdu = &ulp->message.choice.msSUPLPOS.posPayLoad.choice.rrlpPayload;
-
-    rrlp = calloc(1, sizeof(PDU_t));
-    rval = uper_decode_complete(0, &asn_DEF_PDU, (void **)&rrlp, rrlp_pdu->buf, rrlp_pdu->size);
-    switch (rval.code)
+    if (!rrlp_pdu->buf || rrlp_pdu->size <= 0)
         {
-        case RC_OK:
-#ifdef SUPL_DEBUG
-            if (rval.consumed != rrlp_pdu->size)
-                {
-                    if (debug.debug) fprintf(debug.log, "Warning: %lu bytes left over in RRLP decoding\n", rval.consumed);
-                }
-#endif
-
-            *ret_rrlp = rrlp;
-            return 0;
-
-        case RC_WMORE:
-            asn_DEF_PDU.free_struct(&asn_DEF_PDU, rrlp, 0);
-            ret_rrlp = 0;
-            return E_SUPL_DECODE_RRLP;
-
-        default:
-            asn_DEF_PDU.free_struct(&asn_DEF_PDU, rrlp, 0);
-            ret_rrlp = 0;
             return E_SUPL_DECODE_RRLP;
         }
-
-    return E_SUPL_INTERNAL;
+    rrlp = 0;
+    rval = uper_decode_complete(0, &asn_DEF_PDU, (void **)&rrlp, rrlp_pdu->buf, rrlp_pdu->size);
+    if (rval.code == RC_OK && rval.consumed == (size_t)rrlp_pdu->size &&
+        asn_check_constraints(&asn_DEF_PDU, rrlp, 0, 0) == 0)
+        {
+            *ret_rrlp = rrlp;
+            return 0;
+        }
+    ASN_STRUCT_FREE(asn_DEF_PDU, rrlp);
+    return E_SUPL_DECODE_RRLP;
 }
 
 
 int EXPORT supl_server_connect(supl_ctx_t *ctx, char *server)
 {
-    int err;
-    SSL_METHOD *meth;
+    unsigned char address[sizeof(struct in6_addr)];
+    int numeric;
 
-    SSLeay_add_ssl_algorithms();
-    // meth = TLSv1_client_method();
-    meth = (SSL_METHOD *)SSLv23_client_method();
-    SSL_load_error_strings();
-    ctx->ssl_ctx = SSL_CTX_new(meth);
-    if (!ctx->ssl_ctx)
+    /* A peer name is mandatory, including for a caller-supplied socket. */
+    if (!server || !server[0])
         {
             return E_SUPL_CONNECT;
         }
-
+    numeric = inet_pton(AF_INET, server, address) == 1 ||
+              inet_pton(AF_INET6, server, address) == 1;
+    SSLeay_add_ssl_algorithms();
+    SSL_load_error_strings();
+    ctx->ssl_ctx = SSL_CTX_new((SSL_METHOD *)SSLv23_client_method());
+    if (!ctx->ssl_ctx)
+        {
+            goto fail;
+        }
+#if !USE_GNUTLS_FALLBACK
+    SSL_CTX_set_verify(ctx->ssl_ctx, SSL_VERIFY_PEER, 0);
+    if (SSL_CTX_set_default_verify_paths(ctx->ssl_ctx) != 1)
+        {
+            goto fail;
+        }
+    SSL_CTX_set_options(ctx->ssl_ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 |
+                                          SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
+#endif
     ctx->ssl = SSL_new(ctx->ssl_ctx);
     if (!ctx->ssl)
         {
-            return E_SUPL_CONNECT;
+            goto fail;
         }
-
-    if (server)
+#if USE_GNUTLS_FALLBACK
+    /* The OpenSSL compatibility layer does not implement peer verification.
+     * Use the native GnuTLS credentials and verification API. */
+    if (gnutls_certificate_set_x509_system_trust(ctx->ssl->gnutls_cred) < 0 ||
+        gnutls_priority_set_direct(ctx->ssl->gnutls_state,
+            "NORMAL:-VERS-SSL3.0:-VERS-TLS1.0:-VERS-TLS1.1", 0) < 0 ||
+        (!numeric && gnutls_server_name_set(ctx->ssl->gnutls_state,
+                         GNUTLS_NAME_DNS, server, strlen(server)) < 0))
+        {
+            goto fail;
+        }
+#else
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+    if ((numeric && X509_VERIFY_PARAM_set1_ip_asc(SSL_get0_param(ctx->ssl), server) != 1) ||
+        (!numeric && (X509_VERIFY_PARAM_set1_host(SSL_get0_param(ctx->ssl), server, 0) != 1 ||
+                         SSL_set_tlsext_host_name(ctx->ssl, server) != 1)))
+        {
+            goto fail;
+        }
+#else
+    /* Older OpenSSL cannot authenticate the expected server identity. */
+    goto fail;
+#endif
+#endif
+    if (ctx->fd < 0)
         {
             ctx->fd = server_connect(server);
-            if (ctx->fd == -1)
-                {
-                    return E_SUPL_CONNECT;
-                }
         }
-
-    SSL_set_fd(ctx->ssl, ctx->fd);
-    err = SSL_connect(ctx->ssl);
-    if (err == -1)
+    if (ctx->fd < 0 || SSL_set_fd(ctx->ssl, ctx->fd) != 1 || SSL_connect(ctx->ssl) != 1)
         {
-            return E_SUPL_CONNECT;
+            goto fail;
         }
-
-#if 0
-  {
-    X509 *s_cert = SSL_get_peer_certificate(ctx->ssl);
-    FILE *fp = fopen("/tmp/s_cert.pem", "w");
-    if (fp)
-      PEM_write_X509(fp, s_cert);
-    fclose(fp);
-    X509_free(s_cert);
-  }
+#if USE_GNUTLS_FALLBACK
+    {
+        unsigned int status = 0;
+        if (gnutls_certificate_verify_peers3(ctx->ssl->gnutls_state, server, &status) < 0 || status != 0)
+            {
+                goto fail;
+            }
+    }
+#else
+    if (SSL_get_verify_result(ctx->ssl) != X509_V_OK)
+        {
+            goto fail;
+        }
 #endif
-
     return 0;
+
+fail:
+    supl_close(ctx);
+    return E_SUPL_CONNECT;
 }
 
 
 void EXPORT supl_close(supl_ctx_t *ctx)
 {
-    SSL_shutdown(ctx->ssl);
-    SSL_free(ctx->ssl);
-    SSL_CTX_free(ctx->ssl_ctx);
-    close(ctx->fd);
+    if (ctx->ssl)
+        {
+            SSL_free(ctx->ssl);
+            ctx->ssl = 0;
+        }
+    if (ctx->ssl_ctx)
+        {
+            SSL_CTX_free(ctx->ssl_ctx);
+            ctx->ssl_ctx = 0;
+        }
+    if (ctx->fd >= 0)
+        {
+            close(ctx->fd);
+            ctx->fd = -1;
+        }
 }
 
 
@@ -328,22 +358,19 @@ static int server_connect(char *server)
 
     for (aip = ailist; aip; aip = aip->ai_next)
         {
-            if ((fd = socket(aip->ai_family, SOCK_STREAM, 0)) < 0)
+            fd = socket(aip->ai_family, SOCK_STREAM, 0);
+            if (fd < 0)
                 {
-                    err = errno;
+                    continue;
                 }
-            if (connect(fd, aip->ai_addr, aip->ai_addrlen) != 0)
+            if (connect(fd, aip->ai_addr, aip->ai_addrlen) == 0)
                 {
-                    freeaddrinfo(aip);
-                    if (close(fd) != 0)
-                        {
-                            // avoid warning
-                        }
-                    return -1;
+                    break;
                 }
-            break;
+            close(fd);
+            fd = -1;
         }
-    freeaddrinfo(aip);
+    freeaddrinfo(ailist);
     return fd;
 }
 
@@ -419,7 +446,13 @@ static int supl_response_harvest(supl_ctx_t *ctx, supl_ulp_t *pdu)
     ULP_PDU_t *ulp = pdu->pdu;
     void *buf;
 
+    free(ctx->slp_session_id.buf);
     ctx->slp_session_id.buf = 0;
+    ctx->slp_session_id.size = 0;
+    if (!ulp->sessionID.slpSessionID)
+        {
+            return 0;
+        }
 
     ret = uper_encode_to_new_buffer(&asn_DEF_SlpSessionID, 0, (void *)ulp->sessionID.slpSessionID, &buf);
     if (ret == -1)
@@ -600,7 +633,7 @@ static int pdu_make_ulp_rrlp_ack(supl_ctx_t *ctx, supl_ulp_t *pdu, PDU_t *rrlp)
     rrlp_ack->component.present = RRLP_Component_PR_assistanceDataAck;
 
     ret = uper_encode_to_buffer(&asn_DEF_PDU, rrlp_ack, buffer, sizeof(buffer));
-    asn_DEF_ULP_PDU.free_struct(&asn_DEF_PDU, rrlp_ack, 0);
+    ASN_STRUCT_FREE(asn_DEF_PDU, rrlp_ack);
     if (ret.encoded == -1)
         {
             return E_SUPL_ENCODE_RRLP;
@@ -659,6 +692,10 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
 {
     ControlHeader_t *hdr;
 
+    if (!assist || !rrlp || !t)
+        {
+            return E_SUPL_DECODE_RRLP;
+        }
     if (rrlp->component.present != RRLP_Component_PR_assistanceData)
         {
             return 0;
@@ -669,6 +706,66 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
         }
 
     hdr = &rrlp->component.choice.assistanceData.gps_AssistData->controlHeader;
+
+    /* Validate the entire batch before modifying assistance. Counts accumulate
+     * across RRLP messages and must never exceed the destination arrays. */
+    if (assist->cnt_acq < 0 || assist->cnt_acq > MAX_EPHEMERIS ||
+        assist->cnt_alm < 0 || assist->cnt_alm > MAX_EPHEMERIS ||
+        assist->cnt_eph < 0 || assist->cnt_eph > MAX_EPHEMERIS)
+        {
+            return E_SUPL_DECODE_RRLP;
+        }
+    if (hdr->acquisAssist)
+        {
+            int n;
+            int count = hdr->acquisAssist->acquisList.list.count;
+            if (count < 0 || count > MAX_EPHEMERIS - assist->cnt_acq ||
+                (count > 0 && !hdr->acquisAssist->acquisList.list.array))
+                {
+                    return E_SUPL_DECODE_RRLP;
+                }
+            for (n = 0; n < count; n++)
+                {
+                    if (!hdr->acquisAssist->acquisList.list.array[n])
+                        {
+                            return E_SUPL_DECODE_RRLP;
+                        }
+                }
+        }
+    if (hdr->almanac)
+        {
+            int n;
+            int count = hdr->almanac->almanacList.list.count;
+            if (count < 0 || count > MAX_EPHEMERIS - assist->cnt_alm ||
+                (count > 0 && !hdr->almanac->almanacList.list.array))
+                {
+                    return E_SUPL_DECODE_RRLP;
+                }
+            for (n = 0; n < count; n++)
+                {
+                    if (!hdr->almanac->almanacList.list.array[n])
+                        {
+                            return E_SUPL_DECODE_RRLP;
+                        }
+                }
+        }
+    if (hdr->navigationModel)
+        {
+            int n;
+            int count = hdr->navigationModel->navModelList.list.count;
+            if (count < 0 || count > MAX_EPHEMERIS - assist->cnt_eph ||
+                (count > 0 && !hdr->navigationModel->navModelList.list.array))
+                {
+                    return E_SUPL_DECODE_RRLP;
+                }
+            for (n = 0; n < count; n++)
+                {
+                    if (!hdr->navigationModel->navModelList.list.array[n])
+                        {
+                            return E_SUPL_DECODE_RRLP;
+                        }
+                }
+        }
 
     if (hdr->referenceTime)
         {
@@ -683,7 +780,7 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
             OCTET_STRING_t *loc;
 
             loc = &hdr->refLocation->threeDLocation;
-            if (loc->size == 14 && loc->buf[0] == 0x90)
+            if (loc->size == 14 && loc->buf && loc->buf[0] == 0x90)
                 {
                     double lat;
                     double lon;
@@ -885,6 +982,7 @@ int EXPORT supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval 
 int EXPORT supl_ctx_new(supl_ctx_t *ctx)
 {
     memset(ctx, 0, sizeof(supl_ctx_t));
+    ctx->fd = -1;
 #ifdef SUPL_DEBUG
     memset(&debug, 0, sizeof(struct supl_debug_s));
 #endif
@@ -895,6 +993,7 @@ int EXPORT supl_ctx_new(supl_ctx_t *ctx)
 
 int EXPORT supl_ctx_free(supl_ctx_t *ctx)
 {
+    supl_close(ctx);
     if (ctx->slp_session_id.buf)
         {
             free(ctx->slp_session_id.buf);
@@ -918,141 +1017,105 @@ static int supl_more_rrlp(PDU_t *rrlp)
 
 int EXPORT supl_get_assist(supl_ctx_t *ctx, char *server, supl_assist_t *assist)
 {
-    supl_ulp_t ulp;
+    supl_ulp_t ulp = {0};
+    PDU_t *rrlp = 0;
+    int err;
 
-    //  memcpy(ctx->p.msisdn, "\xde\xad\xbe\xef\xf0\x0b\xaa\x42", 8);
+    memset(assist, 0, sizeof(*assist));
     memcpy(ctx->p.msisdn, "\xFF\xFF\x91\x94\x48\x45\x83\x98", 8);
-
-    /*
-     ** connect to server
-     */
-
-    if (supl_server_connect(ctx, server) < 0)
+    err = supl_server_connect(ctx, server);
+    if (err < 0)
         {
-            return E_SUPL_CONNECT;
+            goto done;
         }
-
-    /*
-     ** send SUPL_START
-     */
-
     if (pdu_make_ulp_start(ctx, &ulp) < 0)
         {
-            return E_SUPL_ENCODE_START;
+            ulp.pdu = 0; /* The encoder frees failed messages. */
+            err = E_SUPL_ENCODE_START;
+            goto done;
         }
-
-    (void)supl_ulp_send(ctx, &ulp);
+    err = supl_ulp_send(ctx, &ulp);
     supl_ulp_free(&ulp);
-
-    /*
-     ** should receive SUPL_RESPONSE back
-     */
-
-    if (supl_ulp_recv(ctx, &ulp) < 0)
+    if (err < 0)
         {
-            return E_SUPL_RECV_RESPONSE;
+            goto done;
         }
-
-    if (ulp.pdu->message.present != UlpMessage_PR_msSUPLRESPONSE)
+    err = supl_ulp_recv(ctx, &ulp);
+    if (err < 0)
         {
-            supl_ulp_free(&ulp);
-            return E_SUPL_SUPLRESPONSE;
+            goto done;
         }
-
-    // get and copy slpSessionID if present
-    supl_response_harvest(ctx, &ulp);
-
+    if (ulp.pdu->message.present != UlpMessage_PR_msSUPLRESPONSE ||
+        supl_response_harvest(ctx, &ulp) < 0)
+        {
+            err = E_SUPL_SUPLRESPONSE;
+            goto done;
+        }
     supl_ulp_free(&ulp);
-
-    /*
-     ** send SUPL_POS_INIT
-     */
-
     if (pdu_make_ulp_pos_init(ctx, &ulp) < 0)
         {
-            return E_SUPL_ENCODE_POSINIT;
+            ulp.pdu = 0;
+            err = E_SUPL_ENCODE_POSINIT;
+            goto done;
         }
-
-    (void)supl_ulp_send(ctx, &ulp);
-
-    /*
-     ** should get SUPLPOS back - bounce back and forth until all messages have arrived
-     */
-
-    memset(assist, 0, sizeof(supl_assist_t));
-
+    err = supl_ulp_send(ctx, &ulp);
+    supl_ulp_free(&ulp);
+    if (err < 0)
+        {
+            goto done;
+        }
     while (1)
         {
             struct timeval t;
-            PDU_t *rrlp;
-
-            supl_ulp_free(&ulp);
-
-            /* record packet recv time */
             gettimeofday(&t, 0);
-
-            if (supl_ulp_recv(ctx, &ulp) < 0)
+            err = supl_ulp_recv(ctx, &ulp);
+            if (err < 0)
                 {
-                    return E_SUPL_RECV_SUPLPOS;
+                    goto done;
                 }
-
             if (ulp.pdu->message.present == UlpMessage_PR_msSUPLEND)
                 {
                     break;
                 }
-
-            if (ulp.pdu->message.present != UlpMessage_PR_msSUPLPOS)
+            err = supl_decode_rrlp(&ulp, &rrlp);
+            if (err < 0)
                 {
-                    supl_ulp_free(&ulp);
-                    return E_SUPL_SUPLPOS;
+                    goto done;
                 }
-
-            /* get the beef, the RRLP payload */
-
-            if (supl_decode_rrlp(&ulp, &rrlp) < 0)
+            supl_ulp_free(&ulp);
+            err = supl_collect_rrlp(assist, rrlp, &t);
+            if (err < 0)
                 {
-                    supl_ulp_free(&ulp);
-                    return E_SUPL_DECODE_RRLP;
+                    goto done;
                 }
-
-#ifdef SUPL_DEBUG
-            if (debug.verbose_rrlp)
-                {
-                    fprintf(debug.log, "Embedded RRLP message\n");
-                    xer_fprint(debug.log, &asn_DEF_PDU, rrlp);
-                }
-#endif
-
-            /* remember important stuff from it */
-
-            supl_collect_rrlp(assist, rrlp, &t);
-
             if (!supl_more_rrlp(rrlp))
                 {
-                    asn_DEF_ULP_PDU.free_struct(&asn_DEF_PDU, rrlp, 0);
                     break;
                 }
-
-            /* More data coming in, send SUPLPOS + RRLP ACK */
-
-            if (pdu_make_ulp_rrlp_ack(ctx, &ulp, rrlp) < 0)
+            err = pdu_make_ulp_rrlp_ack(ctx, &ulp, rrlp);
+            if (err < 0)
                 {
-                    return E_SUPL_RRLP_ACK;
+                    goto done;
                 }
-
-            supl_ulp_send(ctx, &ulp);
-            asn_DEF_ULP_PDU.free_struct(&asn_DEF_PDU, rrlp, 0);
+            ASN_STRUCT_FREE(asn_DEF_PDU, rrlp);
+            rrlp = 0;
+            err = supl_ulp_send(ctx, &ulp);
+            supl_ulp_free(&ulp);
+            if (err < 0)
+                {
+                    goto done;
+                }
         }
-
+    err = 0;
+done:
+    ASN_STRUCT_FREE(asn_DEF_PDU, rrlp);
     supl_ulp_free(&ulp);
-
-    /*
-     ** send SUPL_END (but who really cares)
-     */
-
-    supl_close(ctx);
-
-    return 0;
+    supl_ctx_free(ctx);
+    if (err < 0)
+        {
+            memset(assist, 0, sizeof(*assist));
+        }
+    return err;
 }
 
 

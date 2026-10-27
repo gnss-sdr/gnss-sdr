@@ -68,38 +68,43 @@ channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> cha
 
 void channel_msg_receiver_cc::msg_handler_channel_events(const pmt::pmt_t& msg)
 {
-    bool result = false;
     try
         {
-            const int64_t message = pmt::to_long(msg);
-            switch (message)
-                {
-                case 1:  // positive acquisition
-                         // Now the acquisition block can optionally trigger the event valid acquisition internally,
-                         // in order to reduce acquisition to tracking delay.
-                    result = d_channel_fsm->Event_valid_acquisition();
-                    break;
-                case 2:  // negative acquisition
-                    if (d_repeat == true)
-                        {
-                            result = d_channel_fsm->Event_failed_acquisition_repeat();
-                        }
-                    else
-                        {
-                            result = d_channel_fsm->Event_failed_acquisition_no_repeat();
-                        }
-                    break;
-                case 3:  // tracking loss of lock event
-                    result = d_channel_fsm->Event_failed_tracking_standby();
-                    break;
-                default:
-                    LOG(WARNING) << "Default case, invalid message.";
-                    break;
-                }
+            dispatch_event(pmt::to_long(msg));
         }
     catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_channel_events Bad any cast: " << e.what();
+        }
+}
+
+
+void channel_msg_receiver_cc::dispatch_event(int64_t event)
+{
+    bool result = false;
+    switch (event)
+        {
+        case 1:  // positive acquisition
+                 // Now the acquisition block can optionally trigger the event valid acquisition internally,
+                 // in order to reduce acquisition to tracking delay.
+            result = d_channel_fsm->Event_valid_acquisition();
+            break;
+        case 2:  // negative acquisition
+            if (d_repeat == true)
+                {
+                    result = d_channel_fsm->Event_failed_acquisition_repeat();
+                }
+            else
+                {
+                    result = d_channel_fsm->Event_failed_acquisition_no_repeat();
+                }
+            break;
+        case 3:  // tracking loss of lock event
+            result = d_channel_fsm->Event_failed_tracking_standby();
+            break;
+        default:
+            LOG(WARNING) << "Default case, invalid message.";
+            break;
         }
     if (!result)
         {

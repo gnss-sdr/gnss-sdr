@@ -287,17 +287,7 @@ int PositionSystemTest::configure_receiver()
                     config->set_property("GNSS-SDR.observation_date", "2014-12-20");
                 }
             config->set_property("GNSS-SDR.GPS_banned_prns", std::to_string(1));
-            // Set the assistance system parameters
-            config->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
-            config->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
-            config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
-            config->set_property("GNSS-SDR.SUPL_gps_ephemeris_port", std::to_string(7275));
-            config->set_property("GNSS-SDR.SUPL_gps_acquisition_server", "supl.google.com");
-            config->set_property("GNSS-SDR.SUPL_gps_acquisition_port", std::to_string(7275));
-            config->set_property("GNSS-SDR.SUPL_MCC", std::to_string(244));
-            config->set_property("GNSS-SDR.SUPL_MNC", std::to_string(5));
-            config->set_property("GNSS-SDR.SUPL_LAC", "0x59e2");
-            config->set_property("GNSS-SDR.SUPL_CI", "0x31b0");
+            config->set_property("GNSS-SDR.deterministic", "true");
 
             // Set the Signal Source
             config->set_property("SignalSource.implementation", "File_Signal_Source");

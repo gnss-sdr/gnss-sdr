@@ -843,6 +843,17 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     d_timetag_waiting = false;
     set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
     d_last_tow_received = std::make_shared<TOW_to_trk>();
+
+    if (d_det.enabled())
+        {
+            if (d_trk_parameters.tow_to_trk)
+                {
+                    LOG(WARNING) << "tow_to_trk is ignored with GNSS-SDR.deterministic=true";
+                    d_trk_parameters.tow_to_trk = false;
+                }
+            // Inputs needed beyond the progress: see forecast()
+            d_det.require_span(2 * static_cast<uint64_t>(d_trk_parameters.vector_length));
+        }
 }
 
 
@@ -858,6 +869,15 @@ void dll_pll_veml_tracking::forecast(int noutput_items,
 
 void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
+    {
+        // Telemetry fault stamped with the sample of the offending symbol
+        // (GNSS-SDR.deterministic=true). It takes effect a lookahead later.
+        gr::thread::scoped_lock lock(d_setlock);
+        if (d_det.take_fault(msg, this->nitems_read(0), d_state != 0, d_channel))
+            {
+                return;
+            }
+    }
     try
         {
             if (pmt::any_ref(msg).type().hash_code() == d_int_type_hash_code)
@@ -867,7 +887,7 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                         {
                             gr::thread::scoped_lock lock(d_setlock);
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
-                            d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
+                            d_force_loss_of_lock = true;
                         }
                 }
             if (d_trk_parameters.tow_to_trk && pmt::any_ref(msg).type().hash_code() == d_tow_to_trk_type_hash_code)
@@ -902,6 +922,7 @@ void dll_pll_veml_tracking::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
     d_tracking_time_start_sample = d_acq_sample_stamp;
+    d_det.start(d_acq_sample_stamp);  // GNSS-SDR.deterministic=true
 
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / d_trk_parameters.fs_in;
@@ -1195,6 +1216,7 @@ void dll_pll_veml_tracking::start_tracking()
 
     d_carrier_lock_fail_counter = 0;
     d_code_lock_fail_counter = 0;
+    d_force_loss_of_lock = false;
     d_rem_code_phase_samples = 0.0;
     d_rem_carr_phase_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
@@ -1394,15 +1416,25 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
                         }
                 }
         }
-    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
+    if (d_force_loss_of_lock || d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
             std::cout << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << " !\n";
             LOG(INFO) << "Loss of lock in channel " << d_channel << ", satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN)
                       << " (carrier_lock_fail_counter:" << d_carrier_lock_fail_counter
-                      << " code_lock_fail_counter : " << d_code_lock_fail_counter << ")";
-            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
+                      << " code_lock_fail_counter : " << d_code_lock_fail_counter
+                      << (d_force_loss_of_lock ? " forced" : "") << ")";
+            if (d_det.enabled())
+                {
+                    // raised by general_work(), without the lock held
+                    d_det.raise_loss(this->nitems_read(0));
+                }
+            else
+                {
+                    this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
+                }
             d_carrier_lock_fail_counter = 0;
             d_code_lock_fail_counter = 0;
+            d_force_loss_of_lock = false;
             return false;
         }
     return true;
@@ -1909,9 +1941,9 @@ void dll_pll_veml_tracking::log_data()
                     // PRN start sample stamp
                     tmp_long_int = this->nitems_read(0) + static_cast<uint64_t>(d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_long_int), sizeof(uint64_t));
-                    // accumulated carrier phase
-                    tmp_float = static_cast<float>(d_acc_carrier_phase_rad);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // accumulated carrier phase (double, since it grows without bound)
+                    tmp_double = d_acc_carrier_phase_rad;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // carrier and code frequency
                     tmp_float = static_cast<float>(d_carrier_doppler_hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
@@ -1965,8 +1997,8 @@ int32_t dll_pll_veml_tracking::save_matfile() const
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    const int32_t number_of_double_vars = 1;
-    const int32_t number_of_float_vars = 19;
+    const int32_t number_of_double_vars = 2;
+    const int32_t number_of_float_vars = 18;
     const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                                      sizeof(float) * number_of_float_vars + sizeof(uint32_t) +
                                      sizeof(uint64_t) + sizeof(int32_t);
@@ -2007,7 +2039,7 @@ int32_t dll_pll_veml_tracking::save_matfile() const
     auto Prompt_I = std::vector<float>(num_epoch);
     auto Prompt_Q = std::vector<float>(num_epoch);
     auto PRN_start_sample_count = std::vector<uint64_t>(num_epoch);
-    auto acc_carrier_phase_rad = std::vector<float>(num_epoch);
+    auto acc_carrier_phase_rad = std::vector<double>(num_epoch);
     auto carrier_doppler_hz = std::vector<float>(num_epoch);
     auto carrier_doppler_rate_hz = std::vector<float>(num_epoch);
     auto code_freq_chips = std::vector<float>(num_epoch);
@@ -2037,7 +2069,7 @@ int32_t dll_pll_veml_tracking::save_matfile() const
                             dump_file.read(reinterpret_cast<char *>(&Prompt_I[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_Q[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
-                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_rate_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
@@ -2080,7 +2112,7 @@ int32_t dll_pll_veml_tracking::save_matfile() const
             write_matlab_var<2, float>("Prompt_I", Prompt_I.data(), matfp, dims);
             write_matlab_var<2, float>("Prompt_Q", Prompt_Q.data(), matfp, dims);
             write_matlab_var<2, uint64_t>("PRN_start_sample_count", PRN_start_sample_count.data(), matfp, dims);
-            write_matlab_var<2, float>("acc_carrier_phase_rad", acc_carrier_phase_rad.data(), matfp, dims);
+            write_matlab_var<2, double>("acc_carrier_phase_rad", acc_carrier_phase_rad.data(), matfp, dims);
             write_matlab_var<2, float>("carrier_doppler_hz", carrier_doppler_hz.data(), matfp, dims);
             write_matlab_var<2, float>("carrier_doppler_rate_hz", carrier_doppler_rate_hz.data(), matfp, dims);
             write_matlab_var<2, float>("code_freq_chips", code_freq_chips.data(), matfp, dims);
@@ -2327,7 +2359,22 @@ uint64_t dll_pll_veml_tracking::tracking_elapsed_seconds(uint64_t sample_count) 
 }
 
 
-int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
+int dll_pll_veml_tracking::general_work(int noutput_items, gr_vector_int &ninput_items,
+    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+{
+    const int produced = process_input(noutput_items, ninput_items, input_items, output_items);
+    if (d_det.enabled())
+        {
+            // The event reaches the control queue before the progress passes its stamp
+            d_det.dispatch(d_channel, [this](int event) { this->message_port_pub(pmt::mp("events"), pmt::from_long(event)); });
+            // consume_each() has already moved the read pointer
+            d_det.publish(this->nitems_read(0));
+        }
+    return produced;
+}
+
+
+int dll_pll_veml_tracking::process_input(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     gr::thread::scoped_lock l(d_setlock);
@@ -2338,6 +2385,12 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     bool loss_of_lock = false;
     d_tow_from_telemetry_ms = 0ULL;
     d_wn_from_telemetry = 0U;
+
+    if (d_det.fault_due(this->nitems_read(0), d_channel) && d_state != 0)
+        {
+            DLOG(INFO) << "Telemetry fault applied in ch " << this->d_channel;
+            d_force_loss_of_lock = true;
+        }
 
     if (d_pull_in_transitory == true)
         {
@@ -2379,6 +2432,13 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             }
         case 1:  // Pull-in
             {
+                const uint64_t det_skip = d_det.samples_to_pull_in(this->nitems_read(0), d_channel);
+                if (det_skip > 0)
+                    {
+                        // GNSS-SDR.deterministic=true: pull in at the stamped sample
+                        consume_each(static_cast<int>(std::min<uint64_t>(det_skip, static_cast<uint64_t>(ninput_items[0]))));
+                        return 0;
+                    }
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
                 // const int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
                 const int64_t acq_trk_diff_samples = static_cast<int64_t>(this->nitems_read(0)) - static_cast<int64_t>(d_acq_sample_stamp);
@@ -2459,7 +2519,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 // if (d_trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                 if (d_trk_parameters.bit_synchronization_time_limit_s < tracking_elapsed_seconds(this->nitems_read(0)))
                     {
-                        d_carrier_lock_fail_counter = 300000;  // force loss-of-lock condition
+                        d_force_loss_of_lock = true;
                         LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking synchronization time limit reached in channel " << d_channel
                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
                     }
@@ -2849,6 +2909,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
                 }
 
+            d_det.record_output(this->nitems_written(0), current_synchro_data.Tracking_sample_counter);
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

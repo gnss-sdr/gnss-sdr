@@ -255,6 +255,15 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
             // allocated when a search starts (see general_work()).
             set_history(d_data_buffer_size - d_samples_to_consume + 1);
         }
+
+    // A search needs its window beyond its progress (GNSS-SDR.deterministic=true).
+    // Blocking searches publish progress at every dwell. With the acquisition
+    // resampler, sample counts are at the decimated rate, as in update_synchro().
+    if (d_acq_parameters.use_automatic_resampler)
+        {
+            d_det.set_decimation(static_cast<uint64_t>(std::lround(d_acq_parameters.resampler_ratio)));
+        }
+    d_det.require_span((d_data_buffer_size != 0 ? d_data_buffer_size : d_samples_to_consume) + 1);
 }
 
 
@@ -354,6 +363,11 @@ void pcps_acquisition::set_active(bool active)
         if (!active)
             {
                 worker_cv.notify_one();
+            }
+        else
+            {
+                // GNSS-SDR.deterministic=true: a lookahead after the event that caused it
+                d_det.activate(d_sample_count, d_channel);
             }
     }
 
@@ -524,6 +538,7 @@ void pcps_acquisition::send_positive_acquisition(const AcquisitionResult& result
     if (!d_channel_fsm.expired())
         {
             // the channel FSM is set, so, notify it directly the positive acquisition to minimize delays
+            const DeterministicClock::Scope cause(d_det.clock_sample(result.sample_count));
             d_channel_fsm.lock()->Event_valid_acquisition();
         }
     else
@@ -546,6 +561,13 @@ void pcps_acquisition::send_positive_acquisition(const AcquisitionResult& result
 void pcps_acquisition::send_negative_acquisition(const AcquisitionResult& result)
 {
     log_acquisition(result);
+
+    if (d_det.enabled())
+        {
+            // Applied by dispatch_deterministic_events(), without the lock held
+            d_det.raise(DeterministicClock::ACQ_NEGATIVE, result.sample_count);
+            return;
+        }
 
     // Declare negative acquisition using a message port
     // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
@@ -1175,6 +1197,36 @@ void pcps_acquisition::acquisition_core(uint64_t sample_count)
 }
 
 
+void pcps_acquisition::acquisition_worker(uint64_t sample_count)
+{
+    acquisition_core(sample_count);
+    dispatch_deterministic_events();
+}
+
+
+bool pcps_acquisition::align_to_deterministic_start(int available_items)
+{
+    // The window starts at the oldest item of the input buffer
+    int n_consume = 0;
+    const int new_items = std::max(available_items - static_cast<int>(history() - 1), 0);
+    if (d_det.ready_to_start(d_sample_count, history() - 1, 1, new_items, n_consume, d_channel))
+        {
+            return false;
+        }
+    d_sample_count += static_cast<uint64_t>(n_consume);
+    consume_each(n_consume);
+    // The search starts at a later call, with its first sample in front
+    return true;
+}
+
+
+void pcps_acquisition::dispatch_deterministic_events()
+{
+    // A repeated search restarts this block, which takes the lock
+    d_det.dispatch(d_channel, [this](int event) { this->message_port_pub(pmt::mp("events"), pmt::from_long(event)); });
+}
+
+
 float pcps_acquisition::get_threshold() const
 {
     return d_step_two ? d_threshold_step_two : d_threshold_active;
@@ -1247,7 +1299,23 @@ void pcps_acquisition::wait_if_active()
 }
 
 
-int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
+int pcps_acquisition::general_work(int noutput_items,
+    gr_vector_int& ninput_items,
+    gr_vector_const_void_star& input_items,
+    gr_vector_void_star& output_items)
+{
+    const int produced = process_input(noutput_items, ninput_items, input_items, output_items);
+    if (d_det.enabled())
+        {
+            dispatch_deterministic_events();
+            gr::thread::scoped_lock lock(d_setlock);
+            d_det.publish(d_sample_count, d_active, d_channel);
+        }
+    return produced;
+}
+
+
+int pcps_acquisition::process_input(int noutput_items __attribute__((unused)),
     gr_vector_int& ninput_items,
     gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items)
@@ -1274,6 +1342,11 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                     d_sample_count += static_cast<uint64_t>(n_consume);
                     consume_each(n_consume);
                 }
+            return 0;
+        }
+
+    if (d_det.enabled() && d_state == 0 && align_to_deterministic_start(ninput_items[0]))
+        {
             return 0;
         }
 
@@ -1343,6 +1416,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
             // stamp is a dwell boundary and never ahead of the consumed samples.
             const uint64_t window_start = d_sample_count + input_offset - (history() - 1);
             window_stamp = window_start + (input_offset ? d_samples_to_consume : buffer_size);
+            d_det.begin_window(window_start);
             // Consume the dwell that completes the window (all new samples while the
             // history is not full yet); later samples are consumed while the worker runs.
             auto n_consume = input_offset ? new_samples : d_samples_to_consume;
@@ -1421,7 +1495,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                     // set_active(false) may have dropped this search while we waited
                     if (d_active && d_state == 3)
                         {
-                            d_worker = std::make_unique<gr::thread::thread>(&pcps_acquisition::acquisition_core, this, window_stamp);
+                            d_worker = std::make_unique<gr::thread::thread>(&pcps_acquisition::acquisition_worker, this, window_stamp);
                             if (d_buffer_sample_count >= d_data_buffer_size)
                                 {
                                     d_worker_active = true;

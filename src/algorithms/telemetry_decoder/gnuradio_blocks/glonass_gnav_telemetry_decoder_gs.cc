@@ -25,6 +25,7 @@
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
+#include "telemetry_message_stamp.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
@@ -169,7 +170,7 @@ void glonass_gnav_telemetry_decoder_gs::decode_string(const double *frame_symbol
             // get object for this SV (mandatory)
             d_nav.set_rf_link(d_satellite.get_rf_link());
             const std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             LOG(INFO) << "GLONASS GNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
             const auto default_precision = std::cout.precision();
             std::cout << text_color << "New GLONASS L" << d_band << " GNAV message received in channel " << d_channel
@@ -181,7 +182,7 @@ void glonass_gnav_telemetry_decoder_gs::decode_string(const double *frame_symbol
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(d_nav.get_utc_model());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             LOG(INFO) << "GLONASS GNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite;
             const auto default_precision = std::cout.precision();
             std::cout << text_color << "New GLONASS L" << d_band << " GNAV message received in channel " << d_channel
@@ -194,7 +195,7 @@ void glonass_gnav_telemetry_decoder_gs::decode_string(const double *frame_symbol
             const uint32_t slot_nbr = d_nav.get_alm_satellite_slot_number();
             const std::shared_ptr<Glonass_Gnav_Almanac>
                 tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             LOG(INFO) << "GLONASS GNAV Almanac data have been received in channel" << d_channel << " in slot number " << slot_nbr;
             const auto default_precision = std::cout.precision();
             std::cout << text_color << "New GLONASS L" << d_band << " GNAV almanac received in channel " << d_channel
@@ -266,6 +267,8 @@ int glonass_gnav_telemetry_decoder_gs::general_work(int noutput_items __attribut
 
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
+    // Navigation data sent to the PVT is stamped with this symbol
+    const TelemetryWorkScope symbol_stamp(this, current_symbol.Tracking_sample_counter);
     d_symbol_history.push_back(current_symbol);  // add new symbol to the symbol queue
     d_sample_counter++;                          // count for the processed samples
     consume_each(1);

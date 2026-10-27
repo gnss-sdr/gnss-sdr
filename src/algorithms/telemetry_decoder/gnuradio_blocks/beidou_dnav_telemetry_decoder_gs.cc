@@ -29,6 +29,7 @@
 #include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
+#include "telemetry_message_stamp.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
@@ -289,7 +290,7 @@ void beidou_dnav_telemetry_decoder_gs::decode_subframe(float *frame_symbols, dou
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj = std::make_shared<Beidou_Dnav_Ephemeris>(d_nav.get_ephemeris());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
             const auto default_precision = std::cout.precision();
             std::cout << text_color << "New BEIDOU B" << d_band << "I DNAV message received in channel " << d_channel
@@ -301,7 +302,7 @@ void beidou_dnav_telemetry_decoder_gs::decode_subframe(float *frame_symbols, dou
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Utc_Model> tmp_obj = std::make_shared<Beidou_Dnav_Utc_Model>(d_nav.get_utc_model());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             LOG(INFO) << "BEIDOU DNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
             const auto default_precision = std::cout.precision();
             std::cout << text_color << "New BEIDOU B" << d_band << "I DNAV utc model message received in channel "
@@ -314,7 +315,7 @@ void beidou_dnav_telemetry_decoder_gs::decode_subframe(float *frame_symbols, dou
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Iono> tmp_obj = std::make_shared<Beidou_Dnav_Iono>(d_nav.get_iono());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             LOG(INFO) << "BEIDOU DNAV Iono data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
             const auto default_precision = std::cout.precision();
             std::cout << text_color << "New BEIDOU B" << d_band << "I DNAV Iono message received in channel " << d_channel
@@ -325,7 +326,7 @@ void beidou_dnav_telemetry_decoder_gs::decode_subframe(float *frame_symbols, dou
     if (d_nav.have_new_almanac() == true)
         {
             const std::shared_ptr<Beidou_Dnav_Almanac> tmp_obj = std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             LOG(INFO) << "BEIDOU DNAV Almanac data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
             const auto default_precision = std::cout.precision();
             std::cout << text_color << "New BEIDOU B" << d_band << "I DNAV almanac received in channel " << d_channel
@@ -431,6 +432,8 @@ int beidou_dnav_telemetry_decoder_gs::general_work(int noutput_items __attribute
     Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
+    // Navigation data sent to the PVT is stamped with this symbol
+    const TelemetryWorkScope symbol_stamp(this, current_symbol.Tracking_sample_counter);
     d_symbol_history.push_back(current_symbol.Prompt_I);  // add new symbol to the symbol queue
     d_sample_counter++;                                   // count for the processed samples
     consume_each(1);

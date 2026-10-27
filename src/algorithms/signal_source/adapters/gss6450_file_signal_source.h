@@ -67,6 +67,7 @@ public:
     gr::basic_block_sptr get_right_block() override;
     size_t getRfChannels() const override;
     bool is_real_time() const override { return enable_throttle_control_; }
+    bool can_wait() const override { return true; }  // a throttle waits too
 
     inline std::string filename() const
     {

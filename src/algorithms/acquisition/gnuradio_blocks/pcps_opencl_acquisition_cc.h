@@ -41,6 +41,7 @@
 #include "acq_conf.h"
 #include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
+#include "deterministic_acquisition.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_synchro.h"
@@ -48,9 +49,11 @@
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
 #include "opencl/cl.hpp"
+#include <atomic>
 #include <cstdint>
 #include <fstream>
 #include <memory>  // for weak_ptr
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -111,11 +114,19 @@ public:
      */
     inline void set_active(bool active) override
     {
+        std::lock_guard<std::mutex> lock(d_state_mutex);
         if (!active)
             {
                 d_state = 0;
             }
 
+        if (active)
+            {
+                // GNSS-SDR.deterministic=true: a lookahead after the event that
+                // caused it. Before d_active, so that general_work() never sees
+                // an active search without its stamped start
+                d_det.activate(d_sample_counter, d_channel);
+            }
         d_active = active;
     }
 
@@ -163,6 +174,13 @@ private:
 
     explicit pcps_opencl_acquisition_cc(const Acq_Conf& conf, uint32_t max_dwells);
 
+    int process_input(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items,
+        gr_vector_void_star& output_items);
+    void conclude_dwell(uint64_t samplestamp);
+    void run_acquisition_cores();
+    bool next_dwell_ready();
+
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift, int doppler_offset);
 
     int init_opencl_environment(const std::string& kernel_filename);
@@ -188,7 +206,7 @@ private:
 
     Gnss_Synchro* d_gnss_synchro;
 
-    uint64_t d_sample_counter;
+    std::atomic<uint64_t> d_sample_counter;  // also read by the acquisition cores
 
     int* d_max_doppler_indexs;
 
@@ -196,20 +214,22 @@ private:
     float d_input_power;
     float d_test_statistics;
 
-    int d_state;
+    std::atomic<int> d_state;  // set by the acquisition cores
     int d_opencl;
 
     uint32_t d_max_dwells;
-    uint32_t d_well_count;
+    std::atomic<uint32_t> d_well_count;  // dwells processed by the acquisition cores
     const uint32_t d_fft_size;
     uint32_t d_fft_size_pow2;
     uint32_t d_num_doppler_bins;
     uint32_t d_code_phase;
     uint32_t d_channel;
-    uint32_t d_in_dwell_count;
+    std::atomic<uint32_t> d_in_dwell_count;  // dwells in d_in_buffer
 
-    bool d_active;
-    bool d_core_working;
+    std::atomic<bool> d_active;
+    std::atomic<bool> d_core_working;
+    std::mutex d_state_mutex;        // a result and a deactivation do not cross
+    DeterministicAcquisition d_det;  // GNSS-SDR.deterministic=true
 
     std::weak_ptr<ChannelFsm> d_channel_fsm;
 

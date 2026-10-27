@@ -235,7 +235,7 @@ typedef struct supl_ctx_s
 {
     supl_param_t p;
 
-    int fd;
+    int fd; /* -1 until connected; initialized by supl_ctx_new(). */
     SSL *ssl;
     SSL_CTX *ssl_ctx;
 
@@ -285,6 +285,7 @@ int supl_ulp_decode(supl_ulp_t *pdu);
 int supl_decode_rrlp(supl_ulp_t *pdu, PDU_t **rrlp);
 int supl_collect_rrlp(supl_assist_t *assist, PDU_t *rrlp, struct timeval *t);
 
+/* server is required for certificate identity verification, even with an existing fd. */
 int supl_server_connect(supl_ctx_t *ctx, char *server);
 void supl_close(supl_ctx_t *ctx);
 int supl_ulp_send(supl_ctx_t *ctx, supl_ulp_t *pdu);

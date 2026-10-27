@@ -20,7 +20,6 @@
 #include "ion_gsms.h"
 #include "ion_gsms_chunk_data.h"
 #include "ion_gsms_signal_source.h"
-#include <gnuradio/blocks/vector_sink.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
@@ -31,6 +30,13 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#ifdef GR_GREATER_38
+#include <gnuradio/blocks/vector_sink.h>
+#else
+#include <gnuradio/blocks/vector_sink_b.h>
+#include <gnuradio/blocks/vector_sink_c.h>
+#endif
 
 namespace
 {
@@ -626,6 +632,40 @@ TEST(IONGSMSFileSourceTest, ConcatenatesSegmentsForSameStream)
 
     fs::remove(first_data_path);
     fs::remove(second_data_path);
+}
+
+
+TEST(IONGSMSFileSourceTest, ConcatenatesSegmentsWithDifferentChunkCounts)
+{
+    const fs::path data_path = fs::path(GetTempDir()) / "ion_gsms_file_source_different_chunk_counts.bin";
+    const std::vector<std::size_t> chunk_counts{127, 128, 131};
+    const std::vector<uint8_t> packed_samples{0x55, 0xAA, 0xFF};
+    const std::vector<int8_t> decoded_samples{1, -2, -1};
+    const auto stream = make_stream(GnssMetadata::IonStream::IF, "TC", 2, 2048, 1024);
+    const auto chunk = make_chunk(stream, 1, 256);
+    std::vector<GnssMetadata::Block> blocks(chunk_counts.size());
+    std::vector<IONGSMSFileSource::SegmentDescriptor> segments;
+    std::vector<uint8_t> bytes;
+    std::vector<int8_t> expected;
+    for (std::size_t i = 0; i < chunk_counts.size(); ++i)
+        {
+            blocks[i].Cycles(1);
+            for (std::size_t j = 0; j < chunk_counts[i]; ++j)
+                {
+                    blocks[i].Chunks().push_back(chunk);
+                }
+            segments.push_back({data_path, &blocks[i], bytes.size()});
+            bytes.insert(bytes.end(), chunk_counts[i] * 256, packed_samples[i]);
+            expected.insert(expected.end(), chunk_counts[i] * 1024, decoded_samples[i]);
+        }
+    write_binary_file(data_path, bytes);
+
+    // Each segment fits a modest buffer, but their cycle-size LCM is
+    // 2180644864 items, beyond GNU Radio's signed integer limit.
+    const auto output = run_file_source(segments);
+    EXPECT_EQ(expected, output);
+
+    fs::remove(data_path);
 }
 
 

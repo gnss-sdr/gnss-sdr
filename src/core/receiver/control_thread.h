@@ -140,6 +140,14 @@ private:
      */
     void event_dispatcher(bool &valid_event, pmt::pmt_t &msg);
 
+    void dispatch_command_event(const pmt::pmt_t &msg);
+
+    /*
+     * Control loop of GNSS-SDR.deterministic=true: channel events and
+     * maintenance ticks are handled in sample-stamp order, see DeterministicClock
+     */
+    void run_deterministic_loop();
+
     // Read {ephemeris, iono, utc, ref loc, ref time} assistance from a local XML file previously recorded
     bool read_assistance_from_XML();
 

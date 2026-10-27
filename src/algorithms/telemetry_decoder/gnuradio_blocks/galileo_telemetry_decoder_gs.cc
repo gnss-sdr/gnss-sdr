@@ -22,7 +22,8 @@
 #include "Galileo_E1.h"   // for GALILEO_E1_CODE_PERIOD_MS
 #include "Galileo_E5a.h"  // for GALILEO_E5A_CODE_PERIOD_MS
 #include "Galileo_E6.h"   // for GALILEO_E6_CODE_PERIOD_MS
-#include "display.h"      // for colours in terminal: TEXT_BLUE, TEXT_RESET, ...
+#include "deterministic_clock.h"
+#include "display.h"  // for colours in terminal: TEXT_BLUE, TEXT_RESET, ...
 #include "dump_logger_helper.h"
 #include "galileo_almanac_helper.h"  // for Galileo_Almanac_Helper
 #include "galileo_ephemeris.h"       // for Galileo_Ephemeris
@@ -34,6 +35,7 @@
 #include "gnss_sdr_make_unique.h"    // for std::make_unique in C++11
 #include "gnss_synchro.h"            // for Gnss_Synchro
 #include "osnma_data.h"              // for osnma::galileo_week_tow_with_offset
+#include "telemetry_message_stamp.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"    // for Tlm_CRC_Stats
 #include "tlm_utils.h"        // for save_tlm_matfile, tlm_remove_file
@@ -473,8 +475,7 @@ void galileo_telemetry_decoder_gs::publish_pending_reduced_ced()
     reduced_ced.WN = reduced_ced_week;
     reduced_ced.TOTRedCED = galileo_tow::add_ms(d_TOW_at_current_symbol_ms, tow_delta_ms) / 1000U;
     const auto tmp_obj = std::make_shared<Galileo_Reduced_CED>(reduced_ced);
-    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-
+    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
     const auto default_precision = std::cout.precision();
     std::cout << "New Galileo E1 I/NAV reduced CED message received in channel "
               << d_channel << " from satellite " << d_satellite << " with CN0="
@@ -653,7 +654,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                               << std::setprecision(2) << cn0 << std::setprecision(default_precision)
                               << " dB-Hz" << TEXT_RESET << std::endl;
                 }
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             d_first_eph_sent = true;  // do not send reduced CED anymore, since we have the full ephemeris set
             d_pending_reduced_ced = false;
         }
@@ -662,7 +663,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_inav_nav.get_iono());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             if (d_band == '1')
                 {
                     const auto default_precision = std::cout.precision();
@@ -686,7 +687,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
             LOG(INFO) << "Galileo leap second Delta_tLS=" << tmp_obj->Delta_tLS;
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             if (d_band == '1')
                 {
                     const auto default_precision = std::cout.precision();
@@ -717,7 +718,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     if (d_inav_nav.have_new_almanac() == true)  // flag_almanac_4 tells if W10 available.
         {
             const std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             // debug
             if (d_band == '1')
                 {
@@ -802,7 +803,7 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
     if (d_fnav_nav.have_new_ephemeris() == true)
         {
             const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_fnav_nav.get_ephemeris());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             const auto default_precision = std::cout.precision();
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel "
                       << d_channel << ": ephemeris from satellite " << d_satellite << " with CN0="
@@ -813,7 +814,7 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
     if (d_fnav_nav.have_new_iono_and_GST() == true)
         {
             const std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_fnav_nav.get_iono());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             const auto default_precision = std::cout.precision();
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel "
                       << d_channel << ": iono/GST model parameters from satellite " << d_satellite
@@ -825,7 +826,7 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
         {
             const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_fnav_nav.get_utc_model());
             LOG(INFO) << "Galileo leap second Delta_tLS=" << tmp_obj->Delta_tLS;
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
             const auto default_precision = std::cout.precision();
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel "
                       << d_channel << ": UTC model parameters from satellite " << d_satellite
@@ -986,15 +987,23 @@ void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
 }
 
 
-void galileo_telemetry_decoder_gs::check_tlm_separation()
+void galileo_telemetry_decoder_gs::check_tlm_separation(uint64_t sample_stamp)
 {
     if (d_sent_tlm_failed_msg == false)
         {
             if ((d_symbol_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
-                    const int message = 1;  // bad telemetry
                     DLOG(INFO) << "Wrong tlm sync in sat " << this->d_satellite;
-                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    const int message = 1;  // bad telemetry
+                    if (DeterministicClock::instance().enabled())
+                        {
+                            // Record before releasing progress; tracking reads this in its work call
+                            DeterministicClock::instance().report_telemetry_fault(d_channel, sample_stamp);
+                        }
+                    else
+                        {
+                            this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                        }
                     d_sent_tlm_failed_msg = true;
                 }
         }
@@ -1014,6 +1023,8 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
+    // Navigation data sent to the PVT is stamped with this symbol
+    const TelemetryWorkScope symbol_stamp(this, current_symbol.Tracking_sample_counter);
     d_band = current_symbol.Signal[0];
 
     // add new symbol to the symbol queue
@@ -1068,7 +1079,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     d_flag_preamble = false;
 
     // check if there is a problem with the telemetry of the current satellite
-    check_tlm_separation();
+    check_tlm_separation(current_symbol.Tracking_sample_counter);
 
     // ******* frame sync ******************
     int32_t corr_value = 0;

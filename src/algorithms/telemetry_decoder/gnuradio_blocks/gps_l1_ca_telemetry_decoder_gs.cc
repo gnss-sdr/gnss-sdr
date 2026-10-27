@@ -20,6 +20,7 @@
  */
 
 #include "gps_l1_ca_telemetry_decoder_gs.h"
+#include "deterministic_clock.h"
 #include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
@@ -29,6 +30,7 @@
 #include "gps_utc_model.h"   // for Gps_Utc_Model
 #include "qzss_iono.h"       // for Qzss_Iono
 #include "qzss_utc_model.h"  // for Qzss_Utc_Model
+#include "telemetry_message_stamp.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
@@ -397,7 +399,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                 {
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                 }
                             break;
                         case 2:
@@ -405,7 +407,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                 {
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                 }
                             break;
                         case 3:  // we have a new set of ephemeris data for the current SV
@@ -413,7 +415,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                 {
                                     // get ephemeris object for this SV (mandatory)
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav->get_ephemeris());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                 }
                             break;
                         case 4:  // Possible IONOSPHERE and UTC model update (page 18)
@@ -424,12 +426,12 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                             // QZSS broadcasts its own Klobuchar coefficients; keep them
                                             // separate from the GPS ones
                                             const std::shared_ptr<Qzss_Iono> tmp_obj = std::make_shared<Qzss_Iono>(d_nav->get_iono());
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                         }
                                     else
                                         {
                                             const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                         }
                                 }
                             if (d_nav->get_flag_utc_model_valid() == true)
@@ -438,18 +440,18 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                         {
                                             // The QZSS UTC offset refers to UTC(NICT), not to UTC(USNO)
                                             const std::shared_ptr<Qzss_Utc_Model> tmp_obj = std::make_shared<Qzss_Utc_Model>(d_nav->get_utc_model());
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                         }
                                     else
                                         {
                                             const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                         }
                                 }
                             if (d_nav->almanac_validation() == true)
                                 {
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav->get_almanac());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                 }
                             break;
                         case 5:
@@ -460,12 +462,12 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                             // QZSS broadcasts its own Klobuchar coefficients; keep them
                                             // separate from the GPS ones
                                             const std::shared_ptr<Qzss_Iono> tmp_obj = std::make_shared<Qzss_Iono>(d_nav->get_iono());
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                         }
                                     else
                                         {
                                             const std::shared_ptr<Gps_Iono> tmp_obj = std::make_shared<Gps_Iono>(d_nav->get_iono());
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                         }
                                 }
                             if (d_nav->get_flag_utc_model_valid() == true)
@@ -474,18 +476,18 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                                         {
                                             // The QZSS UTC offset refers to UTC(NICT), not to UTC(USNO)
                                             const std::shared_ptr<Qzss_Utc_Model> tmp_obj = std::make_shared<Qzss_Utc_Model>(d_nav->get_utc_model());
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                         }
                                     else
                                         {
                                             const std::shared_ptr<Gps_Utc_Model> tmp_obj = std::make_shared<Gps_Utc_Model>(d_nav->get_utc_model());
-                                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                         }
                                 }
                             if (d_nav->almanac_validation() == true)
                                 {
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(d_nav->get_almanac());
-                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                                 }
                             break;
                         default:
@@ -555,7 +557,7 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
 }
 
 
-void gps_l1_ca_telemetry_decoder_gs::check_tlm_separation()
+void gps_l1_ca_telemetry_decoder_gs::check_tlm_separation(uint64_t sample_stamp)
 {
     gr::thread::scoped_lock lock(d_setlock);
     if (d_stat < 2 && d_sent_tlm_failed_msg == false)
@@ -563,7 +565,15 @@ void gps_l1_ca_telemetry_decoder_gs::check_tlm_separation()
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
                     const int message = 1;  // bad telemetry
-                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    if (DeterministicClock::instance().enabled())
+                        {
+                            // Record before releasing progress; tracking reads this in its work call
+                            DeterministicClock::instance().report_telemetry_fault(d_channel, sample_stamp);
+                        }
+                    else
+                        {
+                            this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                        }
                     d_sent_tlm_failed_msg = true;
                 }
         }
@@ -693,6 +703,8 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     Gnss_Synchro current_symbol{};
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
+    // Navigation data sent to the PVT is stamped with this symbol
+    const TelemetryWorkScope symbol_stamp(this, current_symbol.Tracking_sample_counter);
     if (d_symbol_history.empty())
         {
             // Tracking synchronizes the tlm bit boundaries by acquiring the preamble
@@ -719,7 +731,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     d_flag_preamble = false;
 
     // check if there is a problem with the telemetry of the current satellite
-    check_tlm_separation();
+    check_tlm_separation(current_symbol.Tracking_sample_counter);
 
     // frame sync
     frame_synchronization(current_symbol);

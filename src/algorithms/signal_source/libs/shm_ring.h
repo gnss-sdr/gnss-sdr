@@ -4,9 +4,10 @@
  * EVK1029 byte stream between EVK1029_CtrlApp (producer) and this consumer
  * (SharedMemoryStreamReader).
  *
- * Verbatim copy of EVK1029_CtrlApp's own evk1029/shm_ring.hpp: the two repos
+ * Derived from EVK1029_CtrlApp's own evk1029/shm_ring.hpp: the two repos
  * build separately, but both mmap the same region, so the struct layout and
- * kMagic/kVersion must match -- Attach() refuses a mismatched version.
+ * kMagic/kVersion must match -- Attach() refuses a mismatched version. The
+ * consumer side (ReadBlock()) is GNSS-SDR's own.
  *
  * Wire format: [Header][Block 0][Block 1]...[Block N-1], each block an
  * 8-byte payload-length prefix (real USB chunks aren't always exactly
@@ -17,7 +18,9 @@
  * futex() needs 32-bit and the sequence counters are 64-bit -- a waiting
  * side snapshots the event word, re-checks the real condition (lost-wakeup
  * guard), then futex_waits on the snapshot. Never FUTEX_PRIVATE_FLAG: waited
- * on across processes, not threads.
+ * on across processes, not threads. Whatever ends a wait (a new block, a
+ * terminal state, a stop request) is published before the event word is
+ * bumped, so the snapshot must be taken before checking any of them.
  *
  * The *_waiters counters only let a side skip the futex_wake() syscall when
  * nobody is blocked; they can go stale without losing a wakeup, since
@@ -40,8 +43,10 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cerrno>
 #include <cstdint>
 #include <cstring>
+#include <ctime>
 #include <fcntl.h>
 #include <linux/futex.h>
 #include <string>
@@ -114,16 +119,17 @@ inline uint8_t* BlockPtr(void* base, uint32_t index, uint32_t block_size)
            static_cast<std::size_t>(index) * static_cast<std::size_t>(block_size);
 }
 
-inline int64_t RawFutex(std::atomic<uint32_t>* word, int op, uint32_t val)
+inline int64_t RawFutex(std::atomic<uint32_t>* word, int op, uint32_t val, const struct timespec* timeout = nullptr)
 {
-    return syscall(SYS_futex, reinterpret_cast<uint32_t*>(word), op, val, nullptr, nullptr, 0);
+    return syscall(SYS_futex, reinterpret_cast<uint32_t*>(word), op, val, timeout, nullptr, 0);
 }
 
-inline void FutexWait(std::atomic<uint32_t>& word, uint32_t expected)
+// timeout is relative, nullptr waits forever. Returns false only if it
+// expired: the caller's own loop re-checks the real condition regardless of
+// why this returned otherwise (EAGAIN/EINTR/spurious).
+inline bool FutexWait(std::atomic<uint32_t>& word, uint32_t expected, const struct timespec* timeout = nullptr)
 {
-    // Return value ignored: the caller's own loop re-checks the real
-    // condition regardless of why this returned (EAGAIN/EINTR/spurious).
-    RawFutex(&word, FUTEX_WAIT, expected);
+    return !(RawFutex(&word, FUTEX_WAIT, expected, timeout) == -1 && errno == ETIMEDOUT);
 }
 
 inline void FutexWakeAll(std::atomic<uint32_t>& word)
@@ -133,11 +139,12 @@ inline void FutexWakeAll(std::atomic<uint32_t>& word)
 
 // Increments waiters before the futex syscall, so a concurrent
 // WakeIfWaiting() is guaranteed to see it (see the file comment).
-inline void WaitOn(std::atomic<uint32_t>& word, uint32_t expected, std::atomic<uint32_t>& waiters)
+inline bool WaitOn(std::atomic<uint32_t>& word, uint32_t expected, std::atomic<uint32_t>& waiters, const struct timespec* timeout = nullptr)
 {
     waiters.fetch_add(1, std::memory_order_acq_rel);
-    FutexWait(word, expected);
+    const bool woken = FutexWait(word, expected, timeout);
     waiters.fetch_sub(1, std::memory_order_acq_rel);
+    return woken;
 }
 
 inline void WakeIfWaiting(std::atomic<uint32_t>& word, const std::atomic<uint32_t>& waiters)
@@ -313,36 +320,49 @@ inline bool WriteBlock(MappedRing& ring, const uint8_t* data, std::size_t len, c
     return true;
 }
 
-// Blocks while empty and the stream hasn't ended; false once empty AND
-// Stopped/EndOfStream/Error, on a corrupted length prefix, or on abortFlag.
-inline bool ReadBlock(MappedRing& ring, std::vector<uint8_t>& out, const std::atomic<bool>* abortFlag = nullptr)
+enum class ReadResult
+{
+    Block,        // out holds the next block
+    TimedOut,     // nothing new within the timeout; the stream has not ended
+    EndOfStream,  // empty and Stopped/EndOfStream
+    Error,        // empty and Error
+    Corrupted,    // a length prefix larger than the block
+    Aborted,      // abortFlag was set
+};
+
+// Waits up to timeout (relative, nullptr waits forever) for the next block.
+// Blocks published before a terminal state are still delivered; a raised
+// abortFlag ends the read even if blocks are pending. Whoever raises
+// abortFlag must then bump data_event and wake its waiters.
+inline ReadResult ReadBlock(MappedRing& ring, std::vector<uint8_t>& out, const std::atomic<bool>* abortFlag = nullptr, const struct timespec* timeout = nullptr)
 {
     Header& h = *ring.header;
     for (;;)
         {
-            const uint64_t w = h.write_seq.load(std::memory_order_acquire);
-            const uint64_t r = h.read_seq.load(std::memory_order_relaxed);
-            if (w != r)
+            // Snapshot first, see the file comment
+            const uint32_t expected = h.data_event.load(std::memory_order_acquire);
+            if (abortFlag && abortFlag->load(std::memory_order_acquire))
+                {
+                    return ReadResult::Aborted;
+                }
+            if (h.write_seq.load(std::memory_order_acquire) != h.read_seq.load(std::memory_order_relaxed))
                 {
                     break;
                 }
 
             const auto state = static_cast<StreamState>(h.state.load(std::memory_order_acquire));
-            if (state == StreamState::Stopped || state == StreamState::EndOfStream || state == StreamState::Error)
+            if (state == StreamState::Error)
                 {
-                    return false;
+                    return ReadResult::Error;
                 }
-            if (abortFlag && abortFlag->load(std::memory_order_acquire))
+            if (state == StreamState::Stopped || state == StreamState::EndOfStream)
                 {
-                    return false;
+                    return ReadResult::EndOfStream;
                 }
-
-            const uint32_t expected = h.data_event.load(std::memory_order_acquire);
-            if (h.write_seq.load(std::memory_order_acquire) != h.read_seq.load(std::memory_order_relaxed))
+            if (!WaitOn(h.data_event, expected, h.data_waiters, timeout))
                 {
-                    break;
+                    return ReadResult::TimedOut;
                 }
-            WaitOn(h.data_event, expected, h.data_waiters);
         }
 
     const uint64_t r = h.read_seq.load(std::memory_order_relaxed);
@@ -354,7 +374,7 @@ inline bool ReadBlock(MappedRing& ring, std::vector<uint8_t>& out, const std::at
     if (len > payloadCap)
         {
             // Corrupted/mismatched producer -- would read past the block.
-            return false;
+            return ReadResult::Corrupted;
         }
     out.resize(static_cast<std::size_t>(len));
     std::memcpy(out.data(), blk + sizeof(uint64_t), static_cast<std::size_t>(len));
@@ -363,7 +383,7 @@ inline bool ReadBlock(MappedRing& ring, std::vector<uint8_t>& out, const std::at
     h.read_seq.store(r + 1, std::memory_order_release);
     h.space_event.fetch_add(1, std::memory_order_release);
     WakeIfWaiting(h.space_event, h.space_waiters);
-    return true;
+    return ReadResult::Block;
 }
 
 }  // namespace shm_ring

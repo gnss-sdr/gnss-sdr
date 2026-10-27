@@ -25,6 +25,7 @@
 #include <gnuradio/io_signature.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <cuda_profiler_api.h>
 #include <iostream>
 #include <memory>
@@ -170,6 +171,12 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     d_carrier_phase_step_rad = 0.0;
 
     d_acc_carrier_phase_initialized = false;
+
+    d_Prompt_I_history.set_capacity(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
+    d_P_bit_accu = gr_complex(0.0, 0.0);
+    d_current_bit_symbol = 0;
+    d_bit_synchronized = false;
+    d_Flag_PLL_180_deg_phase_locked = false;
     // set_min_output_buffer((int64_t)300);
 }
 
@@ -237,6 +244,13 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_acc_carrier_phase_cycles = 0.0;
     d_pll_to_dll_assist_secs_Ti = 0.0;
     d_code_phase_samples = d_acq_code_phase_samples;
+
+    // navigation data bit synchronization starts over
+    d_Prompt_I_history.clear();
+    d_P_bit_accu = gr_complex(0.0, 0.0);
+    d_current_bit_symbol = 0;
+    d_bit_synchronized = false;
+    d_Flag_PLL_180_deg_phase_locked = false;
 
     sys = std::string(1, d_acquisition_gnss_synchro->System);
 
@@ -326,6 +340,29 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::check_carrier_phase_coherent_initializat
 }
 
 
+bool Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::acquire_bit_sync()
+{
+    // ******* preamble correlation at the 1 ms prompt rate ********
+    if (d_Prompt_I_history.size() < static_cast<size_t>(GPS_CA_PREAMBLE_LENGTH_SYMBOLS))
+        {
+            return false;
+        }
+    int32_t corr_value = 0;
+    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_SYMBOLS; i++)
+        {
+            const bool symbol_is_one = d_Prompt_I_history[i] >= 0.0F;  // symbols clipping
+            corr_value += (symbol_is_one == (GPS_CA_PREAMBLE_SYMBOLS_STR[i] == '1')) ? 1 : -1;
+        }
+    if (std::abs(corr_value) == GPS_CA_PREAMBLE_LENGTH_SYMBOLS)
+        {
+            // The last prompt closes a bit, so the next one opens a new bit
+            d_Flag_PLL_180_deg_phase_locked = (corr_value < 0);
+            return true;
+        }
+    return false;
+}
+
+
 int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -345,6 +382,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
     double dll_code_error_secs_Ti = 0.0;
     double carr_phase_error_secs_Ti = 0.0;
     bool loss_of_lock = false;
+    int produced = 0;
 
     if (d_enable_tracking == true)
         {
@@ -356,14 +394,10 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     const int32_t acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
                     const double acq_trk_shif_correction_samples = d_correlation_length_samples - fmod(static_cast<double>(acq_to_trk_delay_samples), static_cast<double>(d_correlation_length_samples));
                     const int32_t samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
-                    current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
-                    current_synchro_data.fs = d_fs_in;
-                    current_synchro_data.correlation_length_ms = 1;
-                    *out[0] = std::move(current_synchro_data);
                     d_sample_counter += static_cast<uint64_t>(samples_offset);  // count for the processed samples
                     d_pull_in = false;
                     consume_each(samples_offset);  // shift input to perform alignment with local replica
-                    return 1;
+                    return 0;
                 }
 
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
@@ -439,7 +473,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
 #if USE_GLOG_AND_GFLAGS
             if (d_cn0_estimation_counter < FLAGS_cn0_samples)
 #else
-            if (d_cn0_estimation_counter < absl::getFlag(FLAGS_cn0_samples))
+            if (d_cn0_estimation_counter < absl::GetFlag(FLAGS_cn0_samples))
 #endif
                 {
                     // fill buffer with prompt correlator output values
@@ -485,16 +519,55 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     check_carrier_phase_coherent_initialization();
                 }
 
+            // ########### NAVIGATION DATA BIT SYNCHRONIZATION ##########
+            // The telemetry decoder takes one symbol per navigation data bit
+            bool bit_completed = false;
+            if (!loss_of_lock)
+                {
+                    if (d_bit_synchronized)
+                        {
+                            d_P_bit_accu += d_correlator_outs[1];
+                            d_current_bit_symbol++;
+                            if (d_current_bit_symbol == GPS_CA_TELEMETRY_SYMBOLS_PER_BIT)
+                                {
+                                    d_current_bit_symbol = 0;
+                                    bit_completed = true;
+                                }
+                        }
+                    else
+                        {
+                            d_Prompt_I_history.push_back(d_correlator_outs[1].real());
+                            if (acquire_bit_sync())
+                                {
+                                    d_bit_synchronized = true;
+                                    d_Prompt_I_history.clear();
+                                    d_P_bit_accu = gr_complex(0.0, 0.0);
+                                    d_current_bit_symbol = 0;
+                                    LOG(INFO) << "GPS L1 C/A tracking bit synchronization locked in channel " << d_channel
+                                              << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
+                                }
+                        }
+                }
+
             // ########### Output the tracking data to navigation and PVT ##########
-            current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs[1]).real());
-            current_synchro_data.Prompt_Q = static_cast<double>((d_correlator_outs[1]).imag());
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
-            current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
-            current_synchro_data.Carrier_phase_rads = TWO_PI * d_acc_carrier_phase_cycles;
-            current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
-            current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-            current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
-            current_synchro_data.correlation_length_ms = 1;
+            if (bit_completed || loss_of_lock)
+                {
+                    const gr_complex prompt = bit_completed ? d_P_bit_accu : d_correlator_outs[1];
+                    current_synchro_data.Prompt_I = static_cast<double>(prompt.real());
+                    current_synchro_data.Prompt_Q = static_cast<double>(prompt.imag());
+                    current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
+                    current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;
+                    current_synchro_data.Carrier_phase_rads = TWO_PI * d_acc_carrier_phase_cycles;
+                    current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
+                    current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
+                    current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
+                    current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
+                    current_synchro_data.correlation_length_ms = 1;
+                    current_synchro_data.fs = d_fs_in;
+                    *out[0] = std::move(current_synchro_data);
+                    d_P_bit_accu = gr_complex(0.0, 0.0);
+                    produced = 1;
+                }
         }
     else
         {
@@ -502,15 +575,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                 {
                     d_correlator_outs[n] = gr_complex(0, 0);
                 }
-
-            current_synchro_data.System = {'G'};
-            current_synchro_data.correlation_length_ms = 1;
-            current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
         }
-
-    // assign the GNU Radio block output data
-    current_synchro_data.fs = d_fs_in;
-    *out[0] = std::move(current_synchro_data);
 
     if (d_dump)
         {
@@ -521,6 +586,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             float tmp_VE = 0.0;
             float tmp_VL = 0.0;
             float tmp_float;
+            double tmp_double;
             prompt_I = d_correlator_outs[1].real();
             prompt_Q = d_correlator_outs[1].imag();
             tmp_E = std::abs<float>(d_correlator_outs[0]);
@@ -539,9 +605,9 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
                     d_dump_file.write(reinterpret_cast<char *>(&d_sample_counter), sizeof(uint64_t));
-                    // accumulated carrier phase
-                    tmp_float = static_cast<float>(d_acc_carrier_phase_cycles * TWO_PI);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // accumulated carrier phase (double, since it grows without bound)
+                    tmp_double = d_acc_carrier_phase_cycles * TWO_PI;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // carrier and code frequency
                     tmp_float = static_cast<float>(d_carrier_doppler_hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
@@ -565,7 +631,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     // AUX vars (for debug purposes)
                     tmp_float = code_error_chips_Ti * CURRENT_INTEGRATION_TIME_S;
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    double tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
+                    tmp_double = static_cast<double>(d_sample_counter + d_correlation_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
@@ -580,12 +646,5 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
     consume_each(d_correlation_length_samples);        // this is necessary in gr::block derivates
     d_sample_counter += d_correlation_length_samples;  // count for the processed samples
 
-    if (d_enable_tracking || loss_of_lock)
-        {
-            return 1;
-        }
-    else
-        {
-            return 0;
-        }
+    return produced;  // one item per navigation data bit, plus the loss of lock indication
 }

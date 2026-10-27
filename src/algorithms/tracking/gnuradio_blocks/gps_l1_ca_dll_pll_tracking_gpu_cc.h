@@ -27,6 +27,7 @@
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <fstream>
 #include <map>
@@ -93,6 +94,7 @@ private:
     void update_local_code();
     void update_local_carrier();
     void check_carrier_phase_coherent_initialization();
+    bool acquire_bit_sync();
 
     // PLL and DLL filter library
     Tracking_2nd_DLL_filter d_code_loop_filter;
@@ -159,6 +161,13 @@ private:
     double d_carrier_lock_threshold;
     int32_t d_carrier_lock_fail_counter;
     int32_t d_cn0_estimation_counter;
+
+    // navigation data bit synchronization (the telemetry decoder takes 20 ms bits)
+    boost::circular_buffer<float> d_Prompt_I_history;
+    gr_complex d_P_bit_accu;
+    int32_t d_current_bit_symbol;
+    bool d_bit_synchronized;
+    bool d_Flag_PLL_180_deg_phase_locked;
 
     // control vars
     bool d_acc_carrier_phase_initialized;

@@ -71,7 +71,7 @@ private:
 
     gps_l1_ca_telemetry_decoder_gs(const Tlm_Conf &conf, L1LnavSystem system);
 
-    void check_tlm_separation();
+    void check_tlm_separation(uint64_t sample_stamp);
     void frame_synchronization(const Gnss_Synchro &current_gs);
     bool is_PLL_180_deg_phase_locked();
     bool gps_word_parityCheck(uint32_t gpsword);

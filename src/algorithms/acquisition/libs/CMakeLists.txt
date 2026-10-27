@@ -5,8 +5,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-set(ACQUISITION_LIB_HEADERS acq_conf.h)
-set(ACQUISITION_LIB_SOURCES acq_conf.cc)
+set(ACQUISITION_LIB_HEADERS acq_conf.h deterministic_acquisition.h)
+set(ACQUISITION_LIB_SOURCES acq_conf.cc deterministic_acquisition.cc)
 
 if(ENABLE_FPGA)
     set(ACQUISITION_LIB_SOURCES ${ACQUISITION_LIB_SOURCES} acq_conf_fpga.cc)
@@ -40,11 +40,12 @@ else()
 endif()
 
 target_link_libraries(acquisition_libs
+    PUBLIC
+        core_system_parameters
     INTERFACE
         Gnuradio::runtime
     PRIVATE
         algorithms_libs
-        core_system_parameters
 )
 
 if(ENABLE_GLOG_AND_GFLAGS)

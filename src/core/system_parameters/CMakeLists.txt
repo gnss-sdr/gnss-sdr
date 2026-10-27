@@ -6,6 +6,7 @@
 
 
 set(SYSTEM_PARAMETERS_SOURCES
+    deterministic_clock.cc
     gnss_almanac.cc
     gnss_ephemeris.cc
     gnss_satellite.cc
@@ -43,6 +44,7 @@ set(SYSTEM_PARAMETERS_SOURCES
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
+    deterministic_clock.h
     gnss_almanac.h
     gnss_ephemeris.h
     gnss_satellite.h

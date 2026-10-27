@@ -520,7 +520,7 @@ TEST_F(GpsL1CAGaussianTrackingTest, ValidationOfResults)
         }
 
     // load the measured values
-    Tracking_Dump_Reader trk_dump;
+    Tracking_Dump_Reader trk_dump(Tracking_Dump_Layout::GPS_L1_CA_GAUSSIAN);
 
     ASSERT_EQ(trk_dump.open_obs_file(std::string("./tracking_ch_0.dat")), true)
         << "Failure opening tracking dump file";

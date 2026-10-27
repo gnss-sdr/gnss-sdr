@@ -82,6 +82,9 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
       d_inbuffer(d_fft_size),
       d_magnitudeIA(d_fft_size)
 {
+    // A search needs its dwells beyond its first sample (GNSS-SDR.deterministic=true)
+    d_det.require_span(static_cast<uint64_t>(d_fft_size) * (std::max(1U, d_acq_params.max_dwells) + 1));
+
     this->message_port_register_out(pmt::mp("events"));
 
     if (Zero_padding > 0)
@@ -232,7 +235,24 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
 }
 
 
-int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items __attribute__((unused)),
+int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items,
+    gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
+    gr_vector_void_star &output_items)
+{
+    d_det.begin_call(d_sample_counter);
+    const int produced = process_input(noutput_items, ninput_items, input_items, output_items);
+    if (d_det.enabled())
+        {
+            // GNSS-SDR.deterministic=true: results reach the control queue
+            // before the progress passes their stamp
+            d_det.dispatch(d_channel, [this](int event) { this->message_port_pub(pmt::mp("events"), pmt::from_long(event)); });
+            d_det.publish(d_sample_counter, d_active, d_channel);
+        }
+    return produced;
+}
+
+
+int galileo_e5a_noncoherentIQ_acquisition_caf_cc::process_input(int noutput_items __attribute__((unused)),
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
@@ -264,6 +284,18 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
      *         3 Positive acquisition
      *         4 Negative acquisition
      */
+    if (d_det.enabled() && d_state == 0)
+        {
+            // GNSS-SDR.deterministic=true: the search starts at its stamped sample
+            int n_items = 0;
+            if (!d_det.ready_to_start(d_sample_counter, 0, 1, ninput_items[0], n_items, d_channel))
+                {
+                    d_sample_counter += static_cast<uint64_t>(1) * static_cast<uint64_t>(n_items);
+                    consume_each(n_items);
+                    return 0;
+                }
+        }
+
     switch (d_state)
         {
         case 0:
@@ -676,7 +708,14 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 d_state = 0;
 
                 acquisition_message = 1;
-                this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                if (d_det.enabled())
+                    {
+                        d_det.raise(acquisition_message);
+                    }
+                else
+                    {
+                        this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                    }
                 d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
                 LOG(INFO) << "Successful acquisition in channel " << d_channel
@@ -713,7 +752,14 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                 consume_each(ninput_items[0]);
                 acquisition_message = 2;
-                this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                if (d_det.enabled())
+                    {
+                        d_det.raise(acquisition_message);
+                    }
+                else
+                    {
+                        this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+                    }
                 break;
             }
         }

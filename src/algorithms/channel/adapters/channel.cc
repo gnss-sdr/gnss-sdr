@@ -19,6 +19,7 @@
 #include "acquisition_interface.h"
 #include "channel_fsm.h"
 #include "configuration_interface.h"
+#include "deterministic_clock.h"
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
 #include <stdexcept>  // for std::invalid_argument
@@ -82,6 +83,16 @@ Channel::Channel(const ConfigurationInterface* configuration,
     gnss_signal_ = Gnss_Signal(signal_str);
 
     channel_msg_rx_ = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
+
+    auto& deterministic_clock = DeterministicClock::instance();
+    if (deterministic_clock.enabled() && !flag_enable_fpga_)
+        {
+            // Events are applied in the thread that raises them, before the
+            // producer moves past their sample stamp
+            const auto msg_rx = channel_msg_rx_;
+            deterministic_clock.set_channel_event_sink(static_cast<int32_t>(channel_),
+                [msg_rx](int event) { msg_rx->dispatch_event(event); });
+        }
 }
 
 

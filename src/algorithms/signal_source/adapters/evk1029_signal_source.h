@@ -30,7 +30,10 @@
  * rather than losing data there; a real overflow, reported by
  * EVK1029_CtrlApp's IF_TO_AXIS flag as an event count, is logged by default
  * or stops the stream if role + ".shm_stop_on_buffer_overflow" = true
- * (default false).
+ * (default false). Overflows are counted from the first sample read, not
+ * while the flowgraph is being built. If the producer publishes nothing for
+ * role + ".shm_stall_timeout_s" seconds (default 5, 0 waits forever), the
+ * stream ends as if at EOF (a hung, crashed or restarted EVK1029_CtrlApp).
  *
  * With role + ".enable_freq_xlating" = true, Evk1029Source itself translates,
  * filters and decimates each band (role + ".band<n>_*" parameters, n <
@@ -94,7 +97,8 @@ public:
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_right_block() override;
-    bool is_real_time() const override { return enable_throttle_control_; }
+    bool is_real_time() const override { return shared_memory_input_ || enable_throttle_control_; }
+    bool can_wait() const override { return !shared_memory_input_; }  // a throttle waits too, a live stream does not
 
 private:
     Evk1029Source_sptr evk1029_source_;
@@ -109,6 +113,7 @@ private:
 
     bool enable_throttle_control_;
     bool enable_freq_xlating_;
+    bool shared_memory_input_;
 };
 
 

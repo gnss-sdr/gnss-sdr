@@ -32,11 +32,13 @@
 
 #include "bayesian_estimation.h"
 #include "cpu_multicorrelator_real_codes.h"
+#include "deterministic_tracking.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_2nd_PLL_filter.h"
 #include <armadillo>
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <fstream>
@@ -86,6 +88,8 @@ public:
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
+    int process_input(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
     friend gps_l1_ca_gaussian_tracking_cc_sptr
     gps_l1_ca_gaussian_make_tracking_cc(uint32_t order,
         int64_t fs_in,
@@ -114,6 +118,7 @@ private:
         int32_t bce_kappa);
 
     int32_t save_matfile();
+    bool acquire_bit_sync();
 
     // tracking configuration vars
     uint32_t d_order;
@@ -193,6 +198,7 @@ private:
 
     // processing samples counters
     uint64_t d_sample_counter;
+    DeterministicTracking d_det{this};  // GNSS-SDR.deterministic=true
     uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
@@ -202,6 +208,13 @@ private:
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
     int32_t d_carrier_lock_fail_counter;
+
+    // navigation data bit synchronization (the telemetry decoder takes 20 ms bits)
+    boost::circular_buffer<float> d_Prompt_I_history;
+    gr_complex d_P_bit_accu;
+    int32_t d_current_bit_symbol;
+    bool d_bit_synchronized;
+    bool d_Flag_PLL_180_deg_phase_locked;
 
     // control vars
     bool d_enable_tracking;

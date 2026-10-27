@@ -45,6 +45,7 @@
 
 #include "acq_conf.h"
 #include "channel_fsm.h"
+#include "deterministic_acquisition.h"
 #include "gnss_sdr_fft.h"
 #if CUDA_GPU_ACCEL
 #include "cuda_pcps_engine.h"
@@ -227,6 +228,12 @@ private:
     void refine_doppler(AcquisitionResult& result);
     void handle_integration_done(const AcquisitionResult& result);
     void acquisition_core(uint64_t sample_count);
+    void acquisition_worker(uint64_t sample_count);
+    int process_input(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
+    // GNSS-SDR.deterministic=true: start a search exactly at its stamped sample
+    bool align_to_deterministic_start(int available_items);
+    void dispatch_deterministic_events();
     void log_acquisition(const AcquisitionResult& result) const;
     void send_negative_acquisition(const AcquisitionResult& result);
     void send_positive_acquisition(const AcquisitionResult& result);
@@ -311,6 +318,8 @@ private:
     bool d_step_two;
     bool d_active;
     bool d_worker_active;
+    // GNSS-SDR.deterministic=true
+    DeterministicAcquisition d_det;
 
     // Only access these in acquisition_core and functions strictly called from acquisition_core
     uint32_t d_num_noncoherent_integrations_counter;

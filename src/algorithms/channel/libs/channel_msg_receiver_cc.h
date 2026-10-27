@@ -20,6 +20,7 @@
 #include "channel_fsm.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
+#include <cstdint>
 #include <memory>
 
 /** \addtogroup Channel
@@ -41,6 +42,12 @@ class channel_msg_receiver_cc : public gr::block
 {
 public:
     ~channel_msg_receiver_cc() = default;  //!< Default destructor
+
+    /*!
+     * \brief Applies a channel event (1: positive acquisition, 2: negative
+     * acquisition, 3: loss of lock) to the channel FSM in the calling thread.
+     */
+    void dispatch_event(int64_t event);
 
 private:
     friend channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);

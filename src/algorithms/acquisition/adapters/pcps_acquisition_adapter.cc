@@ -49,6 +49,7 @@
 #include "qzss_signal_replica.h"
 #include "sbas_signal_replica.h"
 #include "signal_flag.h"
+#include <cmath>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -401,6 +402,12 @@ gr::basic_block_sptr PcpsAcquisitionAdapter::get_right_block()
 void PcpsAcquisitionAdapter::set_resampler_latency(uint32_t latency_samples)
 {
     acquisition_->set_resampler_latency(latency_samples);
+}
+
+
+unsigned int PcpsAcquisitionAdapter::resampler_decimation() const
+{
+    return acq_parameters_.use_automatic_resampler ? static_cast<unsigned int>(std::lround(acq_parameters_.resampler_ratio)) : 1U;
 }
 
 

@@ -138,6 +138,9 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
       d_dump_mat(d_trk_parameters.dump_mat && d_dump),
       d_acc_carrier_phase_initialized(false)
 {
+    // Inputs needed beyond the progress (GNSS-SDR.deterministic=true): see forecast()
+    d_det.require_span(2 * static_cast<uint64_t>(d_trk_parameters.vector_length));
+
 #if GNURADIO_GREATER_THAN_38
     this->set_relative_rate(1, static_cast<uint64_t>(d_trk_parameters.vector_length));
 #else
@@ -632,6 +635,15 @@ void kf_tracking::forecast(int noutput_items,
 
 void kf_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
+    {
+        // Telemetry fault stamped with the sample of the offending symbol
+        // (GNSS-SDR.deterministic=true). It takes effect a lookahead later.
+        gr::thread::scoped_lock lock(d_setlock);
+        if (d_det.take_fault(msg, d_sample_counter, d_state != 0, d_channel))
+            {
+                return;
+            }
+    }
     try
         {
             if (pmt::any_ref(msg).type().hash_code() == d_int_type_hash_code)
@@ -641,7 +653,7 @@ void kf_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                         {
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
                             gr::thread::scoped_lock lock(d_setlock);
-                            d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
+                            d_force_loss_of_lock = true;
                         }
                 }
         }
@@ -681,6 +693,7 @@ void kf_tracking::start_tracking()
     d_acq_code_phase_samples = d_acquisition_gnss_synchro->Acq_delay_samples;
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
+    d_det.start(d_acq_sample_stamp);  // GNSS-SDR.deterministic=true
 
     d_carrier_doppler_kf_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_kf_hz / d_trk_parameters.fs_in;
@@ -853,6 +866,7 @@ void kf_tracking::start_tracking()
 
     d_carrier_lock_fail_counter = 0;
     d_code_lock_fail_counter = 0;
+    d_force_loss_of_lock = false;
     d_rem_code_phase_samples = 0.0;
     d_rem_carr_phase_rad = 0.0;
     d_rem_code_phase_chips = 0.0;
@@ -1113,15 +1127,25 @@ bool kf_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
                         }
                 }
         }
-    if (d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
+    if (d_force_loss_of_lock || d_carrier_lock_fail_counter > d_trk_parameters.max_carrier_lock_fail || d_code_lock_fail_counter > d_trk_parameters.max_code_lock_fail)
         {
             std::cout << "Loss of lock in channel " << d_channel << "!\n";
             LOG(INFO) << "Loss of lock in channel " << d_channel
                       << " (carrier_lock_fail_counter:" << d_carrier_lock_fail_counter
-                      << " code_lock_fail_counter : " << d_code_lock_fail_counter << ")";
-            this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
+                      << " code_lock_fail_counter : " << d_code_lock_fail_counter
+                      << (d_force_loss_of_lock ? " forced" : "") << ")";
+            if (d_det.enabled())
+                {
+                    // raised by general_work(), without the lock held
+                    d_det.raise_loss(d_sample_counter);
+                }
+            else
+                {
+                    this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
+                }
             d_carrier_lock_fail_counter = 0;
             d_code_lock_fail_counter = 0;
+            d_force_loss_of_lock = false;
             return false;
         }
     return true;
@@ -1516,9 +1540,9 @@ void kf_tracking::log_data()
                     // PRN start sample stamp
                     tmp_long_int = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_long_int), sizeof(uint64_t));
-                    // accumulated carrier phase
-                    tmp_float = static_cast<float>(d_acc_carrier_phase_rad);
-                    d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
+                    // accumulated carrier phase (double, since it grows without bound)
+                    tmp_double = d_acc_carrier_phase_rad;
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // carrier and code frequency
                     tmp_float = static_cast<float>(d_carrier_doppler_kf_hz);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
@@ -1566,8 +1590,8 @@ int32_t kf_tracking::save_matfile() const
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    const int32_t number_of_double_vars = 1;
-    const int32_t number_of_float_vars = 19;
+    const int32_t number_of_double_vars = 2;
+    const int32_t number_of_float_vars = 18;
     const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                                      sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
@@ -1607,7 +1631,7 @@ int32_t kf_tracking::save_matfile() const
     auto Prompt_I = std::vector<float>(num_epoch);
     auto Prompt_Q = std::vector<float>(num_epoch);
     auto PRN_start_sample_count = std::vector<uint64_t>(num_epoch);
-    auto acc_carrier_phase_rad = std::vector<float>(num_epoch);
+    auto acc_carrier_phase_rad = std::vector<double>(num_epoch);
     auto carrier_doppler_hz = std::vector<float>(num_epoch);
     auto carrier_doppler_rate_hz = std::vector<float>(num_epoch);
     auto code_freq_chips = std::vector<float>(num_epoch);
@@ -1635,7 +1659,7 @@ int32_t kf_tracking::save_matfile() const
                             dump_file.read(reinterpret_cast<char *>(&Prompt_I[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&Prompt_Q[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&PRN_start_sample_count[i]), sizeof(uint64_t));
-                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(float));
+                            dump_file.read(reinterpret_cast<char *>(&acc_carrier_phase_rad[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&carrier_doppler_rate_hz[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&code_freq_chips[i]), sizeof(float));
@@ -1676,7 +1700,7 @@ int32_t kf_tracking::save_matfile() const
             write_matlab_var<2, float>("Prompt_I", Prompt_I.data(), matfp, dims);
             write_matlab_var<2, float>("Prompt_Q", Prompt_Q.data(), matfp, dims);
             write_matlab_var<2, uint64_t>("PRN_start_sample_count", PRN_start_sample_count.data(), matfp, dims);
-            write_matlab_var<2, float>("acc_carrier_phase_rad", acc_carrier_phase_rad.data(), matfp, dims);
+            write_matlab_var<2, double>("acc_carrier_phase_rad", acc_carrier_phase_rad.data(), matfp, dims);
             write_matlab_var<2, float>("carrier_doppler_hz", carrier_doppler_hz.data(), matfp, dims);
             write_matlab_var<2, float>("carrier_doppler_rate_hz", carrier_doppler_rate_hz.data(), matfp, dims);
             write_matlab_var<2, float>("code_freq_chips", code_freq_chips.data(), matfp, dims);
@@ -1741,7 +1765,21 @@ void kf_tracking::stop_tracking()
 }
 
 
-int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
+int kf_tracking::general_work(int noutput_items, gr_vector_int &ninput_items,
+    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+{
+    const int produced = process_input(noutput_items, ninput_items, input_items, output_items);
+    if (d_det.enabled())
+        {
+            // The event reaches the control queue before the progress passes its stamp
+            d_det.dispatch(d_channel, [this](int event) { this->message_port_pub(pmt::mp("events"), pmt::from_long(event)); });
+            d_det.publish(d_sample_counter);
+        }
+    return produced;
+}
+
+
+int kf_tracking::process_input(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     gr::thread::scoped_lock l(d_setlock);
@@ -1749,6 +1787,12 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     current_synchro_data.Flag_valid_symbol_output = false;
+
+    if (d_det.fault_due(d_sample_counter, d_channel) && d_state != 0)
+        {
+            DLOG(INFO) << "Telemetry fault applied in ch " << this->d_channel;
+            d_force_loss_of_lock = true;
+        }
 
     if (d_pull_in_transitory == true)
         {
@@ -1770,6 +1814,15 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
             }
         case 1:  // Pull-in
             {
+                const uint64_t det_skip = d_det.samples_to_pull_in(d_sample_counter, d_channel);
+                if (det_skip > 0)
+                    {
+                        // GNSS-SDR.deterministic=true: pull in at the stamped sample
+                        const auto n_consume = static_cast<int>(std::min<uint64_t>(det_skip, static_cast<uint64_t>(ninput_items[0])));
+                        d_sample_counter += static_cast<uint64_t>(n_consume);
+                        consume_each(n_consume);
+                        return 0;
+                    }
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
                 const int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
                 const double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / d_trk_parameters.fs_in;
@@ -1823,7 +1876,7 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
                 // fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
                 if (d_trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                     {
-                        d_carrier_lock_fail_counter = 300000;  // force loss-of-lock condition
+                        d_force_loss_of_lock = true;
                         LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking synchronization time limit reached in channel " << d_channel
                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
                     }
@@ -2050,6 +2103,7 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
             // output that carries it
             current_synchro_data.Flag_carrier_phase_continuous = !d_carrier_phase_discontinuity;
             d_carrier_phase_discontinuity = false;
+            d_det.record_output(this->nitems_written(0), current_synchro_data.Tracking_sample_counter);
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

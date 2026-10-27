@@ -18,6 +18,7 @@
 
 #include "gps_l5_telemetry_decoder_gs.h"
 #include "GPS_L5.h"
+#include "deterministic_clock.h"
 #include "display.h"
 #include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
@@ -29,6 +30,7 @@
 #include "qzss_cnav_eop.h"        // for Qzss_CNAV_Eop
 #include "qzss_cnav_iono.h"       // for Qzss_CNAV_Iono
 #include "qzss_cnav_utc_model.h"  // for Qzss_CNAV_Utc_Model
+#include "telemetry_message_stamp.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
@@ -167,6 +169,8 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
     Gnss_Synchro current_synchro_data{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_synchro_data = in[0];
+    // Navigation data sent to the PVT is stamped with this symbol
+    const TelemetryWorkScope symbol_stamp(this, current_synchro_data.Tracking_sample_counter);
     consume_each(1);  // one by one
 
     // check if there is a problem with the telemetry of the current satellite
@@ -176,7 +180,15 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
                     const int message = 1;  // bad telemetry
-                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    if (DeterministicClock::instance().enabled())
+                        {
+                            // Record before releasing progress; tracking reads this in its work call
+                            DeterministicClock::instance().report_telemetry_fault(d_channel, current_synchro_data.Tracking_sample_counter);
+                        }
+                    else
+                        {
+                            this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                        }
                     d_sent_tlm_failed_msg = true;
                 }
         }
@@ -224,7 +236,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                 {
                     // get ephemeris object for this SV
                     const std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message->get_ephemeris());
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
                               << " L5 CNAV message received in channel " << d_channel
@@ -237,12 +249,12 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                     if (d_system == CnavSystem::QZSS)
                         {
                             const std::shared_ptr<Qzss_CNAV_Eop> tmp_obj = std::make_shared<Qzss_CNAV_Eop>(d_CNAV_Message->get_eop());
-                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                         }
                     else
                         {
                             const std::shared_ptr<Gps_CNAV_Eop> tmp_obj = std::make_shared<Gps_CNAV_Eop>(d_CNAV_Message->get_eop());
-                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                         }
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
@@ -258,12 +270,12 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                             // QZSS broadcasts its own Klobuchar coefficients (the Wide Area
                             // set in Message Type 30); keep them separate from the GPS ones
                             const std::shared_ptr<Qzss_CNAV_Iono> tmp_obj = std::make_shared<Qzss_CNAV_Iono>(d_CNAV_Message->get_iono());
-                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                         }
                     else
                         {
                             const std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message->get_iono());
-                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                         }
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")
@@ -279,12 +291,12 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                         {
                             // The QZSS UTC offset refers to UTC(NICT), not to UTC(USNO)
                             const std::shared_ptr<Qzss_CNAV_Utc_Model> tmp_obj = std::make_shared<Qzss_CNAV_Utc_Model>(d_CNAV_Message->get_utc_model());
-                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                         }
                     else
                         {
                             const std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message->get_utc_model());
-                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                            this->message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(tmp_obj), d_channel));
                         }
                     const auto default_precision = std::cout.precision();
                     std::cout << TEXT_MAGENTA << "New " << ((d_system == CnavSystem::GPS) ? "GPS" : "QZSS")

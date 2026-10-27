@@ -26,6 +26,7 @@
 #include "dump_logger_helper.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
+#include "telemetry_message_stamp.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include "tow_to_trk.h"
@@ -328,7 +329,7 @@ void beidou_b1c_telemetry_decoder_gs::publish_navigation(double cn0_db_hz)
         {
             auto eph = std::make_shared<Beidou_Cnav1_Ephemeris>(d_nav.get_ephemeris());
             eph->PRN = d_satellite.get_PRN();
-            message_port_pub(pmt::mp("telemetry"), pmt::make_any(eph));
+            message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(eph), d_channel));
 #if __cplusplus == 201103L
             const int default_precision = std::cout.precision();
 #else
@@ -345,7 +346,7 @@ void beidou_b1c_telemetry_decoder_gs::publish_navigation(double cn0_db_hz)
         {
             auto iono = std::make_shared<Beidou_Cnav1_Iono>(d_nav.get_iono());
             iono->valid = true;
-            message_port_pub(pmt::mp("telemetry"), pmt::make_any(iono));
+            message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(iono), d_channel));
             DLOG(INFO) << "New BeiDou B-CNAV1 iono model from PRN " << d_satellite.get_PRN()
                        << " in channel " << d_channel;
         }
@@ -353,7 +354,7 @@ void beidou_b1c_telemetry_decoder_gs::publish_navigation(double cn0_db_hz)
         {
             auto utc = std::make_shared<Beidou_Cnav1_Utc_Model>(d_nav.get_utc_model());
             utc->valid = true;
-            message_port_pub(pmt::mp("telemetry"), pmt::make_any(utc));
+            message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(utc), d_channel));
             DLOG(INFO) << "New BeiDou B-CNAV1 UTC model from PRN " << d_satellite.get_PRN()
                        << " in channel " << d_channel;
         }
@@ -362,7 +363,7 @@ void beidou_b1c_telemetry_decoder_gs::publish_navigation(double cn0_db_hz)
             Beidou_Cnav1_PageData_Message page_msg{};
             page_msg.PRN = d_satellite.get_PRN();
             page_msg.page_data = d_nav.get_page_data();
-            message_port_pub(pmt::mp("telemetry"), pmt::make_any(std::make_shared<Beidou_Cnav1_PageData_Message>(page_msg)));
+            message_port_pub(pmt::mp("telemetry"), stamp_telemetry_message(pmt::make_any(std::make_shared<Beidou_Cnav1_PageData_Message>(page_msg)), d_channel));
             DLOG(INFO) << "New BeiDou B-CNAV1 page data from PRN " << d_satellite.get_PRN()
                        << " in channel " << d_channel
                        << " PageID=" << d_nav.get_page_data().common.page_id;
@@ -397,6 +398,8 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
     const int32_t hist = BEIDOU_CNAV1_FRAME_SYMBOLS;
     const Gnss_Synchro* frame_window = in;
     Gnss_Synchro current_symbol = in[hist - 1];
+    // Navigation data sent to the PVT is stamped with this symbol
+    const TelemetryWorkScope symbol_stamp(this, current_symbol.Tracking_sample_counter);
     current_symbol.PRN = d_satellite.get_PRN();
     d_sample_counter++;
 

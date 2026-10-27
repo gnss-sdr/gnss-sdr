@@ -31,7 +31,7 @@ import struct
 # in src/algorithms/tracking/gnuradio_blocks/kf_tracking.cc
 #
 # Fields are written back-to-back. Unlike the DLL/PLL VEML dump, the KF dump
-# ends at PRN (no TOW_ms / WN fields), so a record is 22 fields / 96 bytes.
+# ends at PRN (no TOW_ms / WN fields), so a record is 22 fields / 100 bytes.
 # '<' selects little-endian / standard sizes / no alignment padding.
 _RECORD_FORMAT = '<' + (
     'f'    # VE  -> Magnitude of the Very Early correlator.
@@ -42,7 +42,7 @@ _RECORD_FORMAT = '<' + (
     'f'    # prompt_I -> Prompt correlator, In-phase component.
     'f'    # prompt_Q -> Prompt correlator, Quadrature component.
     'Q'    # PRN_start_sample -> Sample counter from tracking start.
-    'f'    # acc_carrier_phase_rad -> Accumulated carrier phase, in rad.
+    'd'    # acc_carrier_phase_rad -> Accumulated carrier phase, in rad.
     'f'    # carrier_doppler_hz -> KF carrier Doppler estimate, in Hz.
     'f'    # carrier_doppler_rate_hz2 -> KF carrier Doppler rate, in Hz/s.
     'f'    # code_freq_hz -> KF code frequency, in chips/s.

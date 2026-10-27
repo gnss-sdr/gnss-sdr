@@ -54,6 +54,17 @@ struct IONGSMSChunkUnpackingCtx
 
     uint64_t read_bits(std::size_t bit_count)
     {
+        // Fast path: the field lies within a single word
+        const std::size_t first_word_index = bit_offset_ / word_bitsize_;
+        const std::size_t first_bit_index = bit_offset_ % word_bitsize_;
+        if (bit_count > 0 && first_bit_index + bit_count <= word_bitsize_ && first_word_index < word_count_)
+            {
+                const std::size_t shift = read_lsb_first_ ? first_bit_index : word_bitsize_ - first_bit_index - bit_count;
+                const uint64_t mask = bit_count >= 64 ? ~uint64_t{0} : (uint64_t{1} << bit_count) - 1U;
+                bit_offset_ += bit_count;
+                return (static_cast<uint64_t>(data_[first_word_index]) >> shift) & mask;
+            }
+
         uint64_t value = 0;
         for (std::size_t bit = 0; bit < bit_count; ++bit)
             {

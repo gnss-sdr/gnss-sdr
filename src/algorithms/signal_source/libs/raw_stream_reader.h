@@ -35,12 +35,19 @@ public:
     virtual ~RawStreamReader() = default;
 
     //! A short read (> 0, < requested_bytes) is normal, like POSIX read().
-    //! May block unboundedly (e.g. waiting on a live producer); returns 0
-    //! only once the stream has truly and permanently ended.
+    //! Returns 0 once the stream has permanently ended or, for a live
+    //! stream, if nothing arrived within a short poll interval, so that the
+    //! caller can check whether it has to stop; end_of_stream() tells which.
     virtual std::size_t read(uint8_t* destination, std::size_t requested_bytes) = 0;
 
-    //! Unblocks a concurrent read(); no-op default for a reader that can't
-    //! block (FileStreamReader). Called from Evk1029Source's destructor.
+    //! After read() returned 0: true if the stream has ended, false if it
+    //! just had nothing new yet. The default suits readers that block until
+    //! there is data or the stream ends (FileStreamReader).
+    virtual bool end_of_stream() const { return true; }
+
+    //! Ends the stream: a concurrent or later read() returns 0 promptly.
+    //! Safe to call from another thread than read()'s. No-op default for a
+    //! reader that can't block (FileStreamReader).
     virtual void request_stop() {}
 };
 

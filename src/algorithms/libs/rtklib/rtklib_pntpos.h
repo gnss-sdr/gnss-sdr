@@ -62,6 +62,9 @@ double getiscl2(int sat, const nav_t *nav);
 double getiscl5i(int sat, const nav_t *nav);
 double getiscl5q(int sat, const nav_t *nav);
 
+/* band pair read by prange() for a satellite --------------------------------*/
+void prange_band_pair(const obsd_t *obs, int *i, int *j);
+
 /* psendorange with code bias correction -------------------------------------
  * iono_scale (O) is the multiplier the caller must apply to the modeled L1
  * ionospheric delay so that it is consistent with the returned pseudorange:

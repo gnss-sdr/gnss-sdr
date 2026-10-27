@@ -146,6 +146,15 @@ bool glonass_gnav_is_healthy(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, boo
  */
 geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model, bool glonass_strict_health = true);
 
+/*!
+ * \brief RTKLIB observation code that insert_obs_to_rtklib() stores for a signal
+ * \param system GNSS-SDR system identifier ('G', 'E', 'R', 'C', 'J', 'S')
+ * \param signal GNSS-SDR two-character signal identifier (e.g. "1C", "5X", "B3")
+ * \param band RTKLIB band slot the signal is stored in
+ * \return observation code, CODE_NONE if the signal has no code for that slot
+ */
+unsigned char rtklib_obs_code(char system, const std::string& signal, int band);
+
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const Gnss_Synchro& gnss_synchro,
     const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,

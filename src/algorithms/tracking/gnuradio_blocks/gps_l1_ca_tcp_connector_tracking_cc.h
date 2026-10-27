@@ -27,6 +27,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "tcp_communication.h"
+#include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <fstream>
@@ -90,6 +91,8 @@ private:
         float early_late_space_chips,
         size_t port_ch0);
 
+    bool acquire_bit_sync();
+
     volk_gnsssdr::vector<gr_complex> d_ca_code;
     // correlator
     volk_gnsssdr::vector<float> d_local_code_shift_chips;
@@ -146,6 +149,13 @@ private:
     float d_CN0_SNV_dB_Hz;
     float d_carrier_lock_threshold;
     float d_control_id;
+
+    // navigation data bit synchronization (the telemetry decoder takes 20 ms bits)
+    boost::circular_buffer<float> d_Prompt_I_history;
+    gr_complex d_P_bit_accu;
+    int32_t d_current_bit_symbol;
+    bool d_bit_synchronized;
+    bool d_Flag_PLL_180_deg_phase_locked;
 
     bool d_enable_tracking;
     bool d_pull_in;

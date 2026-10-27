@@ -51,6 +51,45 @@ constexpr int DATA_G2_TAPS[6] = {2, 4, 8, 10, 11, 12};
 constexpr int PILOT_G1_TAPS[4] = {2, 5, 6, 12};
 constexpr int PILOT_G2_TAPS[6] = {0, 4, 6, 7, 11, 12};
 
+// Pilot secondary code parameters
+constexpr std::array<uint16_t, 63> B2A_PILOT_SECONDARY_W = {
+    123, 55, 40, 139, 31, 175, 350, 450, 478, 8, 73, 97, 213, 407, 476, 4, 15, 47, 163, 280,
+    322, 353, 375, 510, 332, 7, 13, 16, 18, 25, 50, 81, 118, 127, 132, 134, 164, 177, 208,
+    249, 276, 349, 439, 477, 498, 88, 155, 330, 3, 21, 84, 111, 128, 153, 197, 199, 214, 256,
+    265, 291, 324, 326, 340};
+
+constexpr std::array<uint16_t, 63> B2A_PILOT_SECONDARY_P = {
+    138, 570, 351, 77, 885, 247, 413, 180, 3, 26, 17, 172, 30, 1008, 646, 158, 170, 99, 53,
+    179, 925, 114, 10, 584, 60, 3, 684, 263, 545, 22, 546, 190, 303, 234, 38, 822, 57, 668,
+    697, 93, 18, 66, 318, 133, 98, 70, 132, 26, 354, 58, 41, 182, 944, 205, 23, 1, 792, 641,
+    83, 7, 111, 96, 92};
+
+constexpr int32_t BEIDOU_B2A_PILOT_SECONDARY_CODE_LENGTH = 100;
+constexpr int32_t BEIDOU_B2A_LEGENDRE_LENGTH = 1021;
+
+static const std::array<int8_t, BEIDOU_B2A_LEGENDRE_LENGTH> legendre = ([]() {
+    std::array<int8_t, BEIDOU_B2A_LEGENDRE_LENGTH> ret{};
+    constexpr uint32_t p2 = (BEIDOU_B2A_LEGENDRE_LENGTH - 1) / 2;
+    ret[0] = 1;
+    for (uint32_t k = 1; k < BEIDOU_B2A_LEGENDRE_LENGTH; k++)
+        {
+            uint32_t legendre_sym = k;
+            for (uint32_t j = 1; j < p2; j++)
+                {
+                    legendre_sym = (legendre_sym * k) % BEIDOU_B2A_LEGENDRE_LENGTH;
+                }
+            if (legendre_sym == BEIDOU_B2A_LEGENDRE_LENGTH - 1)
+                {
+                    ret[k] = 1;
+                }
+            else
+                {
+                    ret[k] = 0;
+                }
+        }
+    return ret;
+})();
+
 void generate_b2a_primary(own::span<int> dest, int32_t prn, uint32_t chip_shift,
     const std::array<uint16_t, 63>& g2_init, const int* g1_taps, int n_g1_taps,
     const int* g2_taps, int n_g2_taps)
@@ -124,17 +163,11 @@ void beidou_b2a_pilot_code_gen_int(own::span<int> dest, int32_t prn, uint32_t ch
 }
 
 
-void beidou_b2a_code_gen_int(own::span<int> dest, int32_t prn, uint32_t chip_shift)
-{
-    beidou_b2a_data_code_gen_int(dest, prn, chip_shift);
-}
-
-
-void beidou_b2a_code_gen_float(own::span<float> dest, int32_t prn, uint32_t chip_shift)
+void beidou_b2a_data_code_gen_float(own::span<float> dest, int32_t prn, uint32_t chip_shift)
 {
     constexpr uint32_t code_length = 10230;
     std::array<int, code_length> code_int{};
-    beidou_b2a_code_gen_int(code_int, prn, chip_shift);
+    beidou_b2a_data_code_gen_int(code_int, prn, chip_shift);
     for (uint32_t ii = 0; ii < code_length; ++ii)
         {
             dest[ii] = static_cast<float>(code_int[ii]);
@@ -142,11 +175,11 @@ void beidou_b2a_code_gen_float(own::span<float> dest, int32_t prn, uint32_t chip
 }
 
 
-void beidou_b2a_code_gen_complex(own::span<std::complex<float>> dest, int32_t prn, uint32_t chip_shift)
+void beidou_b2a_data_code_gen_complex(own::span<std::complex<float>> dest, int32_t prn, uint32_t chip_shift)
 {
     constexpr uint32_t code_length = 10230;
     std::array<int, code_length> code_int{};
-    beidou_b2a_code_gen_int(code_int, prn, chip_shift);
+    beidou_b2a_data_code_gen_int(code_int, prn, chip_shift);
     for (uint32_t ii = 0; ii < code_length; ++ii)
         {
             dest[ii] = std::complex<float>(static_cast<float>(code_int[ii]), 0.0F);
@@ -154,7 +187,7 @@ void beidou_b2a_code_gen_complex(own::span<std::complex<float>> dest, int32_t pr
 }
 
 
-void beidou_b2a_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int sampling_freq, uint32_t chip_shift)
+void beidou_b2a_data_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int sampling_freq, uint32_t chip_shift)
 {
     constexpr int32_t codeFreqBasis = 10230000;
     constexpr int32_t codeLength = 10230;
@@ -163,7 +196,7 @@ void beidou_b2a_code_gen_complex_sampled(own::span<std::complex<float>> dest, ui
     const auto samplesPerCode = static_cast<int32_t>(static_cast<double>(sampling_freq) / (static_cast<double>(codeFreqBasis) / static_cast<double>(codeLength)));
 
     std::array<std::complex<float>, 10230> code_aux{};
-    beidou_b2a_code_gen_complex(code_aux, static_cast<int32_t>(prn), chip_shift);
+    beidou_b2a_data_code_gen_complex(code_aux, static_cast<int32_t>(prn), chip_shift);
 
     for (int32_t i = 0; i < samplesPerCode; i++)
         {
@@ -178,4 +211,106 @@ void beidou_b2a_code_gen_complex_sampled(own::span<std::complex<float>> dest, ui
                     dest[i] = code_aux[codeValueIndex];
                 }
         }
+}
+
+
+void beidou_b2a_pilot_code_gen_float(own::span<float> dest, int32_t prn, uint32_t chip_shift)
+{
+    constexpr uint32_t code_length = 10230;
+    std::array<int, code_length> code_int{};
+    beidou_b2a_pilot_code_gen_int(code_int, prn, chip_shift);
+    for (uint32_t ii = 0; ii < code_length; ++ii)
+        {
+            dest[ii] = static_cast<float>(code_int[ii]);
+        }
+}
+
+
+void beidou_b2a_pilot_code_gen_complex(own::span<std::complex<float>> dest, int32_t prn, uint32_t chip_shift)
+{
+    constexpr uint32_t code_length = 10230;
+    std::array<int, code_length> code_int{};
+    beidou_b2a_pilot_code_gen_int(code_int, prn, chip_shift);
+    for (uint32_t ii = 0; ii < code_length; ++ii)
+        {
+            dest[ii] = std::complex<float>(static_cast<float>(code_int[ii]), 0.0F);
+        }
+}
+
+
+void beidou_b2a_pilot_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int sampling_freq, uint32_t chip_shift)
+{
+    constexpr int32_t codeFreqBasis = 10230000;
+    constexpr int32_t codeLength = 10230;
+    constexpr float tc = 1.0F / static_cast<float>(codeFreqBasis);
+    const float ts = 1.0F / static_cast<float>(sampling_freq);
+    const auto samplesPerCode = static_cast<int32_t>(static_cast<double>(sampling_freq) / (static_cast<double>(codeFreqBasis) / static_cast<double>(codeLength)));
+
+    std::array<std::complex<float>, 10230> code_aux{};
+    beidou_b2a_pilot_code_gen_complex(code_aux, static_cast<int32_t>(prn), chip_shift);
+
+    for (int32_t i = 0; i < samplesPerCode; i++)
+        {
+            const float aux = (ts * (static_cast<float>(i) + 1)) / tc;
+            const int32_t codeValueIndex = AUX_CEIL(aux) - 1;
+            if (i == samplesPerCode - 1)
+                {
+                    dest[i] = code_aux[codeLength - 1];
+                }
+            else
+                {
+                    dest[i] = code_aux[codeValueIndex];
+                }
+        }
+}
+
+
+void beidou_b2a_iq_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int sampling_freq, uint32_t chip_shift)
+{
+    constexpr int32_t codeFreqBasis = 10230000;
+    constexpr int32_t codeLength = 10230;
+    constexpr float tc = 1.0F / static_cast<float>(codeFreqBasis);
+    const float ts = 1.0F / static_cast<float>(sampling_freq);
+    const auto samplesPerCode = static_cast<int32_t>(static_cast<double>(sampling_freq) / (static_cast<double>(codeFreqBasis) / static_cast<double>(codeLength)));
+
+    std::array<float, 10230> code_aux{};
+    beidou_b2a_pilot_code_gen_float(code_aux, static_cast<int32_t>(prn), chip_shift);
+    std::array<float, 10230> code_data{};
+    beidou_b2a_data_code_gen_float(code_data, static_cast<int32_t>(prn), chip_shift);
+
+    for (int32_t i = 0; i < samplesPerCode; i++)
+        {
+            const float aux = (ts * (static_cast<float>(i) + 1)) / tc;
+            const int32_t codeValueIndex = AUX_CEIL(aux) - 1;
+            if (i == samplesPerCode - 1)
+                {
+                    dest[i] = std::complex<float>(code_data[codeLength - 1], code_aux[codeLength - 1]);
+                }
+            else
+                {
+                    dest[i] = std::complex<float>(code_data[codeValueIndex], code_aux[codeValueIndex]);
+                }
+        }
+}
+
+
+int8_t weil(uint32_t k, uint32_t w)
+{
+    return legendre[k] ^ legendre[(k + w) % BEIDOU_B2A_LEGENDRE_LENGTH];
+}
+
+char gen_secondary_char(uint32_t n, uint32_t w, uint32_t p)
+{
+    return weil((n + p - 1) % BEIDOU_B2A_LEGENDRE_LENGTH, w) + '0';
+}
+
+
+std::string beidou_b2a_pilot_secondary_code(int32_t PRN)
+{
+    std::string ret = "";
+    for (uint32_t k = 0; k < BEIDOU_B2A_PILOT_SECONDARY_CODE_LENGTH; k++)
+        {
+            ret += gen_secondary_char(k, B2A_PILOT_SECONDARY_W[PRN - 1], B2A_PILOT_SECONDARY_P[PRN - 1]);
+        }
+    return ret;
 }

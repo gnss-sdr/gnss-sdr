@@ -83,7 +83,7 @@ signal_info get_signal_info(signal_flag sig_flag)
         case BDS_B1C:
             return {'C', {'1', 'D', '\0'}, "BeiDou B1C", BEIDOU_B1C_CODE_RATE_CPS, BEIDOU_B1C_CODE_LENGTH_CHIPS, 1, true, false};
         case BDS_B2A:
-            return {'C', {'5', 'D', '\0'}, "BEIDOU B2a", BEIDOU_B2A_CODE_RATE_CPS, BEIDOU_B2A_CODE_LENGTH_CHIPS, 1, false, true};
+            return {'C', {'5', 'D', '\0'}, "BEIDOU B2a", BEIDOU_B2A_CODE_RATE_CPS, BEIDOU_B2A_CODE_LENGTH_CHIPS, 1, true, false};
         case QZS_J1:
             return {'J', {'J', '1', '\0'}, "QZSS L1 C/A", QZSS_L1_CHIP_RATE, QZSS_L1_CODE_LENGTH, 20, false, true};
         case QZS_J5:

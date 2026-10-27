@@ -646,18 +646,21 @@ second RX channel is not yet exposed).
 Install the [libiio](https://github.com/analogdevicesinc/libiio.git) (>=v0.11),
 [libad9361](https://github.com/analogdevicesinc/libad9361-iio.git) (>=v0.1-1)
 libraries and [gr-iio](https://github.com/analogdevicesinc/gr-iio.git) (>v0.3)
-gnuradio block:
+gnuradio block. GNSS-SDR requires the libiio v0.x API, so libiio v1.x is not
+supported: build libiio and libad9361 from their `libiio-v0` and
+`libad9361-iio-v0` branches, since their default branches now target libiio
+v1.x:
 
 ```
-$ sudo apt install libxml2-dev bison flex
-$ git clone https://github.com/analogdevicesinc/libiio.git
+$ sudo apt install libxml2-dev libaio-dev libusb-1.0-0-dev libavahi-client-dev bison flex
+$ git clone -b libiio-v0 https://github.com/analogdevicesinc/libiio.git
 $ cd libiio
 $ mkdir build
 $ cd build
 $ cmake ..
 $ make && sudo make install && sudo ldconfig
 $ cd ../..
-$ git clone https://github.com/analogdevicesinc/libad9361-iio.git
+$ git clone -b libad9361-iio-v0 https://github.com/analogdevicesinc/libad9361-iio.git
 $ cd libad9361-iio
 $ mkdir build
 $ cd build

@@ -8,6 +8,10 @@
 # Provides the following imported target:
 # Iio::iio
 #
+# GNSS-SDR uses the libiio v0.x API. LIBIIO_FOUND is only set if the header and
+# library found build and link a v0.x program. LIBIIO_IS_V1 is set to TRUE if
+# a libiio v1.x installation was detected instead.
+#
 
 if(NOT COMMAND feature_summary)
     include(FeatureSummary)
@@ -63,8 +67,51 @@ if(LIBIIO_LIBRARIES AND APPLE)
     endif()
 endif()
 
+# libiio v1.x installs its header as iio/iio.h and replaces most of the v0.x
+# API. Its libiio.so.0 compatibility layer is runtime-only (no v0.x header).
+# Check that the header and library found build and link a v0.x program, so a
+# v0.x header from one prefix is not paired with a v1.x library from another.
+unset(LIBIIO_HAS_V0_API CACHE)
+if(LIBIIO_INCLUDE_DIRS AND LIBIIO_LIBRARIES)
+    include(CheckCXXSourceCompiles)
+    set(_LIBIIO_REQUIRED_INCLUDES_SAVED "${CMAKE_REQUIRED_INCLUDES}")
+    set(_LIBIIO_REQUIRED_LIBRARIES_SAVED "${CMAKE_REQUIRED_LIBRARIES}")
+    set(CMAKE_REQUIRED_INCLUDES ${LIBIIO_INCLUDE_DIRS})
+    set(CMAKE_REQUIRED_LIBRARIES ${LIBIIO_LIBRARIES})
+    check_cxx_source_compiles("
+        #include <iio.h>
+        int main()
+        {
+            struct iio_context *ctx = iio_create_context_from_uri(\"ip:localhost\");
+            struct iio_device *dev = iio_context_find_device(ctx, \"cf-ad9361-lpc\");
+            struct iio_buffer *buf = iio_device_create_buffer(dev, 1024, false);
+            iio_buffer_destroy(buf);
+            iio_context_destroy(ctx);
+        }"
+        LIBIIO_HAS_V0_API
+    )
+    set(CMAKE_REQUIRED_INCLUDES "${_LIBIIO_REQUIRED_INCLUDES_SAVED}")
+    set(CMAKE_REQUIRED_LIBRARIES "${_LIBIIO_REQUIRED_LIBRARIES_SAVED}")
+endif()
+
+set(LIBIIO_IS_V1 FALSE)
+if(NOT LIBIIO_HAS_V0_API)
+    find_path(
+        LIBIIO_V1_INCLUDE_DIR
+        NAMES iio/iio.h
+        HINTS ${PC_LIBIIO_INCLUDEDIR}
+        PATHS ${LIBIIO_ROOT_USER_DEFINED}/include
+              ${GNSSSDR_INCLUDE_PATHS}
+    )
+    if(LIBIIO_V1_INCLUDE_DIR)
+        set(LIBIIO_IS_V1 TRUE)
+    elseif(PC_LIBIIO_VERSION AND NOT (PC_LIBIIO_VERSION VERSION_LESS 1))
+        set(LIBIIO_IS_V1 TRUE)
+    endif()
+endif()
+
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LIBIIO DEFAULT_MSG LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS)
+find_package_handle_standard_args(LIBIIO DEFAULT_MSG LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS LIBIIO_HAS_V0_API)
 
 if(PC_LIBIIO_VERSION)
     set(LIBIIO_VERSION ${PC_LIBIIO_VERSION})
@@ -94,4 +141,4 @@ if(LIBIIO_FOUND AND NOT TARGET Iio::iio)
     )
 endif()
 
-mark_as_advanced(LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS)
+mark_as_advanced(LIBIIO_LIBRARIES LIBIIO_INCLUDE_DIRS LIBIIO_V1_INCLUDE_DIR)

@@ -2586,9 +2586,10 @@ int dll_pll_veml_tracking::process_input(int noutput_items __attribute__((unused
                         // 5 ms coded symbol. Default pull-in is 5 s,
                         // which can leave a short file with only one frame.
                         // Forward Prompt during wide tracking so B-CNAV2 can lock.
+                        // When tracking the pilot, *d_Prompt is the pilot correlator.
                         if (d_systemName == "Beidou" && d_signal_type == "5D")
                             {
-                                d_P_data_accu = *d_Prompt;
+                                d_P_data_accu = d_trk_parameters.track_pilot ? d_Prompt_Data[0] : *d_Prompt;
                                 current_synchro_data = *d_acquisition_gnss_synchro;
                                 assign_correlators_to_synchro(current_synchro_data);
                                 current_synchro_data.Code_phase_samples = d_rem_code_phase_samples;

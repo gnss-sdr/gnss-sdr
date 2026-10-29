@@ -19,6 +19,7 @@
 
 
 #include "glonass_gnav_telemetry_decoder_gs.h"
+#include "MATH_CONSTANTS.h"
 #include "display.h"
 #include "dump_logger_helper.h"
 #include "glonass_gnav_almanac.h"
@@ -69,6 +70,7 @@ glonass_gnav_telemetry_decoder_gs::glonass_gnav_telemetry_decoder_gs(const Tlm_C
       d_band(frequency_band == 2 ? '2' : '1'),
       d_flag_frame_sync(false),
       d_flag_preamble(false),
+      d_flag_PLL_180_deg_phase_locked(false),
       d_dump(conf.dump),
       d_dump_mat(conf.dump_mat),
       d_remove_dat(conf.remove_dat),
@@ -239,6 +241,7 @@ void glonass_gnav_telemetry_decoder_gs::reset()
     d_CRC_error_counter = 0;
     d_flag_frame_sync = false;
     d_flag_preamble = false;
+    d_flag_PLL_180_deg_phase_locked = false;
     d_TOW_at_current_symbol = 0;
     // Invalidate the propagated TOW until a new string 5 is decoded; otherwise
     // Flag_valid_word would remain true with a TOW offset by the outage duration
@@ -355,6 +358,7 @@ int glonass_gnav_telemetry_decoder_gs::general_work(int noutput_items __attribut
                     if (crc_ok == true)
                         {
                             d_CRC_error_counter = 0;
+                            d_flag_PLL_180_deg_phase_locked = corr_value < 0;
                             d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
                             d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
                             if (!d_flag_frame_sync)
@@ -413,6 +417,16 @@ int glonass_gnav_telemetry_decoder_gs::general_work(int noutput_items __attribut
     if (d_flag_frame_sync == true && d_nav.is_flag_TOW_set() == true)
         {
             current_symbol.Flag_valid_word = true;
+            if (d_flag_PLL_180_deg_phase_locked == true)
+                {
+                    // correct the accumulated phase for the Costas loop phase shift, if required
+                    current_symbol.Carrier_phase_rads += GNSS_PI;
+                    current_symbol.Flag_PLL_180_deg_phase_locked = true;
+                }
+            else
+                {
+                    current_symbol.Flag_PLL_180_deg_phase_locked = false;
+                }
             if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
                 {
                     d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);

@@ -1563,7 +1563,16 @@ void dll_pll_veml_tracking::run_dll_pll()
     else
         {
             // Secondary code acquired. No symbols transition should be present in the signal
-            d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / TWO_PI;
+            if (d_trk_parameters.keep_phase_at_secondary_lock && !d_Flag_PLL_180_deg_phase_locked)
+                {
+                    // the wiped-off pilot comes out negative at the phase the Costas loop
+                    // held; take it with that sign instead of pulling the carrier half a cycle
+                    d_carr_phase_error_hz = pll_four_quadrant_atan(-d_P_accu) / TWO_PI;
+                }
+            else
+                {
+                    d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / TWO_PI;
+                }
         }
 
     if ((d_pull_in_transitory == true && d_trk_parameters.enable_fll_pull_in == true) || d_trk_parameters.enable_fll_steady_state)

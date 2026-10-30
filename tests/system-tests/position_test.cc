@@ -220,20 +220,6 @@ int PositionSystemTest::configure_receiver()
             config = std::make_shared<InMemoryConfiguration>();
             const int sampling_rate_internal = baseband_sampling_freq;
 
-            const int number_of_taps = 11;
-            const int number_of_bands = 2;
-            const float band1_begin = 0.0;
-            const float band1_end = 0.48;
-            const float band2_begin = 0.52;
-            const float band2_end = 1.0;
-            const float ampl1_begin = 1.0;
-            const float ampl1_end = 1.0;
-            const float ampl2_begin = 0.0;
-            const float ampl2_end = 0.0;
-            const float band1_error = 1.0;
-            const float band2_error = 1.0;
-            const int grid_density = 16;
-
             const float zero = 0.0;
 #if USE_GLOG_AND_GFLAGS
             const int number_of_channels = FLAGS_num_channels;
@@ -241,6 +227,9 @@ int PositionSystemTest::configure_receiver()
             const int number_of_channels = absl::GetFlag(FLAGS_num_channels);
 #endif
             const int in_acquisition = 1;
+
+            const float filter_bw = baseband_sampling_freq * 0.4;
+            const float filter_tw = baseband_sampling_freq * 0.2;
 
             const float threshold = 2.5;
             const float doppler_max = 5000.0;
@@ -254,8 +243,10 @@ int PositionSystemTest::configure_receiver()
             const float dll_bw_hz = 1.5;
             const float early_late_space_chips = 0.5;
             const float early_late_space_narrow_chips = 0.1;
-            const float pll_bw_narrow_hz = 15.0;
-            const float dll_bw_narrow_hz = 1.5;
+            const float pll_bw_narrow_hz = 1.0;
+            const float dll_bw_narrow_hz = 0.005;
+            const float pll_bw_step = 0.001;
+            const float dll_bw_step = 0.001;
 #if USE_GLOG_AND_GFLAGS
             const int extend_correlation_symbols = FLAGS_extend_correlation_symbols;  // defaults to 1
 #else
@@ -304,21 +295,10 @@ int PositionSystemTest::configure_receiver()
             config->set_property("InputFilter.input_item_type", "gr_complex");
             config->set_property("InputFilter.output_item_type", "gr_complex");
             config->set_property("InputFilter.taps_item_type", "float");
-            config->set_property("InputFilter.number_of_taps", std::to_string(number_of_taps));
-            config->set_property("InputFilter.number_of_bands", std::to_string(number_of_bands));
-            config->set_property("InputFilter.band1_begin", std::to_string(band1_begin));
-            config->set_property("InputFilter.band1_end", std::to_string(band1_end));
-            config->set_property("InputFilter.band2_begin", std::to_string(band2_begin));
-            config->set_property("InputFilter.band2_end", std::to_string(band2_end));
-            config->set_property("InputFilter.ampl1_begin", std::to_string(ampl1_begin));
-            config->set_property("InputFilter.ampl1_end", std::to_string(ampl1_end));
-            config->set_property("InputFilter.ampl2_begin", std::to_string(ampl2_begin));
-            config->set_property("InputFilter.ampl2_end", std::to_string(ampl2_end));
-            config->set_property("InputFilter.band1_error", std::to_string(band1_error));
-            config->set_property("InputFilter.band2_error", std::to_string(band2_error));
             config->set_property("InputFilter.filter_type", "lowpass");
-            config->set_property("InputFilter.grid_density", std::to_string(grid_density));
             config->set_property("InputFilter.sampling_frequency", std::to_string(sampling_rate_internal));
+            config->set_property("InputFilter.bw", std::to_string(filter_bw));
+            config->set_property("InputFilter.tw", std::to_string(filter_tw));
             config->set_property("InputFilter.IF", std::to_string(zero));
             config->set_property("Resampler.implementation", "Pass_Through");
             config->set_property("Resampler.dump", "false");
@@ -361,6 +341,8 @@ int PositionSystemTest::configure_receiver()
             config->set_property("Tracking_1C.early_late_space_narrow_chips", std::to_string(early_late_space_narrow_chips));
             config->set_property("Tracking_1C.pll_bw_narrow_hz", std::to_string(pll_bw_narrow_hz));
             config->set_property("Tracking_1C.dll_bw_narrow_hz", std::to_string(dll_bw_narrow_hz));
+            config->set_property("Tracking_1C.pll_bw_step", std::to_string(pll_bw_step));
+            config->set_property("Tracking_1C.dll_bw_step", std::to_string(dll_bw_step));
             config->set_property("Tracking_1C.extend_correlation_symbols", std::to_string(extend_correlation_symbols));
             // config->set_property("Tracking_1C.high_dyn", "true");
             // config->set_property("Tracking_1C.smoother_length", "200");

@@ -49,7 +49,7 @@ int64_t read_signed(const std::vector<uint8_t>& bits, const Field& field)
         {
             for (int32_t j = 0; j < f.second; j++)
                 {
-                    value = static_cast<int64_t>(static_cast<uint64_t>(value) << 1U) | static_cast<int64_t>(bits[f.first - 1 + j] & 1U);
+                    value = value * 2 + static_cast<int64_t>(bits[f.first - 1 + j] & 1U);
                 }
         }
     return value;
@@ -141,6 +141,11 @@ std::vector<float> symbols_to_llr(const float* symbols, size_t n)
             // very high SNR or degenerate estimate: bound the LLR magnitude
             noise_var = 1e-3 * m2;
             amplitude2 = m2 - noise_var;
+        }
+    if (!(noise_var > 0.0))
+        {
+            // all-zero or non-finite symbols carry no reliability information
+            return std::vector<float>(n, 0.0F);
         }
     const double scale = 2.0 * std::sqrt(std::max(amplitude2, 0.0)) / noise_var;
     std::vector<float> llr(n);

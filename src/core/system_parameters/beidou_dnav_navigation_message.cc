@@ -188,7 +188,7 @@ int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
         {
             for (int32_t j = 0; j < param.second; j++)
                 {
-                    value = (value << 1) | static_cast<int64_t>(bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - param.first - j]);
+                    value = value * 2 + static_cast<int64_t>(bits[BEIDOU_DNAV_SUBFRAME_DATA_BITS - param.first - j]);
                 }
         }
     return value;

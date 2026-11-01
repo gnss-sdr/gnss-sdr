@@ -69,7 +69,7 @@ int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(const std::bitset<GP
         {
             for (int32_t j = 0; j < p.second; j++)
                 {
-                    value = (value << 1) | static_cast<int64_t>(bits[GPS_CNAV_DATA_PAGE_BITS - p.first - j]);
+                    value = value * 2 + static_cast<int64_t>(bits[GPS_CNAV_DATA_PAGE_BITS - p.first - j]);
                 }
         }
     return value;

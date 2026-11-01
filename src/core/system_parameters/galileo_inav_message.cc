@@ -127,7 +127,7 @@ int64_t Galileo_Inav_Message::read_navigation_signed(const std::bitset<GALILEO_D
         {
             for (int32_t j = 0; j < p.second; j++)
                 {
-                    value = (value << 1) | static_cast<int64_t>(bits[GALILEO_DATA_JK_BITS - p.first - j]);
+                    value = value * 2 + static_cast<int64_t>(bits[GALILEO_DATA_JK_BITS - p.first - j]);
                 }
         }
     return value;

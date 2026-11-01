@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <utility>
 
 namespace
 {
@@ -1049,7 +1050,7 @@ std::vector<uint8_t> Gps_Cnav2_Ldpc::encode(const std::vector<uint8_t>& message)
                 }
         }
     // p2 = T^-1 (A s^t + B p1^t)
-    std::vector<uint8_t> rhs = as;
+    std::vector<uint8_t> rhs = std::move(as);
     for (int32_t r = 0; r < m - 1; r++)
         {
             if (std::binary_search(d_rows[r].cbegin(), d_rows[r].cend(), d_k))
@@ -1057,7 +1058,7 @@ std::vector<uint8_t> Gps_Cnav2_Ldpc::encode(const std::vector<uint8_t>& message)
                     rhs[r] ^= p1;
                 }
         }
-    const std::vector<uint8_t> p2 = solve_t(rhs);
+    const std::vector<uint8_t> p2 = solve_t(std::move(rhs));
 
     for (int32_t i = 0; i < d_k; i++)
         {

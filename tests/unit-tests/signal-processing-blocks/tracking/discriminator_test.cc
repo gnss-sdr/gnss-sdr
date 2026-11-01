@@ -15,6 +15,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "GPS_L1C.h"
 #include "tracking_discriminators.h"
 #include <gtest/gtest.h>
 #include <cmath>
@@ -170,5 +171,31 @@ TEST(DllNcEMinusLNormalizedTest, CosBoc11)
                                 }
                         }
                 }
+        }
+}
+
+
+TEST(TmbocVemlpSpacingTest, KnownSpacings)
+{
+    // Unique lock at zero delay
+    EXPECT_TRUE(tmboc_vemlp_spacing_is_valid(0.07, 0.5));
+    EXPECT_TRUE(tmboc_vemlp_spacing_is_valid(0.2, 0.5));
+    // Zero delay is unstable, and the loop locks at about +/-6 m
+    EXPECT_FALSE(tmboc_vemlp_spacing_is_valid(0.15, 0.5));
+    // Additional stable points at about +/-42 m
+    EXPECT_FALSE(tmboc_vemlp_spacing_is_valid(1.0 / 24.0, 0.5));
+    // Stable at zero delay, but with a lower gain than a BOC(1,1) replica
+    EXPECT_FALSE(tmboc_vemlp_spacing_is_valid(0.25, 0.5));
+    // Zero delay is unstable
+    EXPECT_FALSE(tmboc_vemlp_spacing_is_valid(0.25, 0.4));
+}
+
+
+TEST(TmbocVemlpSpacingTest, GpsL1cFallbacks)
+{
+    for (const double very_early_late_space_chips : {0.3, 0.4, 0.5, 0.6, 0.75})
+        {
+            EXPECT_TRUE(tmboc_vemlp_spacing_is_valid(GPS_L1C_TMBOC_EARLY_LATE_SPACE_CHIPS, very_early_late_space_chips)) << "VE/VL: " << very_early_late_space_chips;
+            EXPECT_TRUE(tmboc_vemlp_spacing_is_valid(GPS_L1C_TMBOC_EARLY_LATE_SPACE_NARROW_CHIPS, very_early_late_space_chips)) << "VE/VL: " << very_early_late_space_chips;
         }
 }

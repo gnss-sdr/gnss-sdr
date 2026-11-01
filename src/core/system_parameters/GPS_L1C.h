@@ -43,6 +43,8 @@ constexpr int32_t GPS_L1C_OVERLAY_CODE_LENGTH = 1800;                          /
 constexpr int32_t GPS_L1C_TMBOC_SAMPLES_PER_CHIP = 12;                         //!< Samples per chip of a TMBOC(6,1,4/33) replica
 constexpr int32_t GPS_L1C_BOC_SAMPLES_PER_CHIP = 2;                            //!< Samples per chip of a BOC(1,1) replica
 constexpr std::array<int32_t, 4> GPS_L1C_TMBOC_BOC61_SLOTS = {{0, 4, 6, 29}};  //!< BOC(6,1) spreading symbols at t mod 33 (3.3)
+constexpr float GPS_L1C_TMBOC_EARLY_LATE_SPACE_CHIPS = 0.2F;                   //!< Early-late spacing that keeps a unique DLL lock with a TMBOC replica [chips]
+constexpr float GPS_L1C_TMBOC_EARLY_LATE_SPACE_NARROW_CHIPS = 0.07F;           //!< Narrow early-late spacing that keeps a unique DLL lock with a TMBOC replica [chips]
 constexpr float GPS_L1C_OVERLAY_LOCK_RATIO = 0.9F;                             //!< Fraction of the 1800 overlay chips that must match to declare secondary code lock
 
 // Navigation message structure (IS-GPS-800J, 3.2.3)

@@ -33,6 +33,7 @@
 #include "display.h"
 #include "qzss.h"
 #include "signal_flag.h"
+#include "tracking_discriminators.h"
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -169,6 +170,25 @@ void check_and_configure_trk_params(const ConfigurationInterface* configuration,
                     acq_role.replace(0, tracking_prefix.size(), "Acquisition_");
                 }
             trk_params.tmboc = configuration->property(role + ".tmboc", configuration->property(acq_role + ".tmboc", trk_params.tmboc));
+            if (trk_params.track_pilot && trk_params.tmboc)
+                {
+                    // The BOC(6,1) ripple makes zero delay unstable, or weak, for some early-late spacings
+                    const auto check_tmboc_spacing = [&role](float& early_late_space_chips, float very_early_late_space_chips, const std::string& key, float fallback) {
+                        if (!tmboc_vemlp_spacing_is_valid(early_late_space_chips, very_early_late_space_chips))
+                            {
+                                LOG(WARNING) << role << "." << key << "=" << early_late_space_chips
+                                             << " does not give a unique DLL lock at zero delay with the TMBOC replica. Using " << fallback << " chips instead";
+                                early_late_space_chips = fallback;
+                                if (!tmboc_vemlp_spacing_is_valid(early_late_space_chips, very_early_late_space_chips))
+                                    {
+                                        LOG(WARNING) << role << "." << key << "=" << early_late_space_chips
+                                                     << " is not valid either for a very early-late spacing of " << very_early_late_space_chips << " chips";
+                                    }
+                            }
+                    };
+                    check_tmboc_spacing(trk_params.early_late_space_chips, trk_params.very_early_late_space_chips, "early_late_space_chips", GPS_L1C_TMBOC_EARLY_LATE_SPACE_CHIPS);
+                    check_tmboc_spacing(trk_params.early_late_space_narrow_chips, trk_params.very_early_late_space_narrow_chips, "early_late_space_narrow_chips", GPS_L1C_TMBOC_EARLY_LATE_SPACE_NARROW_CHIPS);
+                }
             if (trk_params.track_pilot)
                 {
                     // the 1800-chip overlay code takes a full frame to synchronize

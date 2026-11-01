@@ -50,7 +50,7 @@ repeat them with the default value that applies to each tool.
   `--signal-type` to restrict plots to one signal. Single-file modes and
   signal-specific scripts still require or prefer one signal. Channel ranges are
   computed using GNSS-SDR's receiver order:
-  `1C, 2S, L5, 1B, 5X, E6, 1G, 2G, B1, B3, 7X, J1, J5`.
+  `1C, 1S, 2S, L5, 1B, 5X, E6, 1G, 2G, B1, 1D, 5D, B3, 7X, J1, J5, S1`.
 
 - `-o`, `--fig-path`: directory where plots are saved. Defaults to a per-script
   subdirectory under `./plots/`.
@@ -123,6 +123,7 @@ GNSS-SDR configuration and dump filenames (e.g. `--signal-type=E6`):
 | Code | System  | Signal | Code length (chips) |
 | ---- | ------- | ------ | ------------------- |
 | `1C` | GPS     | L1 C/A | 1023                |
+| `1S` | GPS     | L1C    | 10230               |
 | `2S` | GPS     | L2C    | 10230               |
 | `L5` | GPS     | L5     | 10230               |
 | `1B` | Galileo | E1B    | 4092                |
@@ -132,9 +133,12 @@ GNSS-SDR configuration and dump filenames (e.g. `--signal-type=E6`):
 | `1G` | GLONASS | L1     | 511                 |
 | `2G` | GLONASS | L2     | 511                 |
 | `B1` | BeiDou  | B1I    | 2046                |
+| `1D` | BeiDou  | B1C    | 10230               |
+| `5D` | BeiDou  | B2a    | 10230               |
 | `B3` | BeiDou  | B3I    | 10230               |
 | `J1` | QZSS    | L1 C/A | 1023                |
 | `J5` | QZSS    | L5     | 10230               |
+| `S1` | SBAS    | L1     | 1023                |
 
 In all-files mode `--sat`, `--channel`, `--execution`, and `--signal-type`
 filter the matching dumps. If `--conf` enables several signals and

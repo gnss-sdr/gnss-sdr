@@ -16,6 +16,7 @@
 
 
 #include "galileo_tow_map.h"
+#include <iterator>  // for std::prev
 #include <memory>    // for std::shared_ptr
 #include <typeinfo>  // for typeid
 
@@ -98,4 +99,87 @@ void galileo_tow_map::msg_handler_galileo_tow_map(const pmt::pmt_t& msg)
         {
             LOG(WARNING) << "galileo_tow_map Bad any_cast: " << e.what();
         }
+}
+
+
+namespace
+{
+bool is_valid_tow_entry(const GalileoTowMapEntry& entry)
+{
+    return entry.week != GALILEO_TOW_MAP_INVALID_WEEK &&
+           entry.tow_ms < GALILEO_TOW_MAP_WEEK_MS &&
+           entry.sample_counter != GALILEO_TOW_MAP_INVALID_SAMPLE_COUNTER;
+}
+}  // namespace
+
+
+GalileoTowHistory& GalileoTowHistory::instance()
+{
+    static GalileoTowHistory history;
+    return history;
+}
+
+
+GalileoTowHistory::GalileoTowHistory() : d_retention(std::numeric_limits<uint64_t>::max())
+{
+}
+
+
+void GalileoTowHistory::reset(uint64_t retention)
+{
+    std::lock_guard<std::mutex> lock(d_mutex);
+    d_records.clear();
+    d_retention = retention;
+}
+
+
+void GalileoTowHistory::record(uint32_t prn, int32_t channel, uint64_t stamp, const GalileoTowMapEntry& entry)
+{
+    std::lock_guard<std::mutex> lock(d_mutex);
+    auto& timeline = d_records[prn][channel];
+    const auto inserted = timeline.emplace(stamp, entry);
+    if (!inserted.second && !is_valid_tow_entry(entry))
+        {
+            // A withdrawal wins over an entry with the same stamp
+            inserted.first->second = entry;
+        }
+    const uint64_t newest = timeline.rbegin()->first;
+    if (newest > d_retention)
+        {
+            // Keep the record in force at the oldest sample that can still be asked for
+            const auto after_oldest = timeline.upper_bound(newest - d_retention);
+            if (after_oldest != timeline.begin())
+                {
+                    timeline.erase(timeline.begin(), std::prev(after_oldest));
+                }
+        }
+}
+
+
+GalileoTowMapEntry GalileoTowHistory::lookup(uint32_t prn, uint64_t sample) const
+{
+    std::lock_guard<std::mutex> lock(d_mutex);
+    GalileoTowMapEntry newest{};
+    const auto satellite = d_records.find(prn);
+    if (satellite == d_records.end())
+        {
+            return newest;
+        }
+    uint64_t newest_stamp = 0;
+    for (const auto& channel : satellite->second)
+        {
+            const auto& timeline = channel.second;
+            auto in_force = timeline.upper_bound(sample);
+            if (in_force == timeline.begin())
+                {
+                    continue;
+                }
+            --in_force;
+            if (is_valid_tow_entry(in_force->second) && (!is_valid_tow_entry(newest) || in_force->first > newest_stamp))
+                {
+                    newest = in_force->second;
+                    newest_stamp = in_force->first;
+                }
+        }
+    return newest;
 }

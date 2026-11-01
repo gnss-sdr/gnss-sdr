@@ -29,6 +29,7 @@ execution = 4;
 %     8 BDS. B1
 %     9 BDS. B3
 %    10 BDS. B2a
+%    11 GPS  L1C
 
 signal_type = 8;
 
@@ -71,7 +72,7 @@ switch(signal_type)
         system = 'R';
         signal = '2G';
     case 8
-        n_chips = 2048;
+        n_chips = 2046;
         system = 'C';
         signal = 'B1';
     case 9
@@ -81,7 +82,11 @@ switch(signal_type)
     case 10
         n_chips = 10230;
         system = 'C';
-        signal = '5C';
+        signal = '5D';
+    case 11
+        n_chips = 10230;
+        system = 'G';
+        signal = '1S';
 end
 filename = [path file '_' system '_' signal '_ch_' num2str(channel) '_' num2str(execution) '_sat_' num2str(sat) '.mat'];
 dump = load(filename);

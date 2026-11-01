@@ -205,6 +205,114 @@ TEST(GpsTgdIscTest, IonoFreeL1L5UsesIscL1caOnGammaWeightedTerm)
 }
 
 
+TEST(GpsTgdIscTest, IonoFreeL1cL2cRemovesIonosphereAndBroadcastDelays)
+{
+    nav_t nav{};
+    eph_t eph{};
+    obsd_t obs{};
+    prcopt_t options{};
+    const int sat = satno(SYS_GPS, 11);
+    ASSERT_GT(sat, 0);
+    set_gps_test_ephemeris(nav, eph, sat);
+    // The solver supplies the ISC of the tracked L1C component in slot 0.
+    eph.isc[0] = 20.0e-9;
+    eph.isc[1] = -3.0e-9;
+    nav.lam[sat - 1][0] = L1_WAVELENGTH_M;
+    nav.lam[sat - 1][1] = L2_WAVELENGTH_M;
+    obs.sat = sat;
+    options.ionoopt = IONOOPT_IFLC;
+
+    const double range_m = 24000000.0;
+    const double iono_l1_m = 8.0;
+    const double gamma12 = std::pow(FREQ1 / FREQ2, 2.0);
+    const double azel[2] = {0.0, 1.0};
+    double variance = 0.0;
+    double iono_scale = -1.0;
+    for (const auto l1_code : {CODE_L1L, CODE_L1S, CODE_L1X})
+        {
+            for (const auto l2_code : {CODE_L2S, CODE_L2L, CODE_L2X})
+                {
+                    obs.code[0] = static_cast<unsigned char>(l1_code);
+                    obs.code[1] = static_cast<unsigned char>(l2_code);
+                    for (const double tgd_s : {0.0, TGD_S, -TGD_S})
+                        {
+                            SCOPED_TRACE(::testing::Message() << "L1 code " << l1_code << ", L2 code " << l2_code << ", TGD " << tgd_s);
+                            eph.tgd[0] = tgd_s;
+                            // Synthesize measurements of the same range using the signal
+                            // delays in IS-GPS-800J 3.5.3.9.2 and frequency-scaled ionosphere.
+                            obs.P[0] = range_m + iono_l1_m + SPEED_OF_LIGHT_M_S * (tgd_s - eph.isc[0]);
+                            obs.P[1] = range_m + gamma12 * iono_l1_m + SPEED_OF_LIGHT_M_S * (tgd_s - eph.isc[1]);
+                            EXPECT_NEAR(range_m, prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale), 1.0e-6);
+                            EXPECT_DOUBLE_EQ(0.0, iono_scale);
+                        }
+                }
+        }
+}
+
+
+TEST(GpsTgdIscTest, IonoFreeL1cL2cUsesExternalDcbInsteadOfBroadcastTgd)
+{
+    nav_t nav{};
+    eph_t eph{};
+    obsd_t obs{};
+    prcopt_t options{};
+    const int sat = satno(SYS_GPS, 11);
+    ASSERT_GT(sat, 0);
+    set_gps_test_ephemeris(nav, eph, sat);
+    eph.isc[0] = 20.0e-9;
+    nav.lam[sat - 1][0] = L1_WAVELENGTH_M;
+    nav.lam[sat - 1][1] = L2_WAVELENGTH_M;
+    nav.cbias[sat - 1][0] = 3.0;
+    obs.sat = sat;
+    obs.code[0] = CODE_L1L;
+    obs.code[1] = CODE_L2S;
+    options.ionoopt = IONOOPT_IFLC;
+
+    const double range_m = 24000000.0;
+    const double iono_l1_m = 8.0;
+    const double gamma12 = std::pow(FREQ1 / FREQ2, 2.0);
+    const double effective_tgd_m = nav.cbias[sat - 1][0] / (1.0 - gamma12);
+    obs.P[0] = range_m + iono_l1_m + effective_tgd_m - SPEED_OF_LIGHT_M_S * eph.isc[0];
+    obs.P[1] = range_m + gamma12 * iono_l1_m + effective_tgd_m - SPEED_OF_LIGHT_M_S * eph.isc[1];
+    const double azel[2] = {0.0, 1.0};
+    double variance = 0.0;
+    double iono_scale = -1.0;
+    EXPECT_NEAR(range_m, prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale), 1.0e-6);
+    EXPECT_DOUBLE_EQ(0.0, iono_scale);
+}
+
+
+TEST(GpsTgdIscTest, IonoFreeLegacyL1L2DoesNotApplyCivilSignalCorrections)
+{
+    nav_t nav{};
+    eph_t eph{};
+    obsd_t obs{};
+    prcopt_t options{};
+    const int sat = satno(SYS_GPS, 11);
+    ASSERT_GT(sat, 0);
+    set_gps_test_ephemeris(nav, eph, sat);
+    nav.lam[sat - 1][0] = L1_WAVELENGTH_M;
+    nav.lam[sat - 1][1] = L2_WAVELENGTH_M;
+    obs.sat = sat;
+    obs.code[0] = CODE_L1W;
+    obs.code[1] = CODE_L2W;
+    options.ionoopt = IONOOPT_IFLC;
+
+    const double range_m = 24000000.0;
+    const double iono_l1_m = 8.0;
+    const double gamma12 = std::pow(FREQ1 / FREQ2, 2.0);
+    // The L1/L2 P(Y) ionosphere-free combination is the clock reference:
+    // its group delays cancel without applying any civil-signal ISCs.
+    obs.P[0] = range_m + iono_l1_m + SPEED_OF_LIGHT_M_S * TGD_S;
+    obs.P[1] = range_m + gamma12 * (iono_l1_m + SPEED_OF_LIGHT_M_S * TGD_S);
+    const double azel[2] = {0.0, 1.0};
+    double variance = 0.0;
+    double iono_scale = -1.0;
+    EXPECT_NEAR(range_m, prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale), 1.0e-6);
+    EXPECT_DOUBLE_EQ(0.0, iono_scale);
+}
+
+
 TEST(GlonassDcbTest, SingleFrequencyL2AppliesP1P2DcbOnce)
 {
     nav_t nav{};

@@ -34,7 +34,7 @@ public:
     ~Nav_Message_Packet() = default;  //!< Default destructor
 
     std::string system;                //!< GNSS constellation: "G" for GPS, "R" for Glonass, "S" for SBAS, "E" for Galileo and "C" for Beidou.
-    std::string signal;                //!< GNSS signal: "1C" for GPS L1 C/A, "1B" for Galileo E1b/c, "1G" for Glonass L1 C/A, "2S" for GPS L2 L2C(M), "2G" for Glonass L2 C/A, "L5" for GPS L5 and "5X" for Galileo E5a
+    std::string signal;                //!< GNSS signal: "1C" for GPS L1 C/A, "1S" for GPS L1C, "1B" for Galileo E1b/c, "1G" for Glonass L1 C/A, "2S" for GPS L2 L2C(M), "2G" for Glonass L2 C/A, "L5" for GPS L5 and "5X" for Galileo E5a
     int32_t prn;                       //!< SV ID
     int32_t tow_at_current_symbol_ms;  //!< Time of week of the current symbol, in ms
     std::string nav_message;           //!< Content of the navigation page

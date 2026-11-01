@@ -175,6 +175,7 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     bs_tentative_events_required = configuration->property(role + ".bs_tentative_events_required", bs_tentative_events_required);
     bs_use_phase_dot_detector = configuration->property(role + ".bs_use_phase_dot_detector", bs_use_phase_dot_detector);
 
+    tmboc = configuration->property(role + ".tmboc", tmboc);
     qmboc = configuration->property(role + ".qmboc", qmboc);
     b1c_prompt_use_data_q = configuration->property(role + ".b1c_prompt_use_data_q", b1c_prompt_use_data_q);
     b1c_prompt_normalize_power = configuration->property(role + ".b1c_prompt_normalize_power", b1c_prompt_normalize_power);

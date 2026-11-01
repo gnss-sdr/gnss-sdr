@@ -299,7 +299,8 @@ galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 void galileo_telemetry_decoder_gs::msg_handler_read_galileo_tow_map(const pmt::pmt_t &msg)
 {
     gr::thread::scoped_lock lock(d_setlock);
-    if (d_frame_type == 3)
+    // In deterministic mode the time of week comes from read_galileo_tow_history()
+    if (d_frame_type == 3 && !DeterministicClock::instance().enabled())
         {
             try
                 {
@@ -360,6 +361,17 @@ void galileo_telemetry_decoder_gs::publish_galileo_tow_map_entry(uint32_t week, 
         }
 
     const GalileoTowMapEntry tow_entry{week, tow_ms, sample_counter};
+    if (DeterministicClock::instance().enabled())
+        {
+            // Stamped with the symbol being decoded, or with the event that
+            // resets the decoder. E6 decoders are not sources.
+            const uint64_t stamp = DeterministicClock::scope_stamp();
+            if (d_frame_type != 3 && stamp != NO_SAMPLE_STAMP)
+                {
+                    GalileoTowHistory::instance().record(d_satellite.get_PRN(), d_channel, stamp, tow_entry);
+                }
+            return;
+        }
     const auto tmp_obj = std::make_shared<GalileoTowMapMessage>(d_satellite.get_PRN(), tow_entry);
     this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
 }
@@ -371,6 +383,24 @@ void galileo_telemetry_decoder_gs::publish_current_galileo_tow_map_entry(uint64_
         {
             publish_galileo_tow_map_entry(d_TOW_week, d_TOW_at_current_symbol_ms, sample_counter);
         }
+}
+
+
+void galileo_telemetry_decoder_gs::read_galileo_tow_history(uint64_t sample_counter)
+{
+    // The stream is released at most one lookahead beyond the lowest producer
+    // progress, and tracking does not progress past the symbols that its
+    // telemetry decoder has not finished (see TelemetryWorkScope). Hence every
+    // entry stamped more than one lookahead before this symbol is recorded.
+    const uint64_t lookahead = DeterministicClock::instance().lookahead();
+    GalileoTowMapEntry entry{};
+    if (sample_counter > lookahead)
+        {
+            entry = GalileoTowHistory::instance().lookup(d_satellite.get_PRN(), sample_counter - lookahead - 1);
+        }
+    d_received_week = entry.week;
+    d_received_tow_ms = entry.tow_ms;
+    d_received_sample_counter = entry.sample_counter;
 }
 
 
@@ -1182,6 +1212,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             decode_FNAV_word(d_page_part_symbols.data(), d_frame_length_symbols, current_symbol.CN0_dB_hz);
                             break;
                         case 3:  // CNAV
+                            if (d_there_are_e6_channels && DeterministicClock::instance().enabled())
+                                {
+                                    read_galileo_tow_history(current_symbol.Tracking_sample_counter);
+                                }
                             if (current_symbol.fs != 0LL)
                                 {
                                     const CnavPageReceptionTime page_reception_time = get_cnav_page_reception_time(current_symbol);

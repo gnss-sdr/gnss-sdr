@@ -147,3 +147,58 @@ double dll_nc_vemlp_normalized(gr_complex very_early_s1, gr_complex early_s1, gr
         }
     return (Early - Late) / E_plus_L;
 }
+
+
+namespace
+{
+double boc11_correlation(double tau)
+{
+    return SinBocCorrelationFunction<1, 1>(tau);
+}
+
+
+double tmboc_correlation(double tau)
+{
+    return (29.0 * SinBocCorrelationFunction<1, 1>(tau) + 4.0 * SinBocCorrelationFunction<6, 1>(tau)) / 33.0;
+}
+}  // namespace
+
+
+bool tmboc_vemlp_spacing_is_valid(double early_late_space_chips, double very_early_late_space_chips)
+{
+    // Discriminator output for a code delay tau [chips]. The loop is stable
+    // where the output crosses zero from negative to positive.
+    const auto discriminator = [&](double (*corr)(double), double tau) {
+        return dll_nc_vemlp_normalized(gr_complex(static_cast<float>(corr(tau - very_early_late_space_chips)), 0.0F),
+            gr_complex(static_cast<float>(corr(tau - early_late_space_chips)), 0.0F),
+            gr_complex(static_cast<float>(corr(tau + early_late_space_chips)), 0.0F),
+            gr_complex(static_cast<float>(corr(tau + very_early_late_space_chips)), 0.0F));
+    };
+    const auto tmboc = &tmboc_correlation;
+    const auto boc11 = &boc11_correlation;
+
+    // Delays at (i + 0.5) * step, so that the scan never evaluates zero delay
+    constexpr int steps = 400;
+    constexpr double step = 1.0 / (3.0 * steps);
+    int stable_points = 0;
+    bool zero_is_stable = false;
+    double previous = discriminator(tmboc, (0.5 - steps) * step);
+    for (int i = 1 - steps; i < steps; i++)
+        {
+            const double current = discriminator(tmboc, (i + 0.5) * step);
+            if (previous < 0.0 && current >= 0.0)
+                {
+                    stable_points++;
+                    zero_is_stable = zero_is_stable || (i == 0);
+                }
+            previous = current;
+        }
+    if (!zero_is_stable || stable_points != 1)
+        {
+            return false;
+        }
+
+    const double tmboc_gain = discriminator(tmboc, 0.5 * step) - discriminator(tmboc, -0.5 * step);
+    const double boc11_gain = discriminator(boc11, 0.5 * step) - discriminator(boc11, -0.5 * step);
+    return tmboc_gain >= boc11_gain;
+}

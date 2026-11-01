@@ -55,6 +55,7 @@
 #include "glonass_gnav_utc_model.h"
 #include "gnss_synchro.h"
 #include "gps_almanac.h"
+#include "gps_cnav2_ephemeris.h"
 #include "gps_cnav_eop.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
@@ -200,6 +201,7 @@ public:
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
     std::map<int, Gps_Ephemeris> gps_previous_ephemeris_map;           //!< Previous GPS/QZSS issue retained for SBAS IODE handover
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
+    std::map<int, Gps_CNAV2_Ephemeris> gps_cnav2_ephemeris_map;        //!< Map storing GPS L1C CNAV-2 ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
     std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;    //!< Map storing new BeiDou DNAV Ephmeris
     std::map<int, Beidou_Cnav1_Ephemeris> beidou_cnav1_ephemeris_map;  //!< Map storing BeiDou B-CNAV1 ephemeris

@@ -82,6 +82,18 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Interoperability:
 
+- Added the GPS L1C receiver chain (IS-GPS-800J), with signal identifier `1S`:
+  PCPS acquisition (`GPS_L1C_PCPS_Ambiguous_Acquisition`), VEML DLL+PLL tracking
+  (`GPS_L1C_DLL_PLL_VEML_Tracking`) of the L1CP pilot with synchronization of
+  its 1800-chip overlay code, or of the L1CD data component, and CNAV-2
+  telemetry decoding (`GPS_L1C_Telemetry_Decoder`). Replicas can use the full
+  TMBOC(6,1,4/33) pilot waveform (`Acquisition_1S.tmboc`, `Tracking_1S.tmboc`,
+  default `false`). When a satellite is tracked on both L1 C/A and L1C,
+  positioning uses L1 C/A. RINEX observation files contain
+  `C1L`/`L1L`/`D1L`/`S1L` observables, and RINEX 4.02 navigation files contain
+  CNV2 records. A sample configuration file is provided at
+  `conf/File_input/GPS/gnss-sdr_GPS_L1C_file.conf`. Based on initial work by
+  @tatjam.
 - Fixed `Labsat_Signal_Source` for LabSat 4 (`.LS4`) recordings whose RF
   channels have different bandwidths (different `BW_DIV` values). Hardened the
   parsing of LabSat 4 (`.LS4`) `.ini` files. The source now exits with a
@@ -158,18 +170,18 @@ All notable changes to GNSS-SDR will be documented in this file.
   `GNSS-SDR.osnma_mode=strict`, Galileo HAS corrections
   (`PVT.use_has_corrections=true`, the default with Galileo E6 channels) and
   NTRIP corrections (`PVT.ntrip_client_enabled=true`), whose effects the PVT
-  applies when the messages arrive, Galileo E6 channels together with Galileo
-  E1, E5a or E5b channels, whose time of week reaches the E6 telemetry decoders
-  when it arrives, `Acquisition_XX.blocking_on_standby=true`, a lookahead that
-  is not positive, a control tick below 1 ms, and lookaheads that leave the
-  observables block no margin (220 ms with the default
+  applies when the messages arrive, `Acquisition_XX.blocking_on_standby=true`, a
+  lookahead that is not positive, a control tick below 1 ms, and lookaheads that
+  leave the observables block no margin (220 ms with the default
   `GNSS-SDR.observable_interval_ms`). Multiband configurations do not use
   dual-frequency acquisition assistance in this mode, and the receiver does not
   stop channels that track a satellite already tracked in another channel, since
   both decisions depend on the live tracking status. With
   `GNSS-SDR.tow_to_trk=true`, the DLL/PLL VEML tracking blocks do not compute
   the TOW and week number, since the telemetry messages would reach them at a
-  timing-dependent sample.
+  timing-dependent sample. The Galileo E6 telemetry decoders take the time of
+  week that the E1, E5a or E5b decoders set for the same satellite once the
+  stream has gone one lookahead past the symbol that set it.
 
 ### Improvements in Usability:
 

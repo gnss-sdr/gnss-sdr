@@ -294,7 +294,7 @@ SatelliteVisibility::SatelliteVisibility(const std::shared_ptr<ConfigurationInte
 
     // Signal codes per system, as in gnss_block_factory.cc's signal_mapping.
     static const std::map<std::string, std::vector<std::string>> system_signals{
-        {"GPS", {"1C", "2S", "L5"}},
+        {"GPS", {"1C", "1S", "2S", "L5"}},
         {"Galileo", {"1B", "5X", "E6", "7X"}},
         {"Beidou", {"B1", "1D", "B3", "5D"}},
         {"Glonass", {"1G", "2G"}},
@@ -1249,7 +1249,7 @@ bool SatelliteVisibility::PredictedDopplerHz(const std::shared_ptr<PvtInterface>
     // own band codes, keyed by signal the same way SIGNAL_FREQ_MAP is.
     // GLONASS uses them only to tell L1 from L2.
     static const std::map<std::string, int> kBandForSignal = {
-        {"1C", 1}, {"1B", 1}, {"1D", 1}, {"J1", 1}, {"B1", 1}, {"1G", 1},
+        {"1C", 1}, {"1S", 1}, {"1B", 1}, {"1D", 1}, {"J1", 1}, {"B1", 1}, {"1G", 1},
         {"2S", 2}, {"B2", 2}, {"2G", 2},
         {"L5", 5}, {"5X", 5}, {"J5", 5}, {"5D", 5},
         {"E6", 6},

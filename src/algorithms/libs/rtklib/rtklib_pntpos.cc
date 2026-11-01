@@ -473,6 +473,15 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                     P2 -= gettgd_bds_by_obs_code(obs->sat, nav, obs->code[j]);
                     PC = (gamma_ * P1 - P2) / (gamma_ - 1.0);
                 }
+            else if (sys == SYS_GPS &&
+                     (obs->code[i] == CODE_L1L || obs->code[i] == CODE_L1S || obs->code[i] == CODE_L1X) &&
+                     (obs->code[j] == CODE_L2S || obs->code[j] == CODE_L2L || obs->code[j] == CODE_L2X))
+                {
+                    /* L1C + L2C, IS-GPS-800J 3.5.3.9.2: isc[0] carries the
+                       tracked L1C component's ISC. Apply both ISCs before
+                       combining, then remove the common TGD correction. */
+                    PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
+                }
             else if ((sys == SYS_GPS || sys == SYS_QZS) && obs->code[j] == CODE_L5X)
                 {
                     /* L1 C/A + L5 dual-frequency correction, IS-GPS-705 20.3.3.3.1.2.2:
@@ -507,6 +516,13 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                         {
                             /* B3I is the DNAV timing reference; no TGD1 applied */
                             PC = P1;
+                        }
+                    else if ((sys == SYS_GPS || sys == SYS_QZS) &&
+                             (obs->code[i] == CODE_L1L || obs->code[i] == CODE_L1S || obs->code[i] == CODE_L1X))
+                        {
+                            /* L1C single frequency, IS-GPS-800J 3.5.3.9.1:
+                               (dt_SV)L1CP = dt_SV - TGD + ISC_L1CP */
+                            PC = P1 - P1_P2 + ISCl1;
                         }
                     else
                         {

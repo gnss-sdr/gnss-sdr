@@ -35,6 +35,7 @@
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_acquisition_gsoc2013_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_quicksync_acquisition_gsoc2014_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l1_ca_pcps_tong_acquisition_gsoc2013_test.cc"
+#include "unit-tests/signal-processing-blocks/acquisition/gps_l1c_pcps_acquisition_test.cc"
 
 #ifndef EXCLUDE_TESTS_REQUIRING_BINARIES
 #include "unit-tests/signal-processing-blocks/acquisition/galileo_e1_pcps_ambiguous_acquisition_gsoc_test.cc"

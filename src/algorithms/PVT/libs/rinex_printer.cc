@@ -33,6 +33,7 @@
 #include "gnss_satellite.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
+#include "gps_cnav2_ephemeris.h"
 #include "gps_cnav_eop.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
@@ -92,6 +93,8 @@ std::string signal_flag_to_string(signal_flag flag)
             return "2S";
         case GPS_L5:
             return "L5";
+        case GPS_L1C:
+            return "1S";
         case GAL_1B:
             return "1B";
         case GAL_E5a:
@@ -126,7 +129,7 @@ std::map<std::string, signal_flag> string_to_signal_flag_map()
 {
     std::map<std::string, signal_flag> convertion_map;
 
-    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3, BDS_B1C, BDS_B2A, QZS_J1, QZS_J5})
+    for (const auto flag : {GPS_1C, GPS_2S, GPS_L5, GPS_L1C, GAL_1B, GAL_E5a, GAL_E5b, GAL_E6, GLO_1G, GLO_2G, BDS_B1, BDS_B3, BDS_B1C, BDS_B2A, QZS_J1, QZS_J5})
         {
             convertion_map[signal_flag_to_string(flag)] = flag;
         }
@@ -146,7 +149,7 @@ std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enab
 {
     std::map<char, std::set<signal_flag>> constel_signal_flags;
 
-    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3, BDS_B1C, BDS_B2A}}, {'J', {QZS_J1, QZS_J5}}})
+    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5, GPS_L1C}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3, BDS_B1C, BDS_B2A}}, {'J', {QZS_J1, QZS_J5}}})
         {
             for (const auto flag : it.second)
                 {
@@ -427,6 +430,9 @@ std::map<std::string, std::string> getObservationCodes()
         {"GPS_L1_Y", "1Y"},           // "1Y" GPS L1 Y
         {"GPS_L1_M ", "1M"},          // "1M" GPS L1 M
         {"GPS_L1_CODELESS", "1N"},    // "1N" GPS L1 codeless
+        {"GPS_L1C_D", "1S"},          // "1S" GPS L1C (D)
+        {"GPS_L1C_P", "1L"},          // "1L" GPS L1C (P)
+        {"GPS_L1C_DP", "1X"},         // "1X" GPS L1C (D+P)
         {"GPS_L2_CA", "2C"},          // "2C" GPS L2 C/A
         {"L2_SEMI_CODELESS", "2D"},   // "2D" GPS L2 L1(C/A)+(P2-P1) semi-codeless
         {"GPS_L2_L2CM", "2S"},        // "2S" GPS L2 L2C (M)
@@ -2340,6 +2346,7 @@ void add_obs_sys_obs_type_gps(std::fstream& out,
         {GPS_1C, "GPS_L1_CA"},
         {GPS_2S, "GPS_L2_L2CM"},
         {GPS_L5, "GPS_L5_Q"},
+        {GPS_L1C, "GPS_L1C_P"},  // Code and carrier are tracked on the L1C pilot
     };
 
     add_obs_sys_obs_type(out, "GPS", flags, observationType, observationCode, signal_to_code_map);
@@ -2626,11 +2633,12 @@ void update_nav_header_from_info(std::fstream& out, const std::string& filename,
 
 int get_version(const Signal_Enabled_Flags& flags, int version)
 {
-    const bool gps_requires_cnav = flags.check_any_enabled(GPS_2S, GPS_L5) && !flags.check_any_enabled(GPS_1C);
+    // GPS L1C carries CNAV-2, whose ephemeris records only exist from RINEX 4 on
+    const bool gps_requires_cnav = flags.check_any_enabled(GPS_2S, GPS_L5, GPS_L1C) && !flags.check_any_enabled(GPS_1C);
     const bool qzss_requires_cnav = flags.check_any_enabled(QZS_J5) && !flags.check_any_enabled(QZS_J1);
     if ((version == 2 || version == 3) && (gps_requires_cnav || qzss_requires_cnav))
         {
-            std::cout << "WARNING: Changing RINEX version to 4.02 because RINEX 2/3 navigation files cannot represent the required GPS/QZSS CNAV data.\n";
+            std::cout << "WARNING: Changing RINEX version to 4.02 because RINEX 2/3 navigation files cannot represent the required GPS CNAV/CNAV-2 or QZSS CNAV data.\n";
             return 4;
         }
 
@@ -2774,6 +2782,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const auto galileo_ephemeris_iter = pvt_solver->galileo_ephemeris_map.cbegin();
     const auto gps_ephemeris_iter = pvt_solver->gps_ephemeris_map.cbegin();
     const auto gps_cnav_ephemeris_iter = pvt_solver->gps_cnav_ephemeris_map.cbegin();
+    const auto gps_cnav2_ephemeris_iter = pvt_solver->gps_cnav2_ephemeris_map.cbegin();
     const auto glonass_gnav_ephemeris_iter = pvt_solver->glonass_gnav_ephemeris_map.cbegin();
     const auto beidou_dnav_ephemeris_iter = pvt_solver->beidou_dnav_ephemeris_map.cbegin();
     const auto beidou_cnav1_ephemeris_iter = pvt_solver->beidou_cnav1_ephemeris_map.cbegin();
@@ -2781,6 +2790,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
 
     const bool has_gps_lnav_eph = !pvt_solver->gps_ephemeris_map.empty();
     const bool has_gps_cnav_eph = !pvt_solver->gps_cnav_ephemeris_map.empty();
+    const bool has_gps_cnav2_eph = !pvt_solver->gps_cnav2_ephemeris_map.empty();
     const bool has_galileo_eph = !pvt_solver->galileo_ephemeris_map.empty();
     const bool has_glonass_eph = !pvt_solver->glonass_gnav_ephemeris_map.empty();
     const bool has_beidou_dnav_eph = !pvt_solver->beidou_dnav_ephemeris_map.empty();
@@ -2797,6 +2807,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             return;
         }
     if (d_flags.check_any_enabled(GPS_2S, GPS_L5, QZS_J5) && !has_gps_cnav_eph)
+        {
+            return;
+        }
+    if (d_flags.check_any_enabled(GPS_L1C) && !has_gps_cnav2_eph)
         {
             return;
         }
@@ -2826,7 +2840,14 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         }
     else if (d_flags.has_gps)
         {
-            system_time = Rinex_Printer::compute_GPS_time(gps_cnav_ephemeris_iter->second, rx_time);
+            if (d_flags.check_any_enabled(GPS_2S, GPS_L5))
+                {
+                    system_time = Rinex_Printer::compute_GPS_time(gps_cnav_ephemeris_iter->second, rx_time);
+                }
+            else if (d_flags.check_any_enabled(GPS_L1C))
+                {
+                    system_time = Rinex_Printer::compute_GPS_time(gps_cnav2_ephemeris_iter->second, rx_time);
+                }
             seconds = fmod(rx_time, 60);
             system_time_str = "GPS";
         }
@@ -2920,8 +2941,9 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                                 }
                         }
                 }
-            else if (d_flags.check_any_enabled(GPS_2S, GPS_L5))
+            else if (d_flags.check_any_enabled(GPS_2S, GPS_L5, GPS_L1C))
                 {
+                    // CNAV and CNAV-2 ionospheric and UTC parameters share storage
                     if (d_version == 3 && pvt_solver->gps_cnav_iono.valid)
                         {
                             iono_lines.emplace_back(get_gps_iono_alpha_line(pvt_solver->gps_cnav_iono));
@@ -3019,6 +3041,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                 {
                     log_rinex_nav_gps_cnav(pvt_solver->gps_cnav_ephemeris_map);
                 }
+            if (has_gps_cnav2_eph && d_version == 4)
+                {
+                    log_rinex_nav_gps_cnav2(pvt_solver->gps_cnav2_ephemeris_map);
+                }
 
             if (has_galileo_eph)
                 {
@@ -3084,7 +3110,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                                         }
                                     d_rinex_header_gps_updated = true;
                                 }
-                            else if (d_flags.check_any_enabled(GPS_2S, GPS_L5) && pvt_solver->gps_cnav_utc_model.valid && pvt_solver->gps_cnav_iono.valid)
+                            else if (d_flags.check_any_enabled(GPS_2S, GPS_L5, GPS_L1C) && pvt_solver->gps_cnav_utc_model.valid && pvt_solver->gps_cnav_iono.valid)
                                 {
                                     nav_header_info.emplace_back("GPSA", "IONOSPHERIC CORR", get_gps_iono_alpha_line(pvt_solver->gps_cnav_iono));
                                     nav_header_info.emplace_back("GPSB", "IONOSPHERIC CORR", get_gps_iono_beta_line(pvt_solver->gps_cnav_iono));
@@ -3214,18 +3240,28 @@ void Rinex_Printer::log_rinex_nav_v4_aux_records(const Rtklib_Solver* pvt_solver
                         }
                 }
         }
-    if (d_flags.check_any_enabled(GPS_2S, GPS_L5) && !pvt_solver->gps_cnav_ephemeris_map.empty())
+    if (d_flags.check_any_enabled(GPS_2S, GPS_L5, GPS_L1C) && (!pvt_solver->gps_cnav_ephemeris_map.empty() || !pvt_solver->gps_cnav2_ephemeris_map.empty()))
         {
-            const auto& eph = pvt_solver->gps_cnav_ephemeris_map.cbegin()->second;
+            // CNAV and CNAV-2 share the EOP, ION and STO parameters (CNVX records)
+            const Gps_CNAV_Ephemeris& eph = pvt_solver->gps_cnav_ephemeris_map.empty() ? pvt_solver->gps_cnav2_ephemeris_map.cbegin()->second : pvt_solver->gps_cnav_ephemeris_map.cbegin()->second;
             const auto& utc_model = pvt_solver->gps_cnav_utc_model;
             const auto& eop = pvt_solver->gps_cnav_eop;
             const auto& iono = pvt_solver->gps_cnav_iono;
+            const Gps_CNAV_Ephemeris* eop_eph = nullptr;
             const auto eop_eph_iter = pvt_solver->gps_cnav_ephemeris_map.find(static_cast<int32_t>(eop.PRN));
-            if (eop.valid && eop_eph_iter != pvt_solver->gps_cnav_ephemeris_map.cend() && is_gps_prn(eop.PRN))
+            const auto eop_eph2_iter = pvt_solver->gps_cnav2_ephemeris_map.find(static_cast<int32_t>(eop.PRN));
+            if (eop_eph_iter != pvt_solver->gps_cnav_ephemeris_map.cend())
                 {
-                    const auto& eop_eph = eop_eph_iter->second;
-                    const int32_t ref_week = utc_model.valid && eop.t_eop == utc_model.tot ? utc_model.WN_T : eop_eph.WN;
-                    const double t_tm = eop.tow + 604800.0 * static_cast<double>(eop_eph.WN - ref_week);
+                    eop_eph = &eop_eph_iter->second;
+                }
+            else if (eop_eph2_iter != pvt_solver->gps_cnav2_ephemeris_map.cend())
+                {
+                    eop_eph = &eop_eph2_iter->second;
+                }
+            if (eop.valid && eop_eph != nullptr && is_gps_prn(eop.PRN))
+                {
+                    const int32_t ref_week = utc_model.valid && eop.t_eop == utc_model.tot ? utc_model.WN_T : eop_eph->WN;
+                    const double t_tm = eop.tow + 604800.0 * static_cast<double>(eop_eph->WN - ref_week);
                     const std::string signature = make_record_signature(
                         eop.PRN, ref_week, eop.tow, eop.t_eop,
                         eop.pm_x, eop.pm_x_dot, eop.pm_y, eop.pm_y_dot,
@@ -3714,6 +3750,79 @@ void Rinex_Printer::log_rinex_nav_gps_cnav(const std::map<int32_t, Gps_CNAV_Ephe
             const auto flags_d = static_cast<double>((eph.integrity_status_flag ? 1 : 0) |
                                                      (eph.l2c_phasing_flag ? 2 : 0) |
                                                      (eph.alert_flag ? 4 : 0));
+            out << get_nav_broadcast_orbit(&tow_d, &wn_op_d, &flags_d, nullptr, d_version) << '\n';
+        }
+}
+
+
+void Rinex_Printer::log_rinex_nav_gps_cnav2(const std::map<int32_t, Gps_CNAV2_Ephemeris>& new_cnav2_eph)
+{
+    // RINEX 2 and 3 have no CNAV-2 ephemeris record. L1C-only signal
+    // selections are promoted to RINEX 4 by get_version()
+    if (d_version != 4)
+        {
+            return;
+        }
+
+    auto& out = navFile;
+
+    for (const auto& gps_ephemeris_iter : new_cnav2_eph)
+        {
+            const auto& eph = gps_ephemeris_iter.second;
+
+            // -------- SV / EPOCH / SV CLK
+            const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(eph, eph.toc);
+            const auto sat_system_char = is_qzss_prn(eph.PRN) ? satelliteSystem.at("QZSS") : satelliteSystem.at("GPS");
+            const auto rinex_prn = is_qzss_prn(eph.PRN) ? to_rinex_qzss_prn(eph.PRN) : eph.PRN;
+
+            // CNAV-2 navigation message record, see RINEX 4.02 specification, Table A11
+            out << get_nav_record_header_line("EPH", sat_system_char, rinex_prn, "CNV2") << '\n';
+            out << get_nav_sv_epoch_svclk_line(p_utc_time, sat_system_char, rinex_prn, eph.af0, eph.af1, eph.af2, d_version) << '\n';
+
+            // -------- BROADCAST ORBIT - 1
+            out << get_nav_broadcast_orbit(&eph.Adot, &eph.Crs, &eph.delta_n, &eph.M_0, d_version) << '\n';
+
+            // -------- BROADCAST ORBIT - 2
+            out << get_nav_broadcast_orbit(&eph.Cuc, &eph.ecc, &eph.Cus, &eph.sqrtA, d_version) << '\n';
+
+            // -------- BROADCAST ORBIT - 3
+            const auto top_d = static_cast<double>(eph.top);
+            out << get_nav_broadcast_orbit(&top_d, &eph.Cic, &eph.OMEGA_0, &eph.Cis, d_version) << '\n';
+
+            // -------- BROADCAST ORBIT - 4
+            out << get_nav_broadcast_orbit(&eph.i_0, &eph.Crc, &eph.omega, &eph.OMEGAdot, d_version) << '\n';
+
+            // -------- BROADCAST ORBIT - 5
+            const auto uraned0_d = static_cast<double>(eph.URANED0);
+            const auto uraned1_d = static_cast<double>(eph.URANED1);
+            out << get_nav_broadcast_orbit(&eph.idot, &eph.delta_ndot, &uraned0_d, &uraned1_d, d_version) << '\n';
+
+            // -------- BROADCAST ORBIT - 6 (the health field holds the L1C health bit)
+            const auto uraed_d = static_cast<double>(eph.URAED);
+            const auto health_d = static_cast<double>(eph.l1c_health);
+            const auto uraned2_d = static_cast<double>(eph.URANED2);
+            out << get_nav_broadcast_orbit(&uraed_d, &health_d, &eph.TGD, &uraned2_d, d_version) << '\n';
+
+            // -------- BROADCAST ORBIT - 7
+            // ISC_L1CA, ISC_L2C, ISC_L5I5 and ISC_L5Q5 come from subframe 3, page 1;
+            // leave them blank until that page has been decoded
+            if (eph.sf3_page1_iscs)
+                {
+                    out << get_nav_broadcast_orbit(&eph.ISCL1, &eph.ISCL2, &eph.ISCL5I, &eph.ISCL5Q, d_version) << '\n';
+                }
+            else
+                {
+                    out << get_nav_broadcast_orbit(nullptr, nullptr, nullptr, nullptr, d_version) << '\n';
+                }
+
+            // -------- BROADCAST ORBIT - 8
+            out << get_nav_broadcast_orbit(&eph.ISCL1CD, &eph.ISCL1CP, nullptr, nullptr, d_version) << '\n';
+
+            // -------- BROADCAST ORBIT - 9
+            const auto tow_d = static_cast<double>(eph.tow);
+            // wn_op: GPS continuous week number with the 8-bit ambiguity resolved
+            const auto wn_op_d = static_cast<double>(eph.WNop >= 0 ? expand_truncated_week(eph.WNop, eph.WN, 256) : eph.WN);
+            const auto flags_d = static_cast<double>(eph.integrity_status_flag ? 1 : 0);  // bit 0: integrity status flag
             out << get_nav_broadcast_orbit(&tow_d, &wn_op_d, &flags_d, nullptr, d_version) << '\n';
         }
 }

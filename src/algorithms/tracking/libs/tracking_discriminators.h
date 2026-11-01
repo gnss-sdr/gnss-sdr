@@ -196,6 +196,18 @@ double CosBocCorrelationFunction(double offset_in_chips)
 }
 
 
+/*! \brief Checks the VEMLP code discriminator spacings for a TMBOC(6,1,4/33) replica
+ *
+ * Evaluates dll_nc_vemlp_normalized on the ideal GPS L1CP TMBOC(6,1,4/33)
+ * autocorrelation, 29/33 R_BOC(1,1) + 4/33 R_BOC(6,1) (IS-GPS-800J, 3.3.1.1).
+ * Returns true if zero delay is the only stable lock point within the BOC(1,1)
+ * main lobe (1/3 chip) and the discriminator gain there is not lower than
+ * with a BOC(1,1) replica. Some spacings (e.g., 0.15 chips with very early-late
+ * at 0.5 chips) make zero delay unstable, and the loop locks about 6 m off.
+ */
+bool tmboc_vemlp_spacing_is_valid(double early_late_space_chips, double very_early_late_space_chips);
+
+
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_TRACKING_DISCRIMINATORS_H

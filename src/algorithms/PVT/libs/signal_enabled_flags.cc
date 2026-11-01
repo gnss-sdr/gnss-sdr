@@ -26,6 +26,7 @@ uint32_t flags_from_config(const ConfigurationInterface* configuration)
 
     const std::vector<std::pair<uint32_t, std::string>> signal_flag_to_prop = {
         {GPS_1C, "Channels_1C.count"},
+        {GPS_L1C, "Channels_1S.count"},
         {GPS_2S, "Channels_2S.count"},
         {GPS_L5, "Channels_L5.count"},
         {GAL_1B, "Channels_1B.count"},
@@ -65,7 +66,7 @@ Signal_Enabled_Flags::Signal_Enabled_Flags(const ConfigurationInterface* configu
 
 Signal_Enabled_Flags::Signal_Enabled_Flags(uint32_t flags_)
     : flags(flags_),
-      has_gps(check_any_enabled(GPS_1C, GPS_2S, GPS_L5)),
+      has_gps(check_any_enabled(GPS_1C, GPS_2S, GPS_L5, GPS_L1C)),
       has_galileo(check_any_enabled(GAL_1B, GAL_E5a, GAL_E5b, GAL_E6)),
       has_glonass(check_any_enabled(GLO_1G, GLO_2G)),
       has_beidou(check_any_enabled(BDS_B1, BDS_B3, BDS_B1C, BDS_B2A)),

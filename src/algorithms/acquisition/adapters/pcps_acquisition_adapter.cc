@@ -22,6 +22,7 @@
 #include "Beidou_B2a.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -42,6 +43,7 @@
 #include "glonass_l1_signal_replica.h"
 #include "glonass_l2_signal_replica.h"
 #include "gnss_sdr_flags.h"
+#include "gps_l1c_signal_replica.h"
 #include "gps_l2c_signal_replica.h"
 #include "gps_l5_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
@@ -87,6 +89,8 @@ signal_info get_signal_info(signal_flag sig_flag)
             return {GPS_L2_M_CODE_RATE_CPS, GPS_L2C_OPT_ACQ_FS_SPS, GPS_L2_M_CODE_LENGTH_CHIPS, GPS_L2_M_CODE_PERIOD_MS};
         case GPS_L5:
             return {GPS_L5I_CODE_RATE_CPS, GPS_L5_OPT_ACQ_FS_SPS, GPS_L5I_CODE_LENGTH_CHIPS, GPS_L5I_PERIOD_MS};
+        case GPS_L1C:
+            return {GPS_L1C_CODE_RATE_CPS, GPS_L1C_OPT_ACQ_FS_SPS, GPS_L1C_CODE_LENGTH_CHIPS, GPS_L1C_CODE_PERIOD_MS};
         case GAL_1B:
             return {GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_OPT_ACQ_FS_SPS, GALILEO_E1_B_CODE_LENGTH_CHIPS, GALILEO_E1_CODE_PERIOD_MS};
         case GAL_E5a:
@@ -134,6 +138,10 @@ void code_gen_complex_sampled(signal_flag sig_flag, const Acq_Conf& conf, const 
             break;
         case GPS_L5:
             gps_l5i_code_gen_complex_sampled(dest, gnss_synchro.PRN, sampling_freq);
+            break;
+        case GPS_L1C:
+            // The pilot overlay code is not included: one chip lasts a full code period
+            gps_l1c_code_gen_complex_sampled(dest, conf.acquire_pilot, conf.tmboc, gnss_synchro.PRN, sampling_freq, 0);
             break;
         case GAL_1B:
             {
@@ -248,6 +256,13 @@ Acq_Conf get_acq_conf(const ConfigurationInterface* configuration, const std::st
         {
             acq_parameters.acquire_pilot = configuration->property(role + ".acquire_pilot", true);
             acq_parameters.qmboc = configuration->property(role + ".qmboc", true);
+        }
+
+    if (sig_flag == GPS_L1C)
+        {
+            // 75 % of the L1C power is in the pilot
+            acq_parameters.acquire_pilot = configuration->property(role + ".acquire_pilot", true);
+            acq_parameters.tmboc = configuration->property(role + ".tmboc", acq_parameters.tmboc);
         }
 
     if (sig_flag == BDS_B2A)

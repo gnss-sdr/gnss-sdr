@@ -67,6 +67,7 @@ class Glonass_Gnav_Almanac;
 class Glonass_Gnav_Ephemeris;
 class Glonass_Gnav_Utc_Model;
 class Gnss_Synchro;
+class Gps_CNAV2_Ephemeris;
 class Gps_CNAV_Ephemeris;
 class Gps_CNAV_Iono;
 class Gps_CNAV_Utc_Model;
@@ -120,6 +121,13 @@ public:
      * \brief Print RINEX 4 annotation for GPS/QZSS CNAV message
      */
     void log_rinex_nav_gps_cnav(const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph);
+
+    /*!
+     * \brief Print RINEX 4 annotation for GPS CNAV-2 message (CNV2 records, Table A11).
+     *
+     * RINEX 2 and 3 have no CNAV-2 representation; records are omitted.
+     */
+    void log_rinex_nav_gps_cnav2(const std::map<int32_t, Gps_CNAV2_Ephemeris>& new_cnav2_eph);
 
     /*!
      * \brief Print RINEX annotation for Galileo NAV message

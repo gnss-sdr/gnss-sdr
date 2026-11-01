@@ -34,6 +34,8 @@ set(SYSTEM_PARAMETERS_SOURCES
     Beidou_B1C_codes.cc
     sbas_ephemeris.cc
     gps_cnav_navigation_message.cc
+    gps_cnav2_ldpc.cc
+    gps_cnav2_navigation_message.cc
     glonass_gnav_almanac.cc
     glonass_gnav_ephemeris.cc
     glonass_gnav_utc_model.cc
@@ -79,6 +81,9 @@ set(SYSTEM_PARAMETERS_HEADERS
     gps_cnav_navigation_message.h
     gps_cnav_iono.h
     gps_cnav_utc_model.h
+    gps_cnav2_ephemeris.h
+    gps_cnav2_ldpc.h
+    gps_cnav2_navigation_message.h
     glonass_gnav_ephemeris.h
     glonass_gnav_almanac.h
     glonass_gnav_utc_model.h
@@ -99,8 +104,10 @@ set(SYSTEM_PARAMETERS_HEADERS
     gnss_obs_codes.h
     gnss_synchro.h
     GPS_CNAV.h
+    GPS_CNAV2.h
     GPS_L1_CA.h
     GPS_L2C.h
+    GPS_L1C.h
     GPS_L5.h
     Beidou_B1I.h
     Beidou_B1C.h

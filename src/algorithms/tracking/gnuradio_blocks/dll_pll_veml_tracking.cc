@@ -28,6 +28,7 @@
 #include "Beidou_B2a.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -50,6 +51,7 @@
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
+#include "gps_l1c_signal_replica.h"
 #include "gps_l2c_signal_replica.h"
 #include "gps_l5_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
@@ -189,6 +191,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
 
     std::map<std::string, std::string> map_signal_pretty_name;
     map_signal_pretty_name["1C"] = "L1 C/A";
+    map_signal_pretty_name["1S"] = "L1C";
     map_signal_pretty_name["1B"] = "E1";
     map_signal_pretty_name["1G"] = "L1 C/A";
     map_signal_pretty_name["2S"] = "L2C";
@@ -280,6 +283,35 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                             d_interchange_iq = true;
                         }
+                }
+            else if (d_signal_type == "1S")
+                {
+                    d_signal_carrier_freq = GPS_L1C_FREQ_HZ;
+                    d_code_period = GPS_L1C_CODE_PERIOD_S;
+                    d_code_chip_rate = GPS_L1C_CODE_RATE_CPS;
+                    d_code_length_chips = static_cast<int32_t>(GPS_L1C_CODE_LENGTH_CHIPS);
+                    // GPS L1C has 1 trk symbol (10 ms) per tlm symbol, no symbol integration required
+                    d_symbols_per_bit = GPS_L1C_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = static_cast<int32_t>(GPS_L1C_CODE_PERIOD_MS);
+                    // BOC(1,1): 2 samples per chip. TMBOC(6,1,4/33) pilot: 12 samples per chip
+                    d_code_samples_per_chip = d_trk_parameters.tmboc ? GPS_L1C_TMBOC_SAMPLES_PER_CHIP : GPS_L1C_BOC_SAMPLES_PER_CHIP;
+                    d_veml = true;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.slope = static_cast<float>(-CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+                    d_trk_parameters.y_intercept = static_cast<float>(GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc));
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            // synchronize the L1CO overlay code. The string depends on the PRN
+                            d_secondary = true;
+                            d_secondary_code_length = static_cast<uint32_t>(GPS_L1C_OVERLAY_CODE_LENGTH);
+                            d_signal_pretty_name = d_signal_pretty_name + "P";
+                        }
+                    else
+                        {
+                            d_secondary = false;
+                            d_signal_pretty_name = d_signal_pretty_name + "D";
+                        }
+                    // L1CD and L1CP carriers are in phase (IS-GPS-800J, 3.2.1.6.1)
                 }
             else
                 {
@@ -967,6 +999,21 @@ void dll_pll_veml_tracking::start_tracking()
                     gps_l5i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
+    else if (d_systemName == "GPS" && d_signal_type == "1S")
+        {
+            if (d_trk_parameters.track_pilot)
+                {
+                    gps_l1c_code_gen_float(d_tracking_code, true, d_trk_parameters.tmboc, d_acquisition_gnss_synchro->PRN);
+                    gps_l1c_code_gen_float(d_data_code, false, d_trk_parameters.tmboc, d_acquisition_gnss_synchro->PRN);
+                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    d_multicorrelator_cpu.set_data_code_and_prompt_tap(d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                    d_secondary_code_string = gps_l1c_overlay_code(d_acquisition_gnss_synchro->PRN);
+                }
+            else
+                {
+                    gps_l1c_code_gen_float(d_tracking_code, false, d_trk_parameters.tmboc, d_acquisition_gnss_synchro->PRN);
+                }
+        }
     else if (d_systemName == "Galileo" && d_signal_type == "1B")
         {
             if (d_trk_parameters.track_pilot)
@@ -1373,6 +1420,13 @@ bool dll_pll_veml_tracking::acquire_secondary()
         }
 
     auto lock_threshold = static_cast<int32_t>(d_secondary_code_length);
+    if (d_systemName == "GPS" && d_signal_type == "1S")
+        {
+            // The L1CO overlay codes are truncated 2047-chip m-sequences: their
+            // off-peak correlation over 1800 chips is far below this threshold,
+            // which tolerates a few differential demodulation errors
+            lock_threshold = static_cast<int32_t>(std::lround(GPS_L1C_OVERLAY_LOCK_RATIO * static_cast<float>(d_secondary_code_length)));
+        }
     if (d_systemName == "Beidou" && d_signal_type == "1D")
         {
             const float ratio = std::min(std::max(d_trk_parameters.b1c_secondary_lock_ratio, 0.5F), 1.0F);

@@ -31,6 +31,7 @@
 #include "unit-tests/arithmetic/magnitude_squared_test.cc"
 #include "unit-tests/arithmetic/multiply_test.cc"
 #include "unit-tests/arithmetic/preamble_correlator_test.cc"
+#include "unit-tests/control-plane/galileo_tow_history_test.cc"
 #include "unit-tests/control-plane/gnss_synchro_monitor_test.cc"
 #include "unit-tests/control-plane/in_memory_configuration_test.cc"
 #include "unit-tests/control-plane/protobuf_test.cc"
@@ -40,6 +41,7 @@
 #include "unit-tests/signal-processing-blocks/adapter/pass_through_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/beidou_b1c_signal_replica_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/beidou_b2a_signal_replica_test.cc"
+#include "unit-tests/signal-processing-blocks/libs/gps_l1c_signal_replica_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/item_type_helpers_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/rtklib_lli_test.cc"
 #include "unit-tests/signal-processing-blocks/observables/deterministic_observables_test.cc"
@@ -49,6 +51,7 @@
 #include "unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/deterministic_telemetry_fault_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/galileo_fnav_inav_decoder_test.cc"
+#include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1c_telemetry_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/sbas_l1_telemetry_decoder_test.cc"
 
 #ifndef EXCLUDE_TESTS_REQUIRING_BINARIES

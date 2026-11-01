@@ -24,6 +24,7 @@
 #include "Beidou_B1I.h"
 #include "Beidou_B2a.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -102,6 +103,7 @@ namespace
 
 const auto signal_mapping = std::unordered_map<std::string, std::pair<std::string, std::string>>{
     {"1C", {"GPS", "L1"}},
+    {"1S", {"GPS", "L1C"}},
     {"2S", {"GPS", "L2"}},
     {"L5", {"GPS", "L5"}},
     {"1B", {"Galileo", "E1"}},
@@ -162,9 +164,12 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
             const double fs = configuration_->property("GNSS-SDR.internal_fs_sps", 0.0);
             const double lookahead_ms = configuration_->property("GNSS-SDR.deterministic_lookahead_ms", 100.0);
             const double tick_ms = configuration_->property("GNSS-SDR.deterministic_tick_ms", 100.0);
-            DeterministicClock::instance().enable(fs,
-                static_cast<uint64_t>(std::max(0.0, std::ceil(lookahead_ms * fs / 1000.0))),
+            const auto lookahead = static_cast<uint64_t>(std::max(0.0, std::ceil(lookahead_ms * fs / 1000.0)));
+            DeterministicClock::instance().enable(fs, lookahead,
                 static_cast<uint64_t>(std::max(0.0, std::ceil(tick_ms * fs / 1000.0))));
+            // The E6 telemetry decoders look up entries about two lookaheads
+            // older than the newest ones. Keep a minute more.
+            GalileoTowHistory::instance().reset(4 * lookahead + static_cast<uint64_t>(std::max(0.0, 60.0 * fs)));
         }
     init();
 }
@@ -180,6 +185,7 @@ GNSSFlowgraph::~GNSSFlowgraph()
     if (deterministic_)
         {
             DeterministicClock::instance().disable();
+            GalileoTowHistory::instance().reset();
         }
 }
 
@@ -294,6 +300,7 @@ void GNSSFlowgraph::init()
     top_block_ = gr::make_top_block("GNSSFlowgraph");
 
     mapStringValues_["1C"] = evGPS_1C;
+    mapStringValues_["1S"] = evGPS_L1C;
     mapStringValues_["2S"] = evGPS_2S;
     mapStringValues_["L5"] = evGPS_L5;
     mapStringValues_["1B"] = evGAL_1B;
@@ -906,6 +913,9 @@ double GNSSFlowgraph::acquisition_rate_for_signal(const std::string& signal) con
             break;
         case evGPS_L5:
             acq_fs = GPS_L5_OPT_ACQ_FS_SPS;
+            break;
+        case evGPS_L1C:
+            acq_fs = GPS_L1C_OPT_ACQ_FS_SPS;
             break;
         case evSBAS_1C:
             acq_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
@@ -2483,7 +2493,7 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
 
             if (visible_satellite.second.get_system() == "GPS")
                 {
-                    signal_str_vector = {"1C", "2S", "L5"};
+                    signal_str_vector = {"1C", "1S", "2S", "L5"};
                 }
             else if (visible_satellite.second.get_system() == "Galileo")
                 {
@@ -2683,9 +2693,6 @@ bool GNSSFlowgraph::deterministic_configuration_is_supported()
         {
             unsupported.emplace_back("NTRIP corrections (PVT.ntrip_client_enabled=true)");
         }
-    // The E6 telemetry decoders take the time of week of the E1, E5a or E5b
-    // decoders from the Galileo TOW map when it arrives
-    bool galileo_tow_source = false;
     std::set<std::string> standby_roles;
     for (int ch = 0; ch < channels_count_; ch++)
         {
@@ -2694,17 +2701,12 @@ bool GNSSFlowgraph::deterministic_configuration_is_supported()
                     continue;
                 }
             const auto signal = channels_.at(ch)->get_signal().get_signal_str();
-            galileo_tow_source = galileo_tow_source || is_galileo_tow_source(signal);
             // An idle search that does not consume holds the stream back forever
             const auto acq_role = block_factory::get_role_name(configuration_.get(), "Acquisition_", signal, ch);
             if (configuration_->property(acq_role + ".blocking_on_standby", false))
                 {
                     standby_roles.insert(acq_role);
                 }
-        }
-    if (enable_e6_has_rx_ && galileo_tow_source)
-        {
-            unsupported.emplace_back("Galileo E6 channels together with Galileo E1, E5a or E5b channels (Galileo TOW map)");
         }
     for (const auto& role : standby_roles)
         {
@@ -3199,6 +3201,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         {
         case evGPS_2S:
         case evGPS_L5:
+        case evGPS_L1C:
             assist_signal_candidates = {"1C"};
             break;
 
@@ -3302,8 +3305,8 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                     continue;
                                                 }
                                             // GPS SV configuration: AS_status bits 0-2 (IS-GPS-200, 20.3.3.5.1.4).
-                                            // Require IIR-M for L2C, IIF for L5; accept unknown configurations.
-                                            if (enable_secondary_signal_status_gating_ && (mapStringValues_[searched_signal] == evGPS_L5 || mapStringValues_[searched_signal] == evGPS_2S))
+                                            // Require IIR-M for L2C, IIF for L5, GPS III for L1C; accept unknown configurations.
+                                            if (enable_secondary_signal_status_gating_ && (mapStringValues_[searched_signal] == evGPS_L5 || mapStringValues_[searched_signal] == evGPS_2S || mapStringValues_[searched_signal] == evGPS_L1C))
                                                 {
                                                     const auto pvt_ptr = get_pvt();
                                                     if (pvt_ptr)
@@ -3313,7 +3316,15 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                                             if (alm_it != gps_almanac_map.end() && alm_it->second.AS_status > 0)
                                                                 {
                                                                     const int32_t sv_config = alm_it->second.AS_status & GPS_SV_CONFIG_CODE_MASK;
-                                                                    const int32_t required_config = (mapStringValues_[searched_signal] == evGPS_L5) ? GPS_SV_CONFIG_BLOCK_IIF : GPS_SV_CONFIG_BLOCK_IIR_M;
+                                                                    int32_t required_config = GPS_SV_CONFIG_BLOCK_IIR_M;
+                                                                    if (mapStringValues_[searched_signal] == evGPS_L5)
+                                                                        {
+                                                                            required_config = GPS_SV_CONFIG_BLOCK_IIF;
+                                                                        }
+                                                                    else if (mapStringValues_[searched_signal] == evGPS_L1C)
+                                                                        {
+                                                                            required_config = GPS_SV_CONFIG_BLOCK_III;
+                                                                        }
                                                                     if (sv_config != GPS_SV_CONFIG_UNKNOWN && sv_config < required_config)
                                                                         {
                                                                             continue;

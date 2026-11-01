@@ -110,6 +110,7 @@ public:
     bool acquire_iq{false};
     bool cboc{false};
     bool qmboc{false};
+    bool tmboc{false};  // GPS L1C pilot: TMBOC(6,1,4/33) instead of BOC(1,1) replica
     int zero_padding{0};
     uint32_t folding_factor{0};
 

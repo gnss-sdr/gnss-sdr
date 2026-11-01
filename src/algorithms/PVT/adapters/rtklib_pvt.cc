@@ -333,7 +333,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     int num_bands = 0;
 
-    if (signal_enabled_flags.check_any_enabled(GPS_1C, GAL_1B, GLO_1G, BDS_B1, BDS_B1C, QZS_J1))
+    if (signal_enabled_flags.check_any_enabled(GPS_1C, GPS_L1C, GAL_1B, GLO_1G, BDS_B1, BDS_B1C, QZS_J1))
         {
             num_bands += 1;
         }
@@ -516,7 +516,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const int earth_tide = configuration->property(role + ".earth_tide", 0);
 
     int nsys = 0;
-    if (signal_enabled_flags.check_any_enabled(GPS_1C, GPS_2S, GPS_L5))
+    if (signal_enabled_flags.check_any_enabled(GPS_1C, GPS_2S, GPS_L5, GPS_L1C))
         {
             nsys += SYS_GPS;
         }

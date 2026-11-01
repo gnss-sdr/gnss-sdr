@@ -8,6 +8,7 @@
 set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
     telemetry_impl_interface.cc
     gps_l1_ca_telemetry_decoder_gs.cc
+    gps_l1c_telemetry_decoder_gs.cc
     gps_l2c_telemetry_decoder_gs.cc
     gps_l5_telemetry_decoder_gs.cc
     sbas_l1_telemetry_decoder_gs.cc
@@ -21,6 +22,7 @@ set(TELEMETRY_DECODER_GR_BLOCKS_SOURCES
 set(TELEMETRY_DECODER_GR_BLOCKS_HEADERS
     telemetry_impl_interface.h
     gps_l1_ca_telemetry_decoder_gs.h
+    gps_l1c_telemetry_decoder_gs.h
     gps_l2c_telemetry_decoder_gs.h
     gps_l5_telemetry_decoder_gs.h
     sbas_l1_telemetry_decoder_gs.h

@@ -18,6 +18,7 @@ set(GNSS_SPLIBS_SOURCES
     glonass_l1_signal_replica.cc
     glonass_l2_signal_replica.cc
     gps_l2c_signal_replica.cc
+    gps_l1c_signal_replica.cc
     gps_l5_signal_replica.cc
     gnss_signal_replica.cc
     gps_sdr_signal_replica.cc
@@ -51,6 +52,7 @@ set(GNSS_SPLIBS_HEADERS
     glonass_l1_signal_replica.h
     glonass_l2_signal_replica.h
     gps_l2c_signal_replica.h
+    gps_l1c_signal_replica.h
     gps_l5_signal_replica.h
     gnss_signal_replica.h
     gps_sdr_signal_replica.h

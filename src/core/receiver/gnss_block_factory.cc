@@ -53,6 +53,7 @@
 #include "gps_l1_ca_kf_tracking.h"
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "gps_l1_ca_telemetry_decoder_gs.h"
+#include "gps_l1c_telemetry_decoder_gs.h"
 #include "gps_l2c_telemetry_decoder_gs.h"
 #include "gps_l5_telemetry_decoder_gs.h"
 #include "gss6450_file_signal_source.h"
@@ -199,6 +200,7 @@ auto findRole(const ConfigurationInterface* configuration, const std::string& ba
 
 const auto signal_mapping = std::vector<std::pair<std::string, std::string>>{
     {"1C", "GPS L1 C/A"},
+    {"1S", "GPS L1C"},
     {"2S", "GPS L2C (M)"},
     {"L5", "GPS L5"},
     {"1B", "GALILEO E1 B (I/NAV OS)"},
@@ -457,6 +459,10 @@ std::unique_ptr<AcquisitionInterface> get_acq_block(
         {
             return std::make_unique<PcpsAcquisitionAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L5);
         }
+    else if (implementation == "GPS_L1C_PCPS_Ambiguous_Acquisition")
+        {
+            return std::make_unique<PcpsAcquisitionAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L1C);
+        }
     else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition")
         {
             return std::make_unique<PcpsAcquisitionAdapter>(configuration, role, implementation, in_streams, out_streams, GAL_1B);
@@ -621,6 +627,10 @@ std::unique_ptr<TrackingInterface> get_trk_block(
         {
             return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L5);
         }
+    else if (implementation == "GPS_L1C_DLL_PLL_VEML_Tracking")
+        {
+            return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GPS_L1C);
+        }
     else if (implementation == "GLONASS_L1_CA_DLL_PLL_Tracking")
         {
             return std::make_unique<DllPllTrackingAdapter>(configuration, role, implementation, in_streams, out_streams, GLO_1G);
@@ -779,6 +789,10 @@ std::unique_ptr<TelemetryDecoderInterface> get_tlm_block(
     else if (implementation == "GPS_L5_Telemetry_Decoder")
         {
             telemetry = gps_l5_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
+        }
+    else if (implementation == "GPS_L1C_Telemetry_Decoder")
+        {
+            telemetry = gps_l1c_make_telemetry_decoder_gs(get_tlm_conf(configuration, role));
         }
     else if (implementation == "BEIDOU_B1I_Telemetry_Decoder")
         {

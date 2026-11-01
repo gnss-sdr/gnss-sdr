@@ -29,6 +29,7 @@
 #include "gnss_obs_codes.h"          // for CODE_L1C, CODE_L2S, CODE_L5X
 #include "gnss_synchro.h"            // for Gnss_Synchro
 #include "gps_almanac.h"             // for Gps_Almanac
+#include "gps_cnav2_ephemeris.h"     // for Gps_CNAV2_Ephemeris
 #include "gps_cnav_ephemeris.h"      // for Gps_CNAV_Ephemeris
 #include "gps_ephemeris.h"           // for Gps_Ephemeris
 #include "rtklib_rtkcmn.h"
@@ -185,6 +186,13 @@ unsigned char rtklib_obs_code(char system, const std::string& signal, int band)
         }
     switch (system)
         {
+        case 'G':
+            if (signal == "1S")
+                {
+                    // the L1C pilot provides code and carrier measurements
+                    code = static_cast<unsigned char>(CODE_L1L);
+                }
+            break;
         case 'E':
             if (signal == "7X")
                 {
@@ -910,6 +918,17 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     rtklib_sat.has_clock_correction_m = 0.0;
     rtklib_sat.apply_has_corrections = false;
 
+    return rtklib_sat;
+}
+
+
+eph_t eph_to_rtklib(const Gps_CNAV2_Ephemeris& gps_cnav2_eph)
+{
+    // Orbit and clock parameters are those of CNAV, with toc = toe
+    eph_t rtklib_sat = eph_to_rtklib(static_cast<const Gps_CNAV_Ephemeris&>(gps_cnav2_eph));
+    rtklib_sat.isc[0] = gps_cnav2_eph.ISCL1CP;
+    // L1C health is checked before the observation reaches RTKLIB, as for
+    // LNAV, so that PVT.use_unhealthy_sats applies
     return rtklib_sat;
 }
 

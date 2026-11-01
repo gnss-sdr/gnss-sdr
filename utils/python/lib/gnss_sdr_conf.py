@@ -26,6 +26,7 @@ from typing import Optional
 # the per-channel Channel<N>.signal lines in the conf file for this).
 SIGNAL_ORDER = (
     "1C",
+    "1S",
     "2S",
     "L5",
     "1B",
@@ -35,6 +36,7 @@ SIGNAL_ORDER = (
     "2G",
     "B1",
     "1D",
+    "5D",
     "B3",
     "7X",
     "J1",
@@ -60,6 +62,7 @@ class SignalType:
 # human-friendly signal name for plot labels.
 SIGNAL_TYPES = {
     "1C": SignalType("G", 1023, "GPS L1 C/A"),
+    "1S": SignalType("G", 10230, "GPS L1C"),
     "2S": SignalType("G", 10230, "GPS L2C"),
     "L5": SignalType("G", 10230, "GPS L5"),
     "1B": SignalType("E", 4092, "Galileo E1B"),
@@ -70,6 +73,7 @@ SIGNAL_TYPES = {
     "2G": SignalType("R", 511, "GLONASS L2 C/A"),
     "B1": SignalType("C", 2046, "BeiDou B1I"),
     "1D": SignalType("C", 10230, "BeiDou B1C"),
+    "5D": SignalType("C", 10230, "BeiDou B2a"),
     "B3": SignalType("C", 10230, "BeiDou B3I"),
     "J1": SignalType("J", 1023, "QZSS L1 C/A"),
     "J5": SignalType("J", 10230, "QZSS L5"),

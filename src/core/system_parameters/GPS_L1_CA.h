@@ -192,6 +192,7 @@ constexpr int32_t GPS_SV_CONFIG_CODE_MASK = 0x7;     //!< SV configuration
 constexpr int32_t GPS_SV_CONFIG_UNKNOWN = 0;         //!< 000: no information
 constexpr int32_t GPS_SV_CONFIG_BLOCK_IIR_M = 2;     //!< 010: first with L2C
 constexpr int32_t GPS_SV_CONFIG_BLOCK_IIF = 3;       //!< 011: first with L5
+constexpr int32_t GPS_SV_CONFIG_BLOCK_III = 4;       //!< 100: first with L1C
 
 const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV1({{69, 4}});
 const std::vector<std::pair<int32_t, int32_t>> SV_CONFIG_SV2({{73, 4}});

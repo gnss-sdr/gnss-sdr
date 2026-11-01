@@ -95,6 +95,8 @@ public:
     bool f_error_dump{false};
     bool tow_to_trk{false};
     bool bs_use_phase_dot_detector{true};
+    // GPS L1C-specific options.
+    bool tmboc{false};  //!< TMBOC(6,1,4/33) pilot replica (same key as Acquisition_*.tmboc).
     // BeiDou B1C-specific options.
     bool qmboc{true};  //!< QMBOC local replica (same key as Acquisition_*.qmboc).
     bool b1c_prompt_use_data_q{true};

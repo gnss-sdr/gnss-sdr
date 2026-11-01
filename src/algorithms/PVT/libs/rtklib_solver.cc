@@ -92,6 +92,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     // BDS: B1I and B1C share slot 0 (prefer-B1C XOR). Override lam[0] for B1C (FREQ1).
     d_rtklib_band_index["1G"] = 0;
     d_rtklib_band_index["1C"] = 0;
+    d_rtklib_band_index["1S"] = 0;
     d_rtklib_band_index["1B"] = 0;
     d_rtklib_band_index["B1"] = 0;
     d_rtklib_band_index["1D"] = 0;
@@ -1429,6 +1430,17 @@ bool Rtklib_Solver::get_broadcast_signal_health(char system, uint32_t prn, const
         case 'G':
         case 'J':
             {
+                if (signal == "1S")
+                    {
+                        // L1C: bit 33 of CNAV-2 subframe 2 (0 = signal OK, IS-GPS-800J 3.5.3.4)
+                        const auto cnav2_it = gps_cnav2_ephemeris_map.find(prn_key);
+                        if (cnav2_it != gps_cnav2_ephemeris_map.cend())
+                            {
+                                healthy = (cnav2_it->second.l1c_health == 0);
+                                return true;
+                            }
+                        return false;
+                    }
                 // L2C and L5 health comes from the CNAV message that carries them:
                 // bits 52-54 of message type 10 are the L1, L2 and L5 signal health
                 // (0 = OK, IS-GPS-200N 30.3.3.1.1.2).
@@ -2346,6 +2358,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 break;
                             }
                         const bool is_l1_ca = (sig_ == "1C") || (sig_ == "J1");
+                        const bool is_l1c = (sig_ == "1S");
                         const bool is_l2 = (sig_ == "2S");
                         const bool is_l5 = (sig_ == "L5") || (sig_ == "J5");
                         const std::string rtklib_sig = is_qzss ? (is_l1_ca ? "J1" : (is_l5 ? "J5" : sig_)) : sig_;
@@ -2384,6 +2397,62 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
+                        if (is_l1c && !is_qzss)
+                            {
+                                // L1 C/A and L1C share the first RTKLIB slot. Keep L1 C/A
+                                // when both are tracked and its LNAV ephemeris is available.
+                                bool l1_ca_in_use = false;
+                                if (gps_ephemeris_map.find(gnss_observables_iter->second.PRN) != gps_ephemeris_map.cend())
+                                    {
+                                        for (const auto &obs_pair : gnss_observables_map)
+                                            {
+                                                if (obs_pair.second.System == 'G' && obs_pair.second.PRN == gnss_observables_iter->second.PRN &&
+                                                    std::string(obs_pair.second.Signal, 2) == "1C")
+                                                    {
+                                                        l1_ca_in_use = true;
+                                                        break;
+                                                    }
+                                            }
+                                    }
+                                const auto cnav2_iter = gps_cnav2_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (l1_ca_in_use)
+                                    {
+                                        DLOG(INFO) << "Skip L1C for PRN " << gnss_observables_iter->second.PRN << " (L1 C/A present)";
+                                    }
+                                else if (cnav2_iter != gps_cnav2_ephemeris_map.cend())
+                                    {
+                                        bool found_existing_obs = false;
+                                        for (int i = 0; i < valid_obs; i++)
+                                            {
+                                                if (eph_data[i].sat == sat)
+                                                    {
+                                                        // An L2C or L5 observation came first: L1C fills the first
+                                                        // slot, and its ISC replaces the L1 C/A one
+                                                        eph_data[i].isc[0] = cnav2_iter->second.ISCL1CP;
+                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                            gnss_observables_iter->second,
+                                                            cnav2_iter->second.WN,
+                                                            d_rtklib_band_index.at(sig_));
+                                                        found_existing_obs = true;
+                                                        break;
+                                                    }
+                                            }
+                                        if (!found_existing_obs)
+                                            {
+                                                eph_data[valid_obs] = eph_to_rtklib(cnav2_iter->second);
+                                                obsd_t newobs{};
+                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    cnav2_iter->second.WN,
+                                                    d_rtklib_band_index.at(sig_));
+                                                valid_obs++;
+                                            }
+                                    }
+                                else
+                                    {
+                                        DLOG(INFO) << "No CNAV-2 ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
                         if (is_l2 || is_l5)
                             {
                                 gps_cnav_ephemeris_iter = gps_cnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -2399,7 +2468,12 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         // The existing entry carries the LNAV ephemeris, which has no
                                                         // inter-signal corrections: take the ISCs from CNAV so the
                                                         // dual-frequency correction in prange() can apply them.
-                                                        eph_data[i].isc[0] = gps_cnav_ephemeris_iter->second.ISCL1;
+                                                        // An L1C first slot keeps its own ISC_L1CP.
+                                                        const unsigned char first_code = d_obs_data[i + glo_valid_obs].code[0];
+                                                        if (first_code != CODE_L1L && first_code != CODE_L1S && first_code != CODE_L1X)
+                                                            {
+                                                                eph_data[i].isc[0] = gps_cnav_ephemeris_iter->second.ISCL1;
+                                                            }
                                                         eph_data[i].isc[1] = gps_cnav_ephemeris_iter->second.ISCL2;
                                                         eph_data[i].isc[2] = gps_cnav_ephemeris_iter->second.ISCL5I;
                                                         eph_data[i].isc[3] = gps_cnav_ephemeris_iter->second.ISCL5Q;

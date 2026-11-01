@@ -25,6 +25,9 @@ In the L1 band:
 
 - &#128752; GLONASS L1 C/A (centered at 1602.000 MHz) ✅
 - &#128752; GPS L1 C/A (centered at 1575.420 MHz) ✅
+- &#128752; GPS L1C (GPS III satellites, centered at 1575.420 MHz) —
+  acquisition, tracking and CNAV-2 decoding; not yet used for positioning, since
+  the CNAV-2 message broadcast as of October 2026 carries no navigation data
 - &#128752; Galileo E1b/c (centered at 1575.420 MHz) ✅
 - &#128752; BeiDou B1C (centered at 1575.420 MHz) ✅
 - &#128752; QZSS L1 C/A and C/B, where available (centered at 1575.420 MHz) ✅
@@ -1606,6 +1609,7 @@ identifiers:
 | **Signal**     | **Identifier** |
 | :------------- | :------------: |
 | GPS L1 C/A     |       1C       |
+| GPS L1C        |       1S       |
 | Galileo E1b/c  |       1B       |
 | Glonass L1 C/A |       1G       |
 | Beidou B1I     |       B1       |

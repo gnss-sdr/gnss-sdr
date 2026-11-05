@@ -66,6 +66,19 @@ public:
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
 
+    /*!
+     * \brief Number of samples per output vector for the given satellites.
+     *
+     * Every satellite fills the whole vector: 100 ms if any Galileo E1 or E6
+     * signal is present (their pilot is generated over one full secondary code
+     * period), 1 ms otherwise. Throws std::invalid_argument for unsupported
+     * system/signal combinations.
+     */
+    static unsigned int compute_vector_length(const std::vector<std::string> &system,
+        const std::vector<std::string> &signal,
+        const std::vector<unsigned int> &PRN,
+        unsigned int fs_in);
+
 private:
     friend signal_generator_c_sptr signal_make_generator_c(
         const std::vector<std::string> &signal1,

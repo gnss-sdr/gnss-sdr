@@ -17,13 +17,6 @@
 
 
 #include "signal_generator.h"
-#include "Beidou_B1I.h"
-#include "GLONASS_L1_L2_CA.h"
-#include "GPS_L1_CA.h"
-#include "Galileo_E1.h"
-#include "Galileo_E5a.h"
-#include "Galileo_E5b.h"
-#include "Galileo_E6.h"
 #include "configuration_interface.h"
 #include <cstdint>
 #include <utility>
@@ -84,48 +77,9 @@ SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
             delay_sec.push_back(configuration->property("SignalSource.delay_sec_" + sat, 0));
         }
 
-    // If Galileo signal is present -> vector duration = 100 ms (25 * 4 ms)
-    // If there is only GPS signal (Galileo signal not present) -> vector duration = 1 ms
-    unsigned int vector_length = 0;
-    if (std::find(system.begin(), system.end(), "E") != system.end())
-        {
-            if (signal1[0].at(0) == '5')
-                {
-                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
-                }
-            else if (signal1[0].at(0) == '7')
-                {
-                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GALILEO_E5B_CODE_CHIP_RATE_CPS / GALILEO_E5B_CODE_LENGTH_CHIPS)));
-                }
-            else if (signal1[0].at(1) == '6')
-                {
-                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GALILEO_E6_C_CODE_CHIP_RATE_CPS / GALILEO_E6_C_CODE_LENGTH_CHIPS)) * GALILEO_E6_C_SECONDARY_CODE_LENGTH_CHIPS);
-                }
-            else
-                {
-                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)) * GALILEO_E1_C_SECONDARY_CODE_LENGTH);
-                }
-        }
-    else if (std::find(system.begin(), system.end(), "G") != system.end())
-        {
-            vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
-        }
-    else if (std::find(system.begin(), system.end(), "R") != system.end())
-        {
-            if (signal1[0].at(0) == '1')
-                {
-                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GLONASS_L1_CA_CODE_RATE_CPS / GLONASS_L1_CA_CODE_LENGTH_CHIPS)));
-                }
-            else
-                {
-                    vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
-                }
-        }
-
-    else if (std::find(system.begin(), system.end(), "C") != system.end())
-        {
-            vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
-        }
+    // Every satellite fills the whole output vector: 100 ms if Galileo E1 or E6 is
+    // present (one full pilot secondary code period), 1 ms otherwise.
+    const unsigned int vector_length = signal_generator_c::compute_vector_length(system, signal1, PRN, fs_in);
 
     if (item_type_ == "gr_complex")
         {

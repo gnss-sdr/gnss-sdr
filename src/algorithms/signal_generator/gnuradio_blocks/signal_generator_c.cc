@@ -554,7 +554,7 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
         {
             // Carrier frequency of this satellite. GLONASS is generated at an IF plus its
             // FDMA channel offset; the other systems at baseband plus Doppler.
-            double carrier_freq_hz = static_cast<double>(doppler_Hz_[sat]);
+            auto carrier_freq_hz = static_cast<double>(doppler_Hz_[sat]);
             if (system_[sat] == "R")
                 {
                     const double fdma_step_hz = (!signal_[sat].empty() && signal_[sat].at(0) == '2') ? DFRQ2_GLO : DFRQ1_GLO;

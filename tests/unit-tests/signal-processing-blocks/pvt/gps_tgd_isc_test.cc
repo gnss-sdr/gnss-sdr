@@ -1,6 +1,7 @@
 /*!
  * \file gps_tgd_isc_test.cc
- * \brief Tests for GPS TGD / inter-signal correction application in prange()
+ * \brief Tests for GPS TGD / inter-signal correction application in prange(),
+ * and for the band scaling of the broadcast ionospheric delay in rescode()
  * \author Carles Fernandez-Prades, 2026. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -15,6 +16,7 @@
  */
 
 #include "rtklib_pntpos.h"
+#include "rtklib_rtkcmn.h"
 #include <gtest/gtest.h>
 #include <cmath>
 
@@ -38,7 +40,116 @@ void set_gps_test_ephemeris(nav_t& nav, eph_t& eph, int sat)
     nav.n = 1;
     nav.eph = &eph;
 }
+
+const double RECEIVER_LLH[3] = {30.0 * D2R, 104.0 * D2R, 500.0};
+const double SATELLITE_LLH[3] = {50.0 * D2R, 120.0 * D2R, 20200.0e3};
+
+/* One single-band measurement, as Rtklib_Solver lays it out */
+struct Single_Band_Case
+{
+    const char* name;
+    int sys;
+    int prn;
+    int slot;
+    unsigned char code;
+    double frequency_hz;
+    double slot_zero_frequency_hz;
+};
+
+double rescode_residual(const nav_t& nav, const obsd_t& observation, int ionoopt, double* azel)
+{
+    double x[NX] = {0.0};
+    double rs[6] = {0.0};
+    pos2ecef(RECEIVER_LLH, x);
+    pos2ecef(SATELLITE_LLH, rs);
+
+    double line_of_sight[3];
+    obsd_t obs = observation;
+    for (int slot = 0; slot < NFREQ; slot++)
+        {
+            if (obs.code[slot] != CODE_NONE)
+                {
+                    obs.P[slot] = geodist(rs, x, line_of_sight) + 1000.0;
+                }
+        }
+
+    prcopt_t options{};
+    options.navsys = SYS_ALL;
+    options.ionoopt = ionoopt;
+    options.tropopt = TROPOPT_OFF;
+
+    const double dts[2] = {0.0, 0.0};
+    const double vare[1] = {0.0};
+    const int svh[1] = {0};
+    const int max_residuals = 6;  // the measurement + one constraint per clock
+    double v[max_residuals] = {0.0};
+    double H[max_residuals * NX] = {0.0};
+    double var[max_residuals] = {0.0};
+    double resp[1] = {0.0};
+    int vsat[1] = {0};
+    int ns = 0;
+    rescode(1, &obs, 1, rs, dts, vare, svh, &nav, x, &options, v, H, var, azel, vsat, resp, &ns);
+    EXPECT_EQ(1, vsat[0]);
+    return v[0];
+}
+
+/* Factor rescode() applies to the GPS L1 broadcast delay */
+double applied_iono_factor(const nav_t& nav, const obsd_t& obs)
+{
+    double azel[2] = {0.0, 0.0};
+    const double residual_without_iono = rescode_residual(nav, obs, IONOOPT_OFF, azel);
+    const double residual_with_iono = rescode_residual(nav, obs, IONOOPT_BRDC, azel);
+    const double l1_delay_m = ionmodel(obs.time, nav.ion_gps, RECEIVER_LLH, azel);
+    EXPECT_GT(l1_delay_m, 0.0);
+    return (residual_without_iono - residual_with_iono) / l1_delay_m;
+}
 }  // namespace
+
+
+TEST(SppRescodeIonoTest, SingleBandMeasurementGetsTheDelayOfItsOwnCarrier)
+{
+    const Single_Band_Case cases[] = {
+        {"GPS L1 C/A", SYS_GPS, 1, 0, CODE_L1C, FREQ1, FREQ1},
+        {"GPS L2C", SYS_GPS, 1, 1, CODE_L2S, FREQ2, FREQ1},
+        {"GPS L5", SYS_GPS, 1, 2, CODE_L5X, FREQ5, FREQ1},
+        {"QZSS L5", SYS_QZS, 193, 2, CODE_L5X, FREQ5, FREQ1},
+        {"Galileo E1", SYS_GAL, 1, 0, CODE_L1B, FREQ1, FREQ1},
+        {"Galileo E5a", SYS_GAL, 1, 2, CODE_L5X, FREQ5, FREQ1},
+        {"Galileo E5b", SYS_GAL, 1, 2, CODE_L7X, FREQ7, FREQ1},
+        {"Galileo E6 alone", SYS_GAL, 1, 0, CODE_L6B, FREQ6, FREQ6},
+        {"Galileo E6, E1 lost", SYS_GAL, 1, 2, CODE_L6B, FREQ6, FREQ1},
+        {"GLONASS G1", SYS_GLO, 1, 0, CODE_L1C, FREQ1_GLO, FREQ1_GLO},
+        {"GLONASS G2", SYS_GLO, 1, 1, CODE_L2C, FREQ2_GLO, FREQ1_GLO},
+        {"BeiDou B1I", SYS_BDS, 6, 0, CODE_L2I, FREQ1_BDS, FREQ1_BDS},
+        {"BeiDou B3I", SYS_BDS, 6, 2, CODE_L6I, FREQ3_BDS, FREQ1_BDS},
+        {"GPS L5 in L5+E5b", SYS_GPS, 1, 0, CODE_L5X, FREQ5, FREQ5},
+        {"Galileo E5b in L5+E5b", SYS_GAL, 1, 2, CODE_L7X, FREQ7, FREQ5},
+    };
+
+    nav_t nav{};
+    const double klobuchar[8] = {2.0e-8, 2.2e-8, -1.2e-7, -1.2e-7, 1.2e5, 1.1e5, -1.3e5, -6.5e5};
+    for (int k = 0; k < 8; k++)
+        {
+            nav.ion_gps[k] = klobuchar[k];
+        }
+
+    for (const Single_Band_Case& test_case : cases)
+        {
+            const int sat = satno(test_case.sys, test_case.prn);
+            ASSERT_GT(sat, 0) << test_case.name;
+            nav.lam[sat - 1][0] = SPEED_OF_LIGHT_M_S / test_case.slot_zero_frequency_hz;
+            nav.lam[sat - 1][1] = SPEED_OF_LIGHT_M_S / test_case.frequency_hz;
+            nav.lam[sat - 1][2] = SPEED_OF_LIGHT_M_S / test_case.frequency_hz;
+
+            obsd_t obs{};
+            obs.sat = sat;
+            obs.time = gpst2time(2300, 100000.0);
+            obs.code[test_case.slot] = test_case.code;
+
+            EXPECT_NEAR(std::pow(FREQ1 / test_case.frequency_hz, 2.0), applied_iono_factor(nav, obs), 1.0e-6)
+                << test_case.name;
+        }
+}
 
 
 TEST(GpsTgdIscTest, SingleFrequencyL1AppliesMinusTgd)

@@ -152,6 +152,37 @@ TEST(GalileoE1BgdTest, SingleFrequencyE5bUsesE1E5bBgd)
 }
 
 
+TEST(GalileoE1BgdTest, E5bBgdStaysReferencedToE1WhenSlotZeroHoldsL5)
+{
+    // GPS L5 + Galileo E5b receivers keep the L5/E5a wavelength in slot 0 for
+    // every satellite, so the slot pair does not give the ICD's E1/E5b factor
+    nav_t nav{};
+    eph_t eph{};
+    obsd_t obs{};
+    prcopt_t options{};
+    const int sat = satno(SYS_GAL, 1);
+    ASSERT_GT(sat, 0);
+    set_galileo_test_ephemeris(nav, eph, sat);
+
+    nav.lam[sat - 1][0] = E5A_WAVELENGTH_M;
+    nav.lam[sat - 1][2] = E5B_WAVELENGTH_M;
+    obs.sat = sat;
+    obs.P[2] = 24000000.0;
+    obs.code[2] = CODE_L7X;
+    options.ionoopt = IONOOPT_BRDC;
+
+    const double azel[2] = {0.0, 1.0};
+    double variance = 0.0;
+    double iono_scale = -1.0;
+    const double corrected_pseudorange = prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale);
+    const double gamma_e1 = std::pow(E5B_WAVELENGTH_M / E1_WAVELENGTH_M, 2.0);
+
+    EXPECT_NEAR(obs.P[2] - gamma_e1 * SPEED_OF_LIGHT_M_S * BGD_E1_E5B_S, corrected_pseudorange, 1.0e-6);
+    // iono_scale goes from the band in slot 0 to the measured band
+    EXPECT_DOUBLE_EQ(std::pow(E5B_WAVELENGTH_M / E5A_WAVELENGTH_M, 2.0), iono_scale);
+}
+
+
 TEST(GalileoE1BgdTest, DualFrequencyE1E5aBroadcastModeUsesE1WithItsBgd)
 {
     nav_t nav{};

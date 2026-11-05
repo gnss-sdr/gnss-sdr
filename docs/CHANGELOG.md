@@ -16,7 +16,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Accuracy:
 
-- Fixed a double frequency-band scaling of the broadcast ionospheric delay, for
+- Fixed a double frequency-band scaling of the broadcast ionospheric delay for
   single-band measurements outside the L1/E1 band in the single-point solution
   (GPS L2C or L5, QZSS L5, Galileo E5a or E5b, GLONASS L2). The factor
   `(f_L1/f_band)^2` was applied twice, so L2C and L5 corrections were

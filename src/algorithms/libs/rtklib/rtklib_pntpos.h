@@ -66,10 +66,11 @@ double getiscl5q(int sat, const nav_t *nav);
 void prange_band_pair(const obsd_t *obs, int *i, int *j);
 
 /* psendorange with code bias correction -------------------------------------
- * iono_scale (O) is the multiplier the caller must apply to the modeled L1
- * ionospheric delay so that it is consistent with the returned pseudorange:
- * 1.0 for L1-referenced measurements, (f_L1/f_band)^2 for single-band
- * measurements on another band, 0.0 for ionosphere-free combinations  */
+ * iono_scale (O) is the multiplier the caller must apply to the ionospheric
+ * delay expressed at the first band of prange_band_pair() so that it is
+ * consistent with the returned pseudorange: 1.0 when that band is measured,
+ * (f_first/f_second)^2 when only the second band is, 0.0 for ionosphere-free
+ * combinations  */
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int iter, const prcopt_t *opt, double *var, double *iono_scale);
 

@@ -14,6 +14,18 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Accuracy:
+
+- Fixed a double frequency-band scaling of the broadcast ionospheric delay, for
+  single-band measurements outside the L1/E1 band in the single-point solution
+  (GPS L2C or L5, QZSS L5, Galileo E5a or E5b, GLONASS L2). The factor
+  `(f_L1/f_band)^2` was applied twice, so L2C and L5 corrections were
+  over-scaled by 1.65x and 1.79x respectively, biasing the height solution by
+  several meters. BeiDou was not affected.
+- Fixed the Galileo E5b BGD scaling and the ionospheric scaling of E5b
+  measurements in GPS L5 + Galileo E5b receivers, where the factors were
+  referenced to the E5a wavelength held in the first slot instead of to E1.
+
 ### Improvements in Availability:
 
 - Fixed the GPS L5 I5 and Q5 local code replicas. The XB sequence was wrapped
@@ -217,12 +229,6 @@ https://gnss-sdr.org/design-forces/
 
 ### Improvements in Accuracy:
 
-- Fixed a double frequency-band scaling of the broadcast ionospheric delay for
-  single-band measurements outside the L1/E1/B1 band (GPS L2C-only or L5-only,
-  Galileo E5a-only or E5b-only, GLONASS L2-only, BeiDou B3I-only). The SPP
-  solver applied `(f_L1/f_band)^2` twice, so L2C and L5 corrections were
-  over-scaled by 1.65x and 1.79x respectively, biasing the height solution by
-  several meters even when the rest of the PVT was accurate.
 - Added real-time kinematic (RTK) positioning using RTCM 3 corrections received
   from NTRIP casters, enabling centimeter-level relative positioning under
   suitable observing conditions.

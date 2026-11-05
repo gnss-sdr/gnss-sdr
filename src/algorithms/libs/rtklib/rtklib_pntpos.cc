@@ -320,10 +320,11 @@ void prange_band_pair(const obsd_t *obs, int *i, int *j)
 }
 
 /* psendorange with code bias correction -------------------------------------
- * iono_scale (O) is the multiplier the caller must apply to the modeled L1
- * ionospheric delay so that it is consistent with the returned pseudorange:
- * 1.0 for L1-referenced measurements, (f_L1/f_band)^2 for single-band
- * measurements on another band, 0.0 for ionosphere-free combinations  */
+ * iono_scale (O) is the multiplier the caller must apply to the ionospheric
+ * delay expressed at the first band of prange_band_pair() so that it is
+ * consistent with the returned pseudorange: 1.0 when that band is measured,
+ * (f_first/f_second)^2 when only the second band is, 0.0 for ionosphere-free
+ * combinations  */
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int iter, const prcopt_t *opt, double *var, double *iono_scale)
 {
@@ -532,8 +533,9 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                 }
             else if (obs->code[i] == CODE_NONE && obs->code[j] != CODE_NONE)
                 {
-                    /* single-band measurement on the second band: the modeled
-                       L1 iono delay must be scaled by (f_L1/f_band)^2 */
+                    /* single-band measurement on the second band: the iono
+                       delay at the first band must be scaled by
+                       (f_first/f_second)^2 */
                     if (gamma_ > 0.0)
                         {
                             *iono_scale = gamma_;
@@ -559,8 +561,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                         {
                             P2 += P2_C2; /* C2->P2 */
                             // Galileo OS SIS ICD, Eq. 19: E5a/E5b uses
-                            // (f_E1/f_E5)^2 times its corresponding BGD.
-                            PC = uses_galileo_bgd ? P2 - gamma_ * P1_P2 : P2 - gamma_ * P1_P2 / (1.0 - gamma_);
+                            // (f_E1/f_E5)^2 times its corresponding BGD. Slot 0
+                            // does not hold E1 in GPS L5 + Galileo E5b receivers,
+                            // so gamma_ cannot be used here.
+                            const double gamma_e1 = std::pow(lam[j] / LAM_CARR[0], 2.0);
+                            PC = uses_galileo_bgd ? P2 - gamma_e1 * P1_P2 : P2 - gamma_e1 * P1_P2 / (1.0 - gamma_e1);
                         }
                     else if (sys == SYS_GLO)
                         {
@@ -783,15 +788,13 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     continue;
                 }
 
-            /* ionospheric corrections — use first available observation code/band */
+            /* ionospheric corrections — use first available observation code */
             unsigned char iono_code = CODE_NONE;
-            int iono_band = 0;
             for (j = 0; j < NFREQ; j++)
                 {
                     if (obs[i].code[j] != CODE_NONE && obs[i].P[j] != 0.0)
                         {
                             iono_code = obs[i].code[j];
-                            iono_band = j;
                             break;
                         }
                 }
@@ -802,12 +805,14 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     continue;
                 }
 
-            /* Scale broadcast iono (L1 reference) to the observed carrier.
-               prange() already returns iono_scale=(f_L1/f_band)^2 for a
-               single-band measurement on the second slot; applying the
-               wavelength factor again would double-scale L2C/L5 iono. */
-            if (iono_scale == 1.0 &&
-                (lam_L1 = nav->lam[obs[i].sat - 1][iono_band]) > 0.0)
+            /* The modeled delay is referenced to GPS L1. Express it at the first
+               band of the pair read by prange(); iono_scale then carries it to
+               the band actually measured, so the two factors compose to
+               (f_L1/f_measured)^2 whatever wavelength slot 0 holds. */
+            int first_band = 0;
+            int second_band = 0;
+            prange_band_pair(obs + i, &first_band, &second_band);
+            if ((lam_L1 = nav->lam[obs[i].sat - 1][first_band]) > 0.0)
                 {
                     /* iono delay scales with f^-2, its variance with f^-4 */
                     const double freq_factor = std::pow(lam_L1 / LAM_CARR[0], 2.0);

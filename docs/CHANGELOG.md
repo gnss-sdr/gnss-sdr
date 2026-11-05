@@ -217,6 +217,12 @@ https://gnss-sdr.org/design-forces/
 
 ### Improvements in Accuracy:
 
+- Fixed a double frequency-band scaling of the broadcast ionospheric delay for
+  single-band measurements outside the L1/E1/B1 band (GPS L2C-only or L5-only,
+  Galileo E5a-only or E5b-only, GLONASS L2-only, BeiDou B3I-only). The SPP
+  solver applied `(f_L1/f_band)^2` twice, so L2C and L5 corrections were
+  over-scaled by 1.65x and 1.79x respectively, biasing the height solution by
+  several meters even when the rest of the PVT was accurate.
 - Added real-time kinematic (RTK) positioning using RTCM 3 corrections received
   from NTRIP casters, enabling centimeter-level relative positioning under
   suitable observing conditions.

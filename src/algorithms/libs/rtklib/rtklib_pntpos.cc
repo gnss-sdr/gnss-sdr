@@ -802,8 +802,12 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                     continue;
                 }
 
-            /* Scale broadcast iono (L1 reference) to the observed carrier. */
-            if ((lam_L1 = nav->lam[obs[i].sat - 1][iono_band]) > 0.0)
+            /* Scale broadcast iono (L1 reference) to the observed carrier.
+               prange() already returns iono_scale=(f_L1/f_band)^2 for a
+               single-band measurement on the second slot; applying the
+               wavelength factor again would double-scale L2C/L5 iono. */
+            if (iono_scale == 1.0 &&
+                (lam_L1 = nav->lam[obs[i].sat - 1][iono_band]) > 0.0)
                 {
                     /* iono delay scales with f^-2, its variance with f^-4 */
                     const double freq_factor = std::pow(lam_L1 / LAM_CARR[0], 2.0);

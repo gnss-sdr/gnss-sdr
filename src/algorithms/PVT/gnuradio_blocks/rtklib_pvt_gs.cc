@@ -2781,6 +2781,11 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
                     d_initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = TWO_PI * round(observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads + wrap_carrier_phase_rad;
                     d_channel_initialized.at(observables_iter->second.Channel_ID) = true;
                     DLOG(INFO) << "initialized carrier phase at channel " << observables_iter->second.Channel_ID;
+                    if (d_rtcm_printer)
+                        {
+                            // The carrier phase now has a new integer-cycle offset
+                            d_rtcm_printer->reset_lock_time(observables_iter->second);
+                        }
                 }
             // apply the carrier phase offset to this satellite
             observables_iter->second.Carrier_phase_rads = observables_iter->second.Carrier_phase_rads + d_initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID);
@@ -3166,6 +3171,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             store_valid_observable = true;
                                         }
+                                }
+                            else if (!d_osnma_strict &&
+                                     d_internal_pvt_solver->is_galileo_observable_valid_outside_pvt(gnss_synchro.PRN,
+                                         galileo_signal, galileo_observation_tow))
+                                {
+                                    // The solver ignores the E5 signal of the navigation service not
+                                    // selected for PVT, but its observables belong in RINEX and RTCM.
+                                    store_valid_observable = true;
                                 }
                             if (!d_osnma_strict && tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                 {

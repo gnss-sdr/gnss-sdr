@@ -67,6 +67,54 @@
    later this is a harmless redeclaration */
 constexpr int Rtklib_Solver::NTRIP_MIN_COMMON_SATELLITES;
 
+namespace
+{
+struct Rtklib_Pvt_Signal
+{
+    uint32_t flag;
+    char system;
+    const char *signal;
+};
+
+// Signals the solver can hand to RTKLIB. SBAS L1 ranging is left out, since it
+// never provides a second band.
+const std::array<Rtklib_Pvt_Signal, 16> RTKLIB_PVT_SIGNALS{{
+    {GPS_1C, 'G', "1C"},
+    {GPS_L1C, 'G', "1S"},
+    {GPS_2S, 'G', "2S"},
+    {GPS_L5, 'G', "L5"},
+    {GAL_1B, 'E', "1B"},
+    {GAL_E5a, 'E', "5X"},
+    {GAL_E5b, 'E', "7X"},
+    {GAL_E6, 'E', "E6"},
+    {GLO_1G, 'R', "1G"},
+    {GLO_2G, 'R', "2G"},
+    {BDS_B1, 'C', "B1"},
+    {BDS_B3, 'C', "B3"},
+    {BDS_B1C, 'C', "1D"},
+    {BDS_B2A, 'C', "5D"},
+    {QZS_J1, 'J', "J1"},
+    {QZS_J5, 'J', "J5"},
+}};
+
+struct Rtklib_Pvt_System
+{
+    char system;
+    int rtklib_system;
+    int prn;  // any valid PRN of the system
+    const char *name;
+};
+
+const std::array<Rtklib_Pvt_System, 5> RTKLIB_PVT_SYSTEMS{{
+    {'G', SYS_GPS, MINPRNGPS, "GPS"},
+    {'E', SYS_GAL, MINPRNGAL, "Galileo"},
+    {'R', SYS_GLO, MINPRNGLO, "GLONASS"},
+    {'C', SYS_BDS, MINPRNBDS, "BeiDou"},
+    {'J', SYS_QZS, MINPRNQZS, "QZSS"},
+}};
+}  // namespace
+
+
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const Pvt_Conf &conf,
     const std::string &dump_filename,
@@ -244,11 +292,77 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                 }
         }
 
+    prcopt_t options = rtk.opt;
+    if (options.ionoopt == IONOOPT_IFLC)
+        {
+            check_iono_free_band_pairs(options);
+        }
+
     // rtk_t owns dynamically allocated filter state. A struct copy would make
     // the adapter, clock solver, and user solver alias the same state and would
     // make independent RTK updates unsafe. Initialize it after all potentially
     // throwing C++ setup so a failed constructor cannot leak the C allocation.
-    rtkinit(&d_rtk, &rtk.opt);
+    rtkinit(&d_rtk, &options);
+}
+
+
+void Rtklib_Solver::check_iono_free_band_pairs(prcopt_t &options) const
+{
+    // Iono-Free-LC combines, for each satellite, the two bands that
+    // prange_band_pair() selects for its system, and leaves out satellites
+    // that lack either one. Run that same selection on the slots the enabled
+    // signals are mapped to.
+    const Signal_Enabled_Flags flags(d_signal_enabled_flags);
+    std::string paired_systems;
+    std::string unpaired_systems;
+    for (const auto &system : RTKLIB_PVT_SYSTEMS)
+        {
+            obsd_t observation{};
+            observation.sat = satno(system.rtklib_system, system.prn);
+            bool has_signals = false;
+            for (const auto &signal : RTKLIB_PVT_SIGNALS)
+                {
+                    if (signal.system != system.system || !flags.check_any_enabled(signal.flag) ||
+                        (signal.system == 'E' && !is_galileo_signal_used_in_pvt(signal.signal)))
+                        {
+                            continue;
+                        }
+                    const auto band = d_rtklib_band_index.find(signal.signal);
+                    if (band == d_rtklib_band_index.cend() || band->second < 0 || band->second >= NFREQ)
+                        {
+                            continue;
+                        }
+                    observation.code[band->second] = rtklib_obs_code(system.system, signal.signal, band->second);
+                    observation.P[band->second] = 1.0;  // bds_observation_slots() skips unmeasured bands
+                    has_signals = true;
+                }
+            if (!has_signals)
+                {
+                    continue;
+                }
+            int i = 0;
+            int j = 0;
+            prange_band_pair(&observation, &i, &j);
+            const bool paired = i != j && observation.code[i] != CODE_NONE && observation.code[j] != CODE_NONE;
+            std::string &systems = paired ? paired_systems : unpaired_systems;
+            systems += (systems.empty() ? "" : ", ") + std::string(system.name);
+        }
+
+    if (unpaired_systems.empty())
+        {
+            return;
+        }
+    if (paired_systems.empty())
+        {
+            LOG(WARNING) << "PVT.iono_model=Iono-Free-LC combines two frequency bands of each satellite "
+                         << "(for instance, GPS L1 with L2C or L5, or Galileo E1 with E5a, E5b or E6), "
+                         << "but the enabled signals do not provide such a pair. Using the Broadcast "
+                         << "ionospheric model instead";
+            options.ionoopt = IONOOPT_BRDC;
+            return;
+        }
+    LOG(WARNING) << "PVT.iono_model=Iono-Free-LC: the enabled signals do not provide a pair of frequency bands for "
+                 << unpaired_systems << " satellites, which are left out of the solution";
 }
 
 
@@ -1379,6 +1493,18 @@ bool Rtklib_Solver::is_galileo_signal_used_in_pvt(const std::string &signal) con
         }
     return signal == "1B" ||
            (signal == "7X" && d_rtklib_band_index.find(signal) != d_rtklib_band_index.cend());
+}
+
+
+bool Rtklib_Solver::is_galileo_observable_valid_outside_pvt(uint32_t prn, const std::string &signal, uint32_t observation_tow) const
+{
+    if (is_galileo_signal_used_in_pvt(signal))
+        {
+            return false;
+        }
+    bool healthy = false;
+    return get_galileo_signal_health(prn, signal, observation_tow, healthy) &&
+           (d_conf.use_unhealthy_sats || healthy);
 }
 
 

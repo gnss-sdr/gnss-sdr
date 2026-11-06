@@ -101,6 +101,9 @@ public:
      */
     uint32_t lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
 
+    //! Restarts the lock time of a signal whose carrier phase lost its continuity
+    void reset_lock_time(const Gnss_Synchro& gnss_synchro);
+
     void Print_IGM_Messages(const Galileo_HAS_data& has_data);
     void Print_SSR_Messages(const Galileo_HAS_data& has_data);
 

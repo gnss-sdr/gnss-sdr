@@ -162,6 +162,14 @@ public:
         return d_solution_attempted;
     }
 
+    //! Ionosphere option (IONOOPT_XXX) in use. Iono-Free-LC falls back to the
+    //! Broadcast model if no enabled constellation provides the two bands
+    //! the combination needs
+    inline int ionosphere_option() const
+    {
+        return d_rtk.opt.ionoopt;
+    }
+
     void store_has_data(const Galileo_HAS_data& new_has_data);
     void clear_has_corrections();
     void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);
@@ -172,6 +180,15 @@ public:
     Galileo_Nav_Message_Type galileo_nav_message_type_for_pvt() const;
     bool is_galileo_signal_used_in_pvt(const std::string& signal) const;
     bool get_galileo_signal_health(uint32_t prn, const std::string& signal, uint32_t observation_tow, bool& healthy) const;
+
+    /*!
+     * \brief Whether an observable of a Galileo signal left out of the solver
+     * (E5a when E5a and E5b are both enabled, see is_galileo_signal_used_in_pvt())
+     * is still valid for the observable outputs (RINEX, RTCM MSM). This requires
+     * a usable ephemeris from the signal's own navigation message reporting it
+     * healthy, or just that ephemeris if PVT.use_unhealthy_sats is set.
+     */
+    bool is_galileo_observable_valid_outside_pvt(uint32_t prn, const std::string& signal, uint32_t observation_tow) const;
 
     /*!
      * \brief Broadcast health of one tracked signal, as reported by the navigation
@@ -238,6 +255,7 @@ public:
     std::map<int, Bds3_B1c_PageData> beidou_cnav1_page_data_map;
 
 private:
+    void check_iono_free_band_pairs(prcopt_t& options) const;
     void update_beidou_observation_wavelengths(const obsd_t& observation);
     bool save_matfile() const;
     bool prepare_fixed_base_observations(const Ntrip_Rtcm_Snapshot& fixed_base,

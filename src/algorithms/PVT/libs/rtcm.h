@@ -43,6 +43,7 @@
 #include <sstream>  // for std::stringstream
 #include <string>
 #include <thread>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -384,9 +385,15 @@ public:
      */
     std::vector<std::string> print_IGM05(const Galileo_HAS_data& has_data);
 
-    uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);       //!< Returns the time period in which GPS L1 signals have been continually tracked.
-    uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);  //!< Returns the time period in which GPS L2 signals have been continually tracked.
-    uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);   //!< Returns the time period in which Galileo signals have been continually tracked.
+    uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);       //!< Returns the time period in which this GPS signal has been continually tracked.
+    uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);  //!< Returns the time period in which this GPS signal has been continually tracked.
+    uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);   //!< Returns the time period in which this Galileo signal has been continually tracked.
+
+    /*!
+     * \brief Restarts the lock time of a signal whose carrier phase lost its
+     * continuity, for instance after it was realigned with the pseudorange
+     */
+    void reset_lock_time(const Gnss_Synchro& gnss_synchro);
 
     /*!
      * \brief Locks time period in which GLONASS signals have been continually tracked.
@@ -394,7 +401,7 @@ public:
      * \param eph GLONASS GNAV Broadcast Ephemeris
      * \param obs_time Time of observation at the moment of printing
      * \param observables Set of observables as defined by the platform
-     * \return Returns the time period in which GLONASS signals have been continually tracked.
+     * \return Returns the time period in which this GLONASS signal has been continually tracked.
      */
     uint32_t lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
 
@@ -561,6 +568,11 @@ private:
     static uint32_t get_MSM_signal_data_bits(uint32_t msm_type);
     static uint32_t get_msm_signal_id(const Gnss_Synchro& gnss_synchro);
     static std::vector<std::pair<int32_t, Gnss_Synchro>> get_ordered_msm_signal_cells(const std::map<int32_t, Gnss_Synchro>& observables);
+    // First observable of each satellite, by PRN: DF397 to DF399 carry its rough
+    // range and rate, which the fine values of every signal of that satellite refer to
+    static std::map<uint32_t, Gnss_Synchro> get_msm_satellite_references(const std::map<int32_t, Gnss_Synchro>& observables);
+    static double get_msm_rough_range_m(const Gnss_Synchro& satellite_reference);
+    static bool get_msm_rough_phase_range_rate_m_s(const Gnss_Synchro& satellite_reference, double& rough_rate_m_s);
     static bool get_msm_signal_wavelength(const Gnss_Synchro& gnss_synchro, double& lambda);
     static double get_reconstructed_glonass_l1_pseudorange_m(const Gnss_Synchro& gnss_synchro);
     static bool get_msm_glonass_frequency_channel_number(const Gnss_Synchro& gnss_synchro, uint32_t& frequency_channel_number);
@@ -580,17 +592,13 @@ private:
     static std::map<std::string, int> galileo_signal_map;
     static std::map<std::string, int> gps_signal_map;
     std::vector<std::pair<int32_t, Gnss_Synchro>> sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const;
-    std::vector<std::pair<int32_t, Gnss_Synchro>> sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const;
     boost::posix_time::ptime compute_GPS_time(const Gps_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime compute_GPS_time(const Gps_CNAV_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime compute_GLONASS_time(const Glonass_Gnav_Ephemeris& eph, double obs_time) const;
-    boost::posix_time::ptime gps_L1_last_lock_time[64];
-    boost::posix_time::ptime gps_L2_last_lock_time[64];
-    boost::posix_time::ptime gal_E1_last_lock_time[64];
-    boost::posix_time::ptime gal_E5_last_lock_time[64];
-    boost::posix_time::ptime glo_L1_last_lock_time[64];
-    boost::posix_time::ptime glo_L2_last_lock_time[64];
+    // Start of the current continuous-tracking period of each signal, by system, PRN and signal
+    std::map<std::tuple<char, uint32_t, std::string>, boost::posix_time::ptime> lock_start_time;
+    uint32_t lock_time(const boost::posix_time::ptime& current_time, const Gnss_Synchro& gnss_synchro);
     uint32_t lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_extended_lock_time_indicator(uint32_t lock_time_period_s);
@@ -1563,10 +1571,10 @@ private:
     int32_t set_DF399(const Gnss_Synchro& gnss_synchro);
 
     std::bitset<15> DF400;
-    int32_t set_DF400(const Gnss_Synchro& gnss_synchro);
+    int32_t set_DF400(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference);
 
     std::bitset<22> DF401;
-    int32_t set_DF401(const Gnss_Synchro& gnss_synchro);
+    int32_t set_DF401(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference);
 
     std::bitset<4> DF402;
     int32_t set_DF402(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const Gnss_Synchro& gnss_synchro);
@@ -1575,13 +1583,13 @@ private:
     int32_t set_DF403(const Gnss_Synchro& gnss_synchro);
 
     std::bitset<15> DF404;
-    int32_t set_DF404(const Gnss_Synchro& gnss_synchro);
+    int32_t set_DF404(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference);
 
     std::bitset<20> DF405;
-    int32_t set_DF405(const Gnss_Synchro& gnss_synchro);
+    int32_t set_DF405(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference);
 
     std::bitset<24> DF406;
-    int32_t set_DF406(const Gnss_Synchro& gnss_synchro);
+    int32_t set_DF406(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference);
 
     std::bitset<10> DF407;
     int32_t set_DF407(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const Gnss_Synchro& gnss_synchro);

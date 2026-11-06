@@ -1059,3 +1059,9 @@ uint32_t Rtcm_Printer::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_t
 {
     return rtcm->lock_time(eph, obs_time, gnss_synchro);
 }
+
+
+void Rtcm_Printer::reset_lock_time(const Gnss_Synchro& gnss_synchro)
+{
+    rtcm->reset_lock_time(gnss_synchro);
+}

@@ -55,7 +55,7 @@ boost::posix_time::ptime gps_time_to_ptime(int32_t gps_week, double tow_s)
 }
 
 
-bool get_lock_time_index(const Gnss_Synchro& gnss_synchro, std::size_t& lock_time_index)
+bool is_supported_lock_time_prn(const Gnss_Synchro& gnss_synchro)
 {
     if ((gnss_synchro.PRN < 1U) || (gnss_synchro.PRN > rtcm_max_lock_time_prn))
         {
@@ -63,8 +63,13 @@ bool get_lock_time_index(const Gnss_Synchro& gnss_synchro, std::size_t& lock_tim
                          << " is outside the supported range 1.." << rtcm_max_lock_time_prn;
             return false;
         }
-    lock_time_index = static_cast<std::size_t>(gnss_synchro.PRN - 1U);
     return true;
+}
+
+
+std::tuple<char, uint32_t, std::string> lock_time_key(const Gnss_Synchro& gnss_synchro)
+{
+    return std::make_tuple(gnss_synchro.System, gnss_synchro.PRN, std::string(gnss_synchro.Signal, 2));
 }
 
 
@@ -2583,35 +2588,9 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int32_t, Gnss_Synchr
 {
     std::string sat_data;
 
-    Rtcm::set_DF394(observables);
-    const uint32_t num_satellites = DF394.count();
-    const uint32_t numobs = observables.size();
-
-    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
-
-    observables_vector.reserve(numobs);
-    std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    auto pos = std::vector<uint32_t>();
-    pos.reserve(numobs);
-    std::vector<uint32_t>::iterator it;
-
-    for (gnss_synchro_iter = observables.cbegin();
-        gnss_synchro_iter != observables.cend();
-        gnss_synchro_iter++)
+    for (const auto& satellite_reference : get_msm_satellite_references(observables))
         {
-            it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
-            if (it == pos.end())
-                {
-                    pos.push_back(65 - gnss_synchro_iter->second.PRN);
-                    observables_vector.emplace_back(*gnss_synchro_iter);
-                }
-        }
-
-    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
-
-    for (uint32_t nsat = 0; nsat < num_satellites; nsat++)
-        {
-            Rtcm::set_DF398(ordered_by_PRN_pos.at(nsat).second);
+            Rtcm::set_DF398(satellite_reference.second);
             sat_data += DF398.to_string();
         }
 
@@ -2623,11 +2602,11 @@ std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int32_t, Gnss_Syn
 {
     std::string signal_data;
     const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_cells = get_ordered_msm_signal_cells(observables);
-    const uint32_t Ncells = ordered_cells.size();
+    const std::map<uint32_t, Gnss_Synchro> satellite_references = get_msm_satellite_references(observables);
 
-    for (uint32_t cell = 0; cell < Ncells; cell++)
+    for (const auto& cell : ordered_cells)
         {
-            Rtcm::set_DF400(ordered_cells.at(cell).second);
+            Rtcm::set_DF400(cell.second, satellite_references.at(cell.second.PRN));
             signal_data += DF400.to_string();
         }
 
@@ -2697,11 +2676,13 @@ std::string Rtcm::get_MSM_2_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string third_data_type;
 
     const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_cells = get_ordered_msm_signal_cells(observables);
+    const std::map<uint32_t, Gnss_Synchro> satellite_references = get_msm_satellite_references(observables);
     const uint32_t Ncells = ordered_cells.size();
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
-            Rtcm::set_DF401(ordered_cells.at(cell).second);
+            const Gnss_Synchro& satellite_reference = satellite_references.at(ordered_cells.at(cell).second.PRN);
+            Rtcm::set_DF401(ordered_cells.at(cell).second, satellite_reference);
             Rtcm::set_DF402(ephNAV, ephCNAV, ephFNAV, ephGNAV, obs_time, ordered_cells.at(cell).second);
             Rtcm::set_DF420(ordered_cells.at(cell).second);
             first_data_type += DF401.to_string();
@@ -2777,12 +2758,14 @@ std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string fourth_data_type;
 
     const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_cells = get_ordered_msm_signal_cells(observables);
+    const std::map<uint32_t, Gnss_Synchro> satellite_references = get_msm_satellite_references(observables);
     const uint32_t Ncells = ordered_cells.size();
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
-            Rtcm::set_DF400(ordered_cells.at(cell).second);
-            Rtcm::set_DF401(ordered_cells.at(cell).second);
+            const Gnss_Synchro& satellite_reference = satellite_references.at(ordered_cells.at(cell).second.PRN);
+            Rtcm::set_DF400(ordered_cells.at(cell).second, satellite_reference);
+            Rtcm::set_DF401(ordered_cells.at(cell).second, satellite_reference);
             Rtcm::set_DF402(ephNAV, ephCNAV, ephFNAV, ephGNAV, obs_time, ordered_cells.at(cell).second);
             Rtcm::set_DF420(ordered_cells.at(cell).second);
             first_data_type += DF400.to_string();
@@ -2851,35 +2834,10 @@ std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int32_t, Gnss_Synchr
     std::string first_data_type;
     std::string second_data_type;
 
-    Rtcm::set_DF394(observables);
-    const uint32_t num_satellites = DF394.count();
-    const uint32_t numobs = observables.size();
-
-    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
-    observables_vector.reserve(numobs);
-    std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    auto pos = std::vector<uint32_t>();
-    pos.reserve(numobs);
-    std::vector<uint32_t>::iterator it;
-
-    for (gnss_synchro_iter = observables.cbegin();
-        gnss_synchro_iter != observables.cend();
-        gnss_synchro_iter++)
+    for (const auto& satellite_reference : get_msm_satellite_references(observables))
         {
-            it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
-            if (it == pos.end())
-                {
-                    pos.push_back(65 - gnss_synchro_iter->second.PRN);
-                    observables_vector.emplace_back(*gnss_synchro_iter);
-                }
-        }
-
-    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
-
-    for (uint32_t nsat = 0; nsat < num_satellites; nsat++)
-        {
-            Rtcm::set_DF397(ordered_by_PRN_pos.at(nsat).second);
-            Rtcm::set_DF398(ordered_by_PRN_pos.at(nsat).second);
+            Rtcm::set_DF397(satellite_reference.second);
+            Rtcm::set_DF398(satellite_reference.second);
             first_data_type += DF397.to_string();
             second_data_type += DF398.to_string();
         }
@@ -2903,12 +2861,14 @@ std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string fifth_data_type;
 
     const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_cells = get_ordered_msm_signal_cells(observables);
+    const std::map<uint32_t, Gnss_Synchro> satellite_references = get_msm_satellite_references(observables);
     const uint32_t Ncells = ordered_cells.size();
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
-            Rtcm::set_DF400(ordered_cells.at(cell).second);
-            Rtcm::set_DF401(ordered_cells.at(cell).second);
+            const Gnss_Synchro& satellite_reference = satellite_references.at(ordered_cells.at(cell).second.PRN);
+            Rtcm::set_DF400(ordered_cells.at(cell).second, satellite_reference);
+            Rtcm::set_DF401(ordered_cells.at(cell).second, satellite_reference);
             Rtcm::set_DF402(ephNAV, ephCNAV, ephFNAV, ephGNAV, obs_time, ordered_cells.at(cell).second);
             Rtcm::set_DF420(ordered_cells.at(cell).second);
             Rtcm::set_DF403(ordered_cells.at(cell).second);
@@ -2981,37 +2941,12 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int32_t, Gnss_Synchr
     std::string third_data_type;
     std::string fourth_data_type;
 
-    Rtcm::set_DF394(observables);
-    const uint32_t num_satellites = DF394.count();
-    const uint32_t numobs = observables.size();
-
-    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
-    observables_vector.reserve(numobs);
-    std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    auto pos = std::vector<uint32_t>();
-    pos.reserve(numobs);
-    std::vector<uint32_t>::iterator it;
-
-    for (gnss_synchro_iter = observables.cbegin();
-        gnss_synchro_iter != observables.cend();
-        gnss_synchro_iter++)
+    for (const auto& satellite_reference : get_msm_satellite_references(observables))
         {
-            it = std::find(pos.begin(), pos.end(), 65 - gnss_synchro_iter->second.PRN);
-            if (it == pos.end())
-                {
-                    pos.push_back(65 - gnss_synchro_iter->second.PRN);
-                    observables_vector.emplace_back(*gnss_synchro_iter);
-                }
-        }
-
-    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
-
-    for (uint32_t nsat = 0; nsat < num_satellites; nsat++)
-        {
-            Rtcm::set_DF397(ordered_by_PRN_pos.at(nsat).second);
-            Rtcm::set_DF398(ordered_by_PRN_pos.at(nsat).second);
-            Rtcm::set_DF399(ordered_by_PRN_pos.at(nsat).second);
-            const std::bitset<4> extended_satellite_info = get_msm_extended_satellite_info(ordered_by_PRN_pos.at(nsat).second);
+            Rtcm::set_DF397(satellite_reference.second);
+            Rtcm::set_DF398(satellite_reference.second);
+            Rtcm::set_DF399(satellite_reference.second);
+            const std::bitset<4> extended_satellite_info = get_msm_extended_satellite_info(satellite_reference.second);
             first_data_type += DF397.to_string();
             second_data_type += extended_satellite_info.to_string();
             third_data_type += DF398.to_string();
@@ -3038,16 +2973,18 @@ std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string sixth_data_type;
 
     const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_cells = get_ordered_msm_signal_cells(observables);
+    const std::map<uint32_t, Gnss_Synchro> satellite_references = get_msm_satellite_references(observables);
     const uint32_t Ncells = ordered_cells.size();
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
-            Rtcm::set_DF400(ordered_cells.at(cell).second);
-            Rtcm::set_DF401(ordered_cells.at(cell).second);
+            const Gnss_Synchro& satellite_reference = satellite_references.at(ordered_cells.at(cell).second.PRN);
+            Rtcm::set_DF400(ordered_cells.at(cell).second, satellite_reference);
+            Rtcm::set_DF401(ordered_cells.at(cell).second, satellite_reference);
             Rtcm::set_DF402(ephNAV, ephCNAV, ephFNAV, ephGNAV, obs_time, ordered_cells.at(cell).second);
             Rtcm::set_DF420(ordered_cells.at(cell).second);
             Rtcm::set_DF403(ordered_cells.at(cell).second);
-            Rtcm::set_DF404(ordered_cells.at(cell).second);
+            Rtcm::set_DF404(ordered_cells.at(cell).second, satellite_reference);
             first_data_type += DF400.to_string();
             second_data_type += DF401.to_string();
             third_data_type += DF402.to_string();
@@ -3125,12 +3062,14 @@ std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string fifth_data_type;
 
     const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_cells = get_ordered_msm_signal_cells(observables);
+    const std::map<uint32_t, Gnss_Synchro> satellite_references = get_msm_satellite_references(observables);
     const uint32_t Ncells = ordered_cells.size();
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
-            Rtcm::set_DF405(ordered_cells.at(cell).second);
-            Rtcm::set_DF406(ordered_cells.at(cell).second);
+            const Gnss_Synchro& satellite_reference = satellite_references.at(ordered_cells.at(cell).second.PRN);
+            Rtcm::set_DF405(ordered_cells.at(cell).second, satellite_reference);
+            Rtcm::set_DF406(ordered_cells.at(cell).second, satellite_reference);
             Rtcm::set_DF407(ephNAV, ephCNAV, ephFNAV, ephGNAV, obs_time, ordered_cells.at(cell).second);
             Rtcm::set_DF420(ordered_cells.at(cell).second);
             Rtcm::set_DF408(ordered_cells.at(cell).second);
@@ -3211,16 +3150,18 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
     std::string sixth_data_type;
 
     const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_cells = get_ordered_msm_signal_cells(observables);
+    const std::map<uint32_t, Gnss_Synchro> satellite_references = get_msm_satellite_references(observables);
     const uint32_t Ncells = ordered_cells.size();
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
-            Rtcm::set_DF405(ordered_cells.at(cell).second);
-            Rtcm::set_DF406(ordered_cells.at(cell).second);
+            const Gnss_Synchro& satellite_reference = satellite_references.at(ordered_cells.at(cell).second.PRN);
+            Rtcm::set_DF405(ordered_cells.at(cell).second, satellite_reference);
+            Rtcm::set_DF406(ordered_cells.at(cell).second, satellite_reference);
             Rtcm::set_DF407(ephNAV, ephCNAV, ephFNAV, ephGNAV, obs_time, ordered_cells.at(cell).second);
             Rtcm::set_DF420(ordered_cells.at(cell).second);
             Rtcm::set_DF408(ordered_cells.at(cell).second);
-            Rtcm::set_DF404(ordered_cells.at(cell).second);
+            Rtcm::set_DF404(ordered_cells.at(cell).second, satellite_reference);
             first_data_type += DF405.to_string();
             second_data_type += DF406.to_string();
             third_data_type += DF407.to_string();
@@ -4700,32 +4641,34 @@ uint32_t Rtcm::get_msm_message_number_from_inputs(uint32_t msm_type,
 }
 
 
-std::vector<std::pair<int32_t, Gnss_Synchro>> Rtcm::sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const
+std::map<uint32_t, Gnss_Synchro> Rtcm::get_msm_satellite_references(const std::map<int32_t, Gnss_Synchro>& observables)
 {
-    std::vector<std::pair<int32_t, Gnss_Synchro>>::const_iterator synchro_map_iter;
-    std::vector<std::pair<int32_t, Gnss_Synchro>> my_vec;
-    struct
-    {
-        bool operator()(const std::pair<int32_t, Gnss_Synchro>& a, const std::pair<int32_t, Gnss_Synchro>& b)
+    std::map<uint32_t, Gnss_Synchro> satellite_references;
+    for (const auto& observable : observables)
         {
-            uint32_t value_a = 64 - a.second.PRN;
-            uint32_t value_b = 64 - b.second.PRN;
-            return value_a < value_b;
+            // insert() keeps the first observable of each satellite
+            satellite_references.insert(std::make_pair(observable.second.PRN, observable.second));
         }
-    } has_lower_pos;
+    return satellite_references;
+}
 
-    for (synchro_map_iter = synchro_map.cbegin();
-        synchro_map_iter != synchro_map.cend();
-        synchro_map_iter++)
 
+double Rtcm::get_msm_rough_range_m(const Gnss_Synchro& satellite_reference)
+{
+    const double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
+    return std::round(satellite_reference.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+}
+
+
+bool Rtcm::get_msm_rough_phase_range_rate_m_s(const Gnss_Synchro& satellite_reference, double& rough_rate_m_s)
+{
+    double lambda = 0.0;
+    if (!get_msm_signal_wavelength(satellite_reference, lambda))
         {
-            std::pair<int32_t, Gnss_Synchro> p(synchro_map_iter->first, synchro_map_iter->second);
-            my_vec.push_back(p);
+            return false;
         }
-
-    std::sort(my_vec.begin(), my_vec.end(), has_lower_pos);
-    std::reverse(my_vec.begin(), my_vec.end());
-    return my_vec;
+    rough_rate_m_s = std::round(-satellite_reference.Carrier_Doppler_hz * lambda);
+    return (rough_rate_m_s >= -8191.0) && (rough_rate_m_s <= 8191.0);
 }
 
 
@@ -4862,120 +4805,54 @@ boost::posix_time::ptime Rtcm::compute_GLONASS_time(const Glonass_Gnav_Ephemeris
 }
 
 
-uint32_t Rtcm::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+uint32_t Rtcm::lock_time(const boost::posix_time::ptime& current_time, const Gnss_Synchro& gnss_synchro)
 {
-    std::size_t lock_time_index = 0;
-    if (!get_lock_time_index(gnss_synchro, lock_time_index))
+    if (!is_supported_lock_time_prn(gnss_synchro))
         {
             return 0;
         }
 
-    const boost::posix_time::ptime current_time = Rtcm::compute_GPS_time(eph, obs_time);
-    boost::posix_time::ptime& last_lock_time = Rtcm::gps_L1_last_lock_time[lock_time_index];
-    if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
+    // Each signal has its own continuous-tracking period, which a cycle slip
+    // restarts. So does a signal not seen before or whose carrier phase was
+    // realigned (see reset_lock_time()).
+    boost::posix_time::ptime& lock_start = lock_start_time[lock_time_key(gnss_synchro)];
+    if (lock_start.is_not_a_date_time() || (current_time < lock_start) ||
+        gnss_synchro.Flag_cycle_slip || gnss_synchro.Flag_half_cycle_slip)
         {
-            last_lock_time = current_time;
+            lock_start = current_time;
         }
-    const boost::posix_time::time_duration lock_duration = current_time - last_lock_time;
-    const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
-    // Debug:
-    // std::cout << "lock time PRN " << gnss_synchro.PRN << ": " << lock_time_in_seconds <<  "  current time: " << current_time << '\n';
-    return lock_time_in_seconds;
+    const boost::posix_time::time_duration lock_duration = current_time - lock_start;
+    return static_cast<uint32_t>(lock_duration.total_seconds());
+}
+
+
+uint32_t Rtcm::lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
+{
+    return Rtcm::lock_time(Rtcm::compute_GPS_time(eph, obs_time), gnss_synchro);
 }
 
 
 uint32_t Rtcm::lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    std::size_t lock_time_index = 0;
-    if (!get_lock_time_index(gnss_synchro, lock_time_index))
-        {
-            return 0;
-        }
-
-    const boost::posix_time::ptime current_time = Rtcm::compute_GPS_time(eph, obs_time);
-    boost::posix_time::ptime& last_lock_time = Rtcm::gps_L2_last_lock_time[lock_time_index];
-    if (last_lock_time.is_not_a_date_time())  // || CHECK LLI!!......)
-        {
-            last_lock_time = current_time;
-        }
-    const boost::posix_time::time_duration lock_duration = current_time - last_lock_time;
-    const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
-    return lock_time_in_seconds;
+    return Rtcm::lock_time(Rtcm::compute_GPS_time(eph, obs_time), gnss_synchro);
 }
 
 
 uint32_t Rtcm::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    std::size_t lock_time_index = 0;
-    if (!get_lock_time_index(gnss_synchro, lock_time_index))
-        {
-            return 0;
-        }
-
-    const boost::posix_time::ptime current_time = Rtcm::compute_Galileo_time(eph, obs_time);
-
-    boost::posix_time::ptime* last_lock_time = nullptr;
-    const std::string sig_(gnss_synchro.Signal);
-    if (sig_ == "1B")
-        {
-            last_lock_time = &Rtcm::gal_E1_last_lock_time[lock_time_index];
-        }
-    if ((sig_ == "5X") || (sig_ == "8X") || (sig_ == "7X"))
-        {
-            last_lock_time = &Rtcm::gal_E5_last_lock_time[lock_time_index];
-        }
-    if (last_lock_time == nullptr)
-        {
-            return 0;
-        }
-
-    if (last_lock_time->is_not_a_date_time())  // || CHECK LLI!!......)
-        {
-            *last_lock_time = current_time;
-        }
-
-    const boost::posix_time::time_duration lock_duration = current_time - *last_lock_time;
-
-    const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
-    return lock_time_in_seconds;
+    return Rtcm::lock_time(Rtcm::compute_Galileo_time(eph, obs_time), gnss_synchro);
 }
 
 
 uint32_t Rtcm::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro)
 {
-    std::size_t lock_time_index = 0;
-    if (!get_lock_time_index(gnss_synchro, lock_time_index))
-        {
-            return 0;
-        }
+    return Rtcm::lock_time(Rtcm::compute_GLONASS_time(eph, obs_time), gnss_synchro);
+}
 
-    const boost::posix_time::ptime current_time = Rtcm::compute_GLONASS_time(eph, obs_time);
 
-    boost::posix_time::ptime* last_lock_time = nullptr;
-    const std::string sig_(gnss_synchro.Signal);
-    const std::string sig = sig_.substr(0, 2);
-    if (sig == "1G")
-        {
-            last_lock_time = &Rtcm::glo_L1_last_lock_time[lock_time_index];
-        }
-    if (sig == "2G")
-        {
-            last_lock_time = &Rtcm::glo_L2_last_lock_time[lock_time_index];
-        }
-    if (last_lock_time == nullptr)
-        {
-            return 0;
-        }
-
-    if (last_lock_time->is_not_a_date_time())  // || CHECK LLI!!......)
-        {
-            *last_lock_time = current_time;
-        }
-
-    const boost::posix_time::time_duration lock_duration = current_time - *last_lock_time;
-
-    const auto lock_time_in_seconds = static_cast<uint32_t>(lock_duration.total_seconds());
-    return lock_time_in_seconds;
+void Rtcm::reset_lock_time(const Gnss_Synchro& gnss_synchro)
+{
+    lock_start_time.erase(lock_time_key(gnss_synchro));
 }
 
 
@@ -6595,7 +6472,7 @@ std::string Rtcm::set_DF396(const std::map<int32_t, Gnss_Synchro>& observables)
 int32_t Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
 {
     const double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
-    const double rough_range_s = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    const double rough_range_s = get_msm_rough_range_m(gnss_synchro);
 
     uint32_t int_ms = 0;
 
@@ -6616,7 +6493,7 @@ int32_t Rtcm::set_DF397(const Gnss_Synchro& gnss_synchro)
 int32_t Rtcm::set_DF398(const Gnss_Synchro& gnss_synchro)
 {
     const double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
-    const double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    const double rough_range_m = get_msm_rough_range_m(gnss_synchro);
     uint32_t rr_mod_ms;
     if ((rough_range_m <= 0.0) || (rough_range_m > meters_to_miliseconds * 255.0))
         {
@@ -6633,16 +6510,11 @@ int32_t Rtcm::set_DF398(const Gnss_Synchro& gnss_synchro)
 
 int32_t Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
 {
-    double lambda = 0.0;
     int32_t rough_phase_range_rate_ms = -8192;  // 2000h: invalid value
-
-    if (get_msm_signal_wavelength(gnss_synchro, lambda))
+    double rough_rate = 0.0;
+    if (get_msm_rough_phase_range_rate_m_s(gnss_synchro, rough_rate))
         {
-            const double rough_rate = std::round(-gnss_synchro.Carrier_Doppler_hz * lambda);
-            if ((rough_rate >= -8191.0) && (rough_rate <= 8191.0))
-                {
-                    rough_phase_range_rate_ms = static_cast<int32_t>(rough_rate);
-                }
+            rough_phase_range_rate_ms = static_cast<int32_t>(rough_rate);
         }
 
     DF399 = std::bitset<14>(rough_phase_range_rate_ms);
@@ -6650,10 +6522,16 @@ int32_t Rtcm::set_DF399(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int32_t Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro)
+// The fine values of DF400, DF401 and DF404 to DF406 are differences with
+// respect to the rough range and rate of the satellite (DF397 to DF399), which
+// all of its signals share. Rounding each signal's own rough value instead
+// would offset a signal by one rough-range step (292.77 m) or by 1 m/s
+// whenever its value and the satellite reference fall on different sides of a
+// rounding boundary.
+int32_t Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference)
 {
     const double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
-    const double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    const double rough_range_m = get_msm_rough_range_m(satellite_reference);
     const double psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
     int32_t fine_pseudorange;
 
@@ -6671,10 +6549,10 @@ int32_t Rtcm::set_DF400(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference)
 {
     const double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
-    const double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    const double rough_range_m = get_msm_rough_range_m(satellite_reference);
     int64_t fine_phaserange;
 
     double lambda = 0.0;
@@ -6685,16 +6563,11 @@ int32_t Rtcm::set_DF401(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            double phrng_m = (gnss_synchro.Carrier_phase_rads / TWO_PI) * lambda - rough_range_m;
-
-            /* Subtract phase - pseudorange integer cycle offset */
-            /* TODO: check LLI! */
-            double cp = gnss_synchro.Carrier_phase_rads / TWO_PI;  // ?
-            if (std::fabs(phrng_m - cp) > 1171.0)
-                {
-                    cp = std::round(phrng_m / lambda) * lambda;
-                }
-            phrng_m -= cp;
+            // The PVT block aligns the carrier phase of each channel with its
+            // pseudorange at lock, so the phase-range keeps its integer-cycle
+            // continuity without any offset here. Removing cycles to center it
+            // on the rough range would change its ambiguity at every epoch.
+            const double phrng_m = (gnss_synchro.Carrier_phase_rads / TWO_PI) * lambda - rough_range_m;
 
             if (std::fabs(phrng_m) > 1171.0)
                 {
@@ -6747,14 +6620,15 @@ int32_t Rtcm::set_DF403(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int32_t Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference)
 {
     double lambda = 0.0;
+    double rough_phase_range_rate = 0.0;
     int32_t fine_phaserange_rate = -16384;  // 4000h: invalid value
 
-    if (get_msm_signal_wavelength(gnss_synchro, lambda))
+    if (get_msm_signal_wavelength(gnss_synchro, lambda) &&
+        get_msm_rough_phase_range_rate_m_s(satellite_reference, rough_phase_range_rate))
         {
-            const double rough_phase_range_rate = std::round(-gnss_synchro.Carrier_Doppler_hz * lambda);
             const double phrr = (-gnss_synchro.Carrier_Doppler_hz * lambda - rough_phase_range_rate);
             if (std::fabs(phrr) <= 1.6384)
                 {
@@ -6767,10 +6641,10 @@ int32_t Rtcm::set_DF404(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int32_t Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference)
 {
     const double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
-    const double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    const double rough_range_m = get_msm_rough_range_m(satellite_reference);
     const double psrng_s = gnss_synchro.Pseudorange_m - rough_range_m;
     int64_t fine_pseudorange;
 
@@ -6787,11 +6661,11 @@ int32_t Rtcm::set_DF405(const Gnss_Synchro& gnss_synchro)
 }
 
 
-int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
+int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro, const Gnss_Synchro& satellite_reference)
 {
     int64_t fine_phaserange_ex;
     const double meters_to_miliseconds = SPEED_OF_LIGHT_M_S * 0.001;
-    const double rough_range_m = std::round(gnss_synchro.Pseudorange_m / meters_to_miliseconds / TWO_N10) * meters_to_miliseconds * TWO_N10;
+    const double rough_range_m = get_msm_rough_range_m(satellite_reference);
     double lambda = 0.0;
     if (!get_msm_signal_wavelength(gnss_synchro, lambda))
         {
@@ -6800,16 +6674,8 @@ int32_t Rtcm::set_DF406(const Gnss_Synchro& gnss_synchro)
         }
     else
         {
-            double phrng_m = (gnss_synchro.Carrier_phase_rads / TWO_PI) * lambda - rough_range_m;
-
-            /* Subtract phase - pseudorange integer cycle offset */
-            /* TODO: check LLI! */
-            double cp = gnss_synchro.Carrier_phase_rads / TWO_PI;  // ?
-            if (std::fabs(phrng_m - cp) > 1171.0)
-                {
-                    cp = std::round(phrng_m / lambda) * lambda;
-                }
-            phrng_m -= cp;
+            // See set_DF401(): the phase-range is used as is, without removing cycles
+            const double phrng_m = (gnss_synchro.Carrier_phase_rads / TWO_PI) * lambda - rough_range_m;
 
             if (std::fabs(phrng_m) > 1171.0)
                 {

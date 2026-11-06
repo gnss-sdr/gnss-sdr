@@ -114,6 +114,29 @@ All notable changes to GNSS-SDR will be documented in this file.
   channel lacks a valid `BUF_SIZE_x` (which, with 12-bit quantization, must be a
   multiple of 24 bytes). Also, `seconds_to_skip` no longer lands in the middle
   of a frame when channels have bandwidth dividers that are not powers of two.
+- Fixed the missing Galileo E5a observables in RINEX observation files and RTCM
+  MSM messages when E5a and E5b are both enabled. The PVT solution uses E5b and
+  I/NAV in that configuration, but since v0.0.22 the E5a observables were
+  dropped from those outputs as well, leaving the `C5X`/`L5X`/`D5X`/`S5X` RINEX
+  fields blank. They are now reported once the satellite's F/NAV ephemeris
+  reports E5a as healthy. The PVT solution does not change.
+- Fixed the fine pseudorange, phase-range and phase-range-rate fields of RTCM
+  MSM messages (DF400, DF401, DF404, DF405 and DF406). They were computed from a
+  rough range and rate rounded from each signal's own measurement, instead of
+  those of its satellite (DF397 to DF399). When a satellite had more than one
+  signal, decoders occasionally got the other signals 292.77 m (one rough-range
+  step) or 1 m/s off. In addition, the phase-range was moved to within one cycle
+  of the rough range at every epoch, so its integer ambiguity changed from epoch
+  to epoch and MSM carrier phases were unusable for RTK. The phase-range now
+  keeps its continuity, and is marked as invalid if it is more than 1171 m away
+  from the rough range.
+- RTCM lock time indicators (DF013, DF019, DF043 and DF049 in MT1001 to MT1004
+  and MT1009 to MT1012, DF402 and DF407 in MSM messages) are now kept per
+  signal, and restart after a cycle slip or a half-cycle slip, and whenever the
+  receiver realigns a carrier phase with its pseudorange after a loss of lock.
+  Before, the signals of a satellite in the same band group shared one lock time
+  (GPS L2C with L5, Galileo E5a with E5b), and lock times never restarted, so
+  rovers could not detect cycle slips from them.
 
 ### Improvements in Reliability:
 
@@ -217,6 +240,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   `float` whose resolution drops to 0.0625 rad at 10^6 rad. Each binary record
   is now 4 bytes longer, and the MATLAB and Python readers in `utils/` are
   updated accordingly.
+- `PVT.iono_model=Iono-Free-LC` now falls back to the `Broadcast` model, and
+  logs a warning, when no enabled constellation provides the two frequency bands
+  the combination needs. Examples are Galileo E5a + E5b without E1, or any
+  single-band receiver. Before, every satellite was left out of the solution, so
+  the receiver computed no position and wrote no RINEX files. When only some
+  constellations provide a band pair, the log names those whose satellites are
+  left out of the solution.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

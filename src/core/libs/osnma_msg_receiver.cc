@@ -2308,7 +2308,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                     candidate_public_key.pkid = npktid;
                                     candidate_public_key.npkt_valid = true;
                                     candidate_public_key.npkt = d_osnma_data.d_dsm_pkr_message.npkt;
-                                    candidate_public_key.key_type = PKT;
+                                    candidate_public_key.key_type = std::move(PKT);
                                     candidate_public_key.source = "DSM-PKR";
                                     candidate_public_key.compressed_key = d_new_public_key;
                                     candidate_public_key.fingerprint_sha256 =

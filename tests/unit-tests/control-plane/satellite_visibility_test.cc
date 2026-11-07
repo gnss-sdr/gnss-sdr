@@ -38,6 +38,7 @@
 #include <cmath>
 #include <memory>
 #include <thread>
+#include <utility>
 
 class VisibilityTestPvt : public PvtInterface
 {
@@ -116,7 +117,7 @@ protected:
         gps.WN = fix.week % 1024;
         gps.toe = gps.toc = gps.tow = tow;
         gps.sqrtA = 5153.795;
-        pvt->gps_eph[1] = gps;
+        pvt->gps_eph[1] = std::move(gps);
         SetGpsAlmanac(tow);
         Gps_Almanac gps_almanac = pvt->gps_alm.at(1);
         gps_almanac.PRN = 2;
@@ -141,7 +142,7 @@ protected:
         beidou.WN = fix.week - 1356;
         beidou.toe = beidou.toc = beidou.tow = tow;
         beidou.sqrtA = 5282.0;
-        pvt->bds_eph[10] = beidou;
+        pvt->bds_eph[10] = std::move(beidou);
         Beidou_Dnav_Almanac beidou_almanac;
         beidou_almanac.PRN = 11;
         beidou_almanac.WNa = fix.week - 1356;

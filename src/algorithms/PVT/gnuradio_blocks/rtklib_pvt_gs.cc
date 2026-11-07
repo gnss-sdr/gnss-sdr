@@ -2850,7 +2850,6 @@ void rtklib_pvt_gs::report_fixed_base_status()
                          << " common satellites: "
                          << d_user_pvt_solver->get_fixed_base_common_satellites();
             break;
-        case Rtklib_Fixed_Base_Status::NOT_REQUESTED:
         default:
             break;
         }

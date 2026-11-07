@@ -627,7 +627,7 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                     memcpy(arch_inbuff, inbuffs[j], vlen * inputsig[j].size * (inputsig[j].is_complex ? 2 : 1));
                     arch_buffs.push_back(arch_inbuff);
                 }
-            test_data.push_back(arch_buffs);
+            test_data.push_back(std::move(arch_buffs));
         }
 
     std::vector<volk_gnsssdr_type_t> both_sigs;

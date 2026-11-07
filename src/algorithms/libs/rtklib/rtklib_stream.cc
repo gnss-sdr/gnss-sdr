@@ -46,6 +46,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
+#include <limits>
 #include <memory>
 #include <netdb.h>
 #include <netinet/tcp.h>
@@ -613,8 +614,19 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
                             std::snprintf(msg, MAXSTRPATH, "T%+.1fs", seconds);
                         }
 
+                    /* Reject positions fseeko() cannot address (corrupted tag file).
+                       Past this check, the cast to int64_t below cannot wrap negative,
+                       so nmax can never exceed the caller's buffer size. */
+                    if (record.fpos > static_cast<size_t>(std::numeric_limits<off_t>::max()))
+                        {
+                            trace(1, "readfile: invalid file position in tag file\n");
+                            return 0;
+                        }
+
+                    const int64_t fpos_delta = static_cast<int64_t>(record.fpos) - static_cast<int64_t>(file->fpos);
+
                     /* If jump in file position */
-                    if (static_cast<int64_t>(record.fpos) - static_cast<int64_t>(file->fpos) >= nmax)
+                    if (fpos_delta >= nmax)
                         {
                             if (fseeko(file->fp, static_cast<off_t>(record.fpos), SEEK_SET) != 0)
                                 {
@@ -624,7 +636,8 @@ int readfile(file_t *file, unsigned char *buff, int nmax, char *msg)
                             return 0;
                         }
 
-                    nmax = static_cast<int>(record.fpos - file->fpos);
+                    /* 0 <= nmax < caller's nmax; a backward position reads nothing */
+                    nmax = fpos_delta > 0 ? static_cast<int>(fpos_delta) : 0;
 
                     if (file->repmode || file->speed > 0.0)
                         {

@@ -87,7 +87,8 @@ option_t::option_t(std::string t_longform,
     : longform("--" + t_longform),
       shortform("-" + t_shortform),
       msg(std::move(t_msg)),
-      printval(std::move(t_printval))
+      printval(std::move(t_printval)),
+      callback(nullptr)
 {
     option_type = STRING;
 }
@@ -97,7 +98,7 @@ option_t::option_t(std::string t_longform,
  * Option List
  */
 
-option_list::option_list(std::string program_name) : d_program_name(program_name)
+option_list::option_list(std::string program_name) : d_program_name(std::move(program_name))
 {
     d_internal_list = std::vector<option_t>();
 }

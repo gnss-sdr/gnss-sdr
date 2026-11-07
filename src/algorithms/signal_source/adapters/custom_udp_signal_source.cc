@@ -61,7 +61,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(const ConfigurationInterface* confi
     const std::string sample_type = configuration->property(role + ".sample_type", default_sample_type);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
 
-    udp_gnss_rx_source_ = Gr_Complex_Ip_Packet_Source::make(capture_device,
+    udp_gnss_rx_source_ = Gr_Complex_Ip_Packet_Source::make(std::move(capture_device),
         address,
         port,
         payload_bytes,

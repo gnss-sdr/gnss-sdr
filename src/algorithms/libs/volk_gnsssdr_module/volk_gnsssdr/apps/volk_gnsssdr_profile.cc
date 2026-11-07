@@ -53,9 +53,9 @@ void set_update(bool val) { update_mode = val; }
 bool dry_run = false;
 void set_dryrun(bool val) { dry_run = val; }
 std::string json_filename("");
-void set_json(std::string val) { json_filename = val; }
+void set_json(std::string val) { json_filename = std::move(val); }
 std::string volk_config_path("");
-void set_volk_config(std::string val) { volk_config_path = val; }
+void set_volk_config(std::string val) { volk_config_path = std::move(val); }
 
 int main(int argc, char *argv[])
 {

@@ -3495,7 +3495,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         {
                                             info.healthy = healthy;
                                         }
-                                    d_monitor_pvt.tracked_satellites.push_back(info);
+                                    d_monitor_pvt.tracked_satellites.push_back(std::move(info));
                                 }
                         }
 

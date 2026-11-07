@@ -7,6 +7,10 @@
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${GNSSSDR_SOURCE_DIR}/docs/protobuf/monitor_pvt.proto)
 protobuf_generate_cpp(PROTO_SRCS2 PROTO_HDRS2 ${GNSSSDR_SOURCE_DIR}/docs/protobuf/gps_ephemeris.proto)
 protobuf_generate_cpp(PROTO_SRCS3 PROTO_HDRS3 ${GNSSSDR_SOURCE_DIR}/docs/protobuf/galileo_ephemeris.proto)
+# Do not lint protoc-generated sources (honored by CMake >= 3.27)
+set_source_files_properties(${PROTO_SRCS} ${PROTO_SRCS2} ${PROTO_SRCS3}
+    PROPERTIES SKIP_LINTING ON
+)
 
 set(PVT_LIB_SOURCES
     an_packet_printer.cc

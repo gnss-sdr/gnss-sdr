@@ -6,6 +6,8 @@
 
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${GNSSSDR_SOURCE_DIR}/docs/protobuf/gnss_synchro.proto)
+# Do not lint protoc-generated sources (honored by CMake >= 3.27)
+set_source_files_properties(${PROTO_SRCS} PROPERTIES SKIP_LINTING ON)
 
 set(CORE_MONITOR_LIBS_SOURCES
     gnss_synchro_monitor.cc

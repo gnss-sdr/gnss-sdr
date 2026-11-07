@@ -1065,7 +1065,8 @@ static ssize_t OCTET_STRING__convert_binary(void *sptr, const void *chunk_buf,
     BIT_STRING_t *st = (BIT_STRING_t *)sptr;
     const char *p = (const char *)chunk_buf;
     const char *pend = p + chunk_size;
-    int bits_unused = st->bits_unused & 0x7;
+    /* An empty string has no partially filled octet */
+    int bits_unused = st->size ? (st->bits_unused & 0x7) : 0;
     uint8_t *buf;
 
     /* Reallocate buffer according to high cap estimation */

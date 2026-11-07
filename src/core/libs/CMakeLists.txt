@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${GNSSSDR_SOURCE_DIR}/docs/protobuf/nav_message.proto)
+# Do not lint protoc-generated sources (honored by CMake >= 3.27)
+set_source_files_properties(${PROTO_SRCS} PROPERTIES SKIP_LINTING ON)
 
 add_subdirectory(supl)
 

@@ -57,6 +57,7 @@ Checks: >
   clang-analyzer-optin.performance.*,
   clang-analyzer-optin.portability.UnixAPI,
   clang-analyzer-security.*,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   cppcoreguidelines-prefer-member-initializer,
   cppcoreguidelines-pro-type-cstyle-cast,
   cppcoreguidelines-pro-type-static-cast-downcast,

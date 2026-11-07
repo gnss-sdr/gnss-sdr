@@ -263,6 +263,10 @@ private:
     bool d_force_loss_of_lock{false};          // declare loss of lock at the next lock check, whatever the lock fail counters
 
     DeterministicTracking d_det{this};  // GNSS-SDR.deterministic=true
+    float d_dll_bw_hz;
+    float d_pll_bw_hz;
+    float d_dll_tgt_bw_hz;
+    float d_pll_tgt_bw_hz;
 };
 
 

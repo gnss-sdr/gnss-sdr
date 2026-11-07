@@ -83,7 +83,7 @@ Gr_Complex_Ip_Packet_Source::make(std::string src_device,
     size_t item_size,
     bool IQ_swap_)
 {
-    return gnuradio::get_initial_sptr(new Gr_Complex_Ip_Packet_Source(std::move(src_device),
+    return sptr(new Gr_Complex_Ip_Packet_Source(std::move(src_device),
         origin_address,
         udp_port,
         udp_packet_size,
@@ -237,7 +237,7 @@ Gr_Complex_Ip_Packet_Source::~Gr_Complex_Ip_Packet_Source()
         {
             delete d_pcap_thread;
         }
-    delete[] fifo_buff;
+    volk_free(fifo_buff);
     std::cout << "Stop Ethernet packet capture\n";
 }
 

@@ -130,6 +130,15 @@ uint64_t dwell_offset(uint32_t samples_per_dwell, double residual, uint32_t dwel
         }
     return offset;
 }
+
+// Doppler separation between a full-grid winner and the CFAR reference row
+// opposite to it, (index + num_bins / 2) % num_bins. The floor is intended:
+// that row is num_bins / 2 rows away, or num_bins - num_bins / 2 if it wraps.
+float opposite_reference_separation_hz(uint32_t num_bins, uint32_t doppler_step)
+{
+    const uint32_t separation_bins = num_bins / 2U;
+    return static_cast<float>(separation_bins) * static_cast<float>(doppler_step);
+}
 }  // namespace
 
 pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_)
@@ -160,7 +169,7 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       // Inline, not via needs_extra_reference_row(candidate_bins) -- that
       // helper reads d_use_CFAR_algorithm_flag, declared (so initialized)
       // later in this same list; see its own doc comment in the header.
-      d_full_grid_reference_needs_extra_row(conf_.use_CFAR_algorithm_flag && (static_cast<float>(d_num_doppler_bins / 2) * static_cast<float>(d_doppler_step) < d_min_reference_separation_hz)),
+      d_full_grid_reference_needs_extra_row(conf_.use_CFAR_algorithm_flag && (opposite_reference_separation_hz(d_num_doppler_bins, d_doppler_step) < d_min_reference_separation_hz)),
       // Reserve two reference rows for a full grid that needs them.
       d_num_doppler_bins_full_grid_active(d_num_doppler_bins + (d_full_grid_reference_needs_extra_row ? (d_num_doppler_bins > 1U ? 2U : 1U) : 0U)),
       d_num_doppler_bins_capacity(d_num_doppler_bins + 2U),
@@ -1241,7 +1250,7 @@ bool pcps_acquisition::needs_extra_reference_row(uint32_t candidate_bins) const
             return true;
         }
     // Full grids need extra references only for CFAR with insufficient wraparound separation.
-    return d_use_CFAR_algorithm_flag && (static_cast<float>(candidate_bins / 2) * static_cast<float>(d_doppler_step) < d_min_reference_separation_hz);
+    return d_use_CFAR_algorithm_flag && (opposite_reference_separation_hz(candidate_bins, d_doppler_step) < d_min_reference_separation_hz);
 }
 
 

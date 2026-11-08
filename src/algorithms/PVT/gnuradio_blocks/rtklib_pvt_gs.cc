@@ -762,7 +762,16 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
-    apply_pending_navigation_clear();
+    try
+        {
+            // Apply a clear requested after the last work() call, so that the
+            // navigation data saved below reflects it
+            apply_pending_navigation_clear();
+        }
+    catch (const std::exception& e)
+        {
+            LOG(WARNING) << "Failed to apply a pending navigation data clear: " << e.what();
+        }
     DLOG(INFO) << "PVT block destructor called.";
     if (d_ntrip_client)
         {

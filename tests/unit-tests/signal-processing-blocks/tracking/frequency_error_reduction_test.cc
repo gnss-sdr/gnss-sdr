@@ -220,29 +220,41 @@ protected:
             {
                 tracking->d_state = 5;
                 EXPECT_EQ(0U, tracking->tracking_elapsed_seconds(scan_end));
-                // Even if pull-in expired before scan entry, completion restores it.
-                tracking->d_pull_in_transitory = false;
-                tracking->d_carrier_lock_fail_counter = 50;
-                tracking->d_code_lock_fail_counter = 50;
             }
+        // Wide tracking that starts long after the acquisition stamp, either after the
+        // scan or because a non-blocking acquisition delivered its result late, restarts
+        // the timers. Even if pull-in expired before, the restart restores it.
+        tracking->d_pull_in_transitory = false;
+        tracking->d_carrier_lock_fail_counter = 50;
+        tracking->d_code_lock_fail_counter = 50;
         tracking->begin_wide_tracking(scan_end);
         EXPECT_EQ(2, tracking->d_state);
         EXPECT_EQ(acquisition_sample, tracking->d_acq_sample_stamp);
-        if (scan)
-            {
-                EXPECT_TRUE(tracking->d_pull_in_transitory);
-                EXPECT_EQ(0, tracking->d_carrier_lock_fail_counter);
-                EXPECT_EQ(0, tracking->d_code_lock_fail_counter);
-                EXPECT_EQ(0U, tracking->tracking_elapsed_seconds(scan_end));
-                EXPECT_EQ(5U, tracking->tracking_elapsed_seconds(scan_end + 5 * fs));
-                EXPECT_EQ(20U, tracking->tracking_elapsed_seconds(scan_end + 20 * fs));
-                tracking->start_tracking();
-                EXPECT_EQ(30U, tracking->tracking_elapsed_seconds(scan_end));
-            }
-        else
-            {
-                EXPECT_EQ(30U, tracking->tracking_elapsed_seconds(scan_end));
-            }
+        EXPECT_TRUE(tracking->d_pull_in_transitory);
+        EXPECT_EQ(0, tracking->d_carrier_lock_fail_counter);
+        EXPECT_EQ(0, tracking->d_code_lock_fail_counter);
+        EXPECT_EQ(0U, tracking->tracking_elapsed_seconds(scan_end));
+        EXPECT_EQ(5U, tracking->tracking_elapsed_seconds(scan_end + 5 * fs));
+        EXPECT_EQ(20U, tracking->tracking_elapsed_seconds(scan_end + 20 * fs));
+        tracking->start_tracking();
+        EXPECT_EQ(30U, tracking->tracking_elapsed_seconds(scan_end));
+    }
+
+    void check_prompt_start_timers()
+    {
+        make_tracking();
+        const auto fs = static_cast<uint64_t>(tracking->d_trk_parameters.fs_in);
+        const uint64_t acquisition_sample = synchro.Acq_samplestamp_samples;
+        tracking->d_carrier_lock_fail_counter = 50;
+        tracking->d_code_lock_fail_counter = 50;
+        // Within one second of the acquisition stamp, as with a blocking acquisition,
+        // wide tracking keeps the acquisition time origin and the lock counters.
+        tracking->begin_wide_tracking(acquisition_sample + fs);
+        EXPECT_EQ(2, tracking->d_state);
+        EXPECT_EQ(acquisition_sample, tracking->d_acq_sample_stamp);
+        EXPECT_EQ(50, tracking->d_carrier_lock_fail_counter);
+        EXPECT_EQ(50, tracking->d_code_lock_fail_counter);
+        EXPECT_EQ(30U, tracking->tracking_elapsed_seconds(acquisition_sample + 30 * fs));
     }
 
     void run_long_scan()
@@ -381,9 +393,15 @@ TEST_F(DllPllTrackingFrequencyErrorTest, ScanRestartsTrackingTimers)
 }
 
 
-TEST_F(DllPllTrackingFrequencyErrorTest, DisabledScanPreservesAcquisitionTimeOrigin)
+TEST_F(DllPllTrackingFrequencyErrorTest, LateWideTrackingStartRestartsTimers)
 {
     check_timers(false);
+}
+
+
+TEST_F(DllPllTrackingFrequencyErrorTest, PromptWideTrackingStartPreservesAcquisitionTimeOrigin)
+{
+    check_prompt_start_timers();
 }
 
 

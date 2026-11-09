@@ -142,13 +142,13 @@ std::vector<float> symbols_to_llr(const float* symbols, size_t n)
             noise_var = 1e-3 * m2;
             amplitude2 = m2 - noise_var;
         }
+    std::vector<float> llr(n);  // zero-initialized
     if (!(noise_var > 0.0))
         {
             // all-zero or non-finite symbols carry no reliability information
-            return std::vector<float>(n, 0.0F);
+            return llr;
         }
     const double scale = 2.0 * std::sqrt(std::max(amplitude2, 0.0)) / noise_var;
-    std::vector<float> llr(n);
     for (size_t i = 0; i < n; i++)
         {
             llr[i] = static_cast<float>(scale * static_cast<double>(symbols[i]));

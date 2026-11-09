@@ -35,7 +35,10 @@
 #include "pcps_tong_acquisition_cc.h"
 #include "signal_flag.h"
 #include <boost/math/distributions/exponential.hpp>
+#include <boost/math/special_functions/gamma.hpp>
 #include <boost/optional.hpp>
+#include <algorithm>
+#include <cmath>
 #include <memory>
 #include <stdexcept>
 
@@ -82,6 +85,12 @@ public:
 };
 
 class ThresholdComputeQuickSync : public ThresholdComputeInterface
+{
+public:
+    float calculate_threshold(const Acq_Conf& acq_parameters) const override;
+};
+
+class ThresholdComputeCfar : public ThresholdComputeInterface
 {
 public:
     float calculate_threshold(const Acq_Conf& acq_parameters) const override;
@@ -135,6 +144,27 @@ float ThresholdComputeQuickSync::calculate_threshold(const Acq_Conf& acq_paramet
             boost::math::exponential_distribution<double> mydist(lambda);
             const auto threshold = static_cast<float>(quantile(mydist, val));
             return threshold;
+        }
+
+    return acq_parameters.threshold;
+}
+
+
+float ThresholdComputeCfar::calculate_threshold(const Acq_Conf& acq_parameters) const
+{
+    if (acq_parameters.pfa > 0.0)
+        {
+            // The threshold of the CFAR test statistic of pcps_acquisition for
+            // one dwell. Here each dwell is tested on its own, so the pfa of a
+            // search is shared among all the cells of the dwells it may test
+            unsigned int frequency_bins = 0;
+            for (int doppler = -acq_parameters.doppler_max; doppler <= acq_parameters.doppler_max; doppler += acq_parameters.doppler_step)
+                {
+                    frequency_bins++;
+                }
+            const auto dwells = acq_parameters.bit_transition_flag ? 2U : std::max(1U, acq_parameters.max_dwells);
+            const auto ncells = static_cast<double>(acq_parameters.vector_length) * static_cast<double>(frequency_bins) * static_cast<double>(dwells);
+            return static_cast<float>(2.0 * boost::math::gamma_p_inv(2.0, std::pow(1.0 - acq_parameters.pfa, 1.0 / ncells)));
         }
 
     return acq_parameters.threshold;
@@ -228,6 +258,10 @@ Acq_Conf get_acq_conf(
              implementation == "Galileo_E1_PCPS_CCCWSR_Ambiguous_Acquisition")
         {
             threshold_compute = std::make_unique<ThresholdComputeBasic>();
+        }
+    else if (implementation == "GPS_L1_CA_PCPS_OpenCl_Acquisition")
+        {
+            threshold_compute = std::make_unique<ThresholdComputeCfar>();
         }
     else
         {

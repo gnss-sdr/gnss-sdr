@@ -1,0 +1,6 @@
+SPDX-FileCopyrightText: 2008-2026 The Khronos Group Inc.
+SPDX-License-Identifier: Apache-2.0
+
+Unmodified copy of include/CL/opencl.hpp from the Khronos OpenCL C++ bindings,
+https://github.com/KhronosGroup/OpenCL-CLHPP, release v2026.05.29.
+It is only used if CL/opencl.hpp is not found in the system.

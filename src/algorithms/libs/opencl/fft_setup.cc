@@ -11,18 +11,10 @@
 
 #include "fft_base_kernels.h"
 #include "fft_internal.h"
+#include <cstdio>
 #include <cstdlib>
-#include <cstring>
-#include <iostream>
 #include <limits>
-#include <sstream>
 #include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-using namespace std;
-
-extern void getKernelWorkDimensions(cl_fft_plan *plan, cl_fft_kernel_info *kernelInfo, cl_int *batchSize, size_t *gWorkItems, size_t *lWorkItems);
 
 static void
 getBlockConfigAndKernelString(cl_fft_plan *plan)
@@ -170,12 +162,13 @@ createKernelList(cl_fft_plan *plan)
 }
 
 
-int getMaxKernelWorkGroupSize(cl_fft_plan *plan, unsigned int *max_wg_size, unsigned int num_devices, cl_device_id *devices)
+static int
+getMaxKernelWorkGroupSize(cl_fft_plan *plan, unsigned int *max_wg_size, unsigned int num_devices, cl_device_id *devices)
 {
     int reg_needed = 0;
-    *max_wg_size = std::numeric_limits<int>::max();
+    *max_wg_size = std::numeric_limits<unsigned int>::max();
     int err;
-    unsigned wg_size;
+    size_t wg_size;
 
     unsigned int i;
     for (i = 0; i < num_devices; i++)
@@ -196,7 +189,7 @@ int getMaxKernelWorkGroupSize(cl_fft_plan *plan, unsigned int *max_wg_size, unsi
 
                     if (*max_wg_size > wg_size)
                         {
-                            *max_wg_size = wg_size;
+                            *max_wg_size = static_cast<unsigned int>(wg_size);
                         }
 
                     kInfo = kInfo->next;
@@ -226,7 +219,6 @@ clFFT_CreatePlan(cl_context context, clFFT_Dim3 n, clFFT_Dimension dim, clFFT_Da
     cl_int err;
     int isPow2 = 1;
     cl_fft_plan *plan = nullptr;
-    ostringstream kString;
     int num_devices;
     int gpu_found = 0;
     cl_device_id devices[16];
@@ -236,9 +228,9 @@ clFFT_CreatePlan(cl_context context, clFFT_Dim3 n, clFFT_Dimension dim, clFFT_Da
     if (!context)
         ERR_MACRO(CL_INVALID_VALUE);
 
-    isPow2 |= n.x && !((n.x - 1) & n.x);
-    isPow2 |= n.y && !((n.y - 1) & n.y);
-    isPow2 |= n.z && !((n.z - 1) & n.z);
+    isPow2 &= n.x && !((n.x - 1) & n.x);
+    isPow2 &= n.y && !((n.y - 1) & n.y);
+    isPow2 &= n.z && !((n.z - 1) & n.z);
 
     if (!isPow2)
         ERR_MACRO(CL_INVALID_VALUE);
@@ -246,7 +238,7 @@ clFFT_CreatePlan(cl_context context, clFFT_Dim3 n, clFFT_Dimension dim, clFFT_Da
     if ((dim == clFFT_1D && (n.y != 1 || n.z != 1)) || (dim == clFFT_2D && n.z != 1))
         ERR_MACRO(CL_INVALID_VALUE);
 
-    plan = (cl_fft_plan *)malloc(sizeof(cl_fft_plan));
+    plan = static_cast<cl_fft_plan *>(malloc(sizeof(cl_fft_plan)));
     if (!plan)
         ERR_MACRO(CL_OUT_OF_RESOURCES);
 
@@ -272,7 +264,7 @@ clFFT_CreatePlan(cl_context context, clFFT_Dim3 n, clFFT_Dimension dim, clFFT_Da
 
 patch_kernel_source:
 
-    plan->kernel_string = new string("");
+    plan->kernel_string = new std::string("");
     if (!plan->kernel_string)
         ERR_MACRO(CL_OUT_OF_RESOURCES);
 
@@ -298,6 +290,7 @@ patch_kernel_source:
                     err = clBuildProgram(plan->program, 1, &devices[i], "-cl-mad-enable", nullptr, nullptr);
                     if (err != CL_SUCCESS)
                         {
+                            const cl_int build_err = err;
                             char *build_log;
                             char devicename[200];
                             size_t log_size;
@@ -305,19 +298,29 @@ patch_kernel_source:
                             err = clGetProgramBuildInfo(plan->program, devices[i], CL_PROGRAM_BUILD_LOG, 0, nullptr, &log_size);
                             ERR_MACRO(err);
 
-                            build_log = (char *)malloc(log_size + 1);
+                            build_log = static_cast<char *>(calloc(log_size + 1, 1));
+                            if (!build_log)
+                                ERR_MACRO(build_err);
 
                             err = clGetProgramBuildInfo(plan->program, devices[i], CL_PROGRAM_BUILD_LOG, log_size, build_log, nullptr);
-                            ERR_MACRO(err);
+                            if (err != CL_SUCCESS)
+                                {
+                                    free(build_log);
+                                    ERR_MACRO(err);
+                                }
 
                             err = clGetDeviceInfo(devices[i], CL_DEVICE_NAME, sizeof(devicename), devicename, nullptr);
-                            ERR_MACRO(err);
+                            if (err != CL_SUCCESS)
+                                {
+                                    free(build_log);
+                                    ERR_MACRO(err);
+                                }
 
                             fprintf(stdout, "FFT program build log on device %s\n", devicename);
                             fprintf(stdout, "%s\n", build_log);
                             free(build_log);
 
-                            ERR_MACRO(err);
+                            ERR_MACRO(build_err);
                         }
                 }
         }
@@ -335,7 +338,7 @@ patch_kernel_source:
     int patching_req = getMaxKernelWorkGroupSize(plan, &max_kernel_wg_size, num_devices, devices);
     if (patching_req == -1)
         {
-            ERR_MACRO(err);
+            ERR_MACRO(CL_INVALID_KERNEL);
         }
 
     if (patching_req)
@@ -363,7 +366,7 @@ patch_kernel_source:
 
 void clFFT_DestroyPlan(clFFT_Plan plan)
 {
-    auto *Plan = (cl_fft_plan *)plan;
+    auto *Plan = static_cast<cl_fft_plan *>(plan);
     if (Plan)
         {
             destroy_plan(Plan);
@@ -387,7 +390,7 @@ void clFFT_DumpPlan(clFFT_Plan Plan, FILE *file)
             out = file;
         }
 
-    auto *plan = (cl_fft_plan *)Plan;
+    auto *plan = static_cast<cl_fft_plan *>(Plan);
     cl_fft_kernel_info *kInfo = plan->kernel_info;
 
     while (kInfo)

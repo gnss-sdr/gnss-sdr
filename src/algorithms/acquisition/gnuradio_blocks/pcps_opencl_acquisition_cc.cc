@@ -36,18 +36,38 @@
 
 #include "pcps_opencl_acquisition_cc.h"
 #include "MATH_CONSTANTS.h"  // TWO_PI
-#include "opencl/fft_base_kernels.h"
-#include "opencl/fft_internal.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
 #include <array>
 #include <exception>
-#include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <utility>
+
+// Khronos OpenCL C++ bindings: CL/opencl.hpp from the system or, if not
+// found, from src/algorithms/libs/opencl/include
+#define CL_HPP_ENABLE_EXCEPTIONS
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#ifndef CL_SILENCE_DEPRECATION
+#define CL_SILENCE_DEPRECATION  // OpenCL is deprecated, but still available, in macOS
+#endif
+#include "opencl/clFFT.h"
+#if defined(__APPLE__) || defined(__MACOSX)
+#include <OpenCL/opencl.h>
+#else
+#include <CL/opencl.h>
+#endif
+// The bindings compare the CL_KHR_COMMAND_BUFFER_*_EXTENSION_VERSION macros of
+// the C headers of their own release, which older C headers (e.g., those of
+// Ubuntu 22.04 and 24.04) do not define. Command buffers are not used here:
+// hiding them lets the bundled bindings build with any C headers
+#undef cl_khr_command_buffer
+#undef cl_khr_command_buffer_mutable_dispatch
+#include <CL/opencl.hpp>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -55,38 +75,155 @@
 #include <absl/log/log.h>
 #endif
 
-// Built-in copy of the math kernels, used when the kernel file given to
-// init_opencl_environment() is not found next to the executable.
-static const char *math_kernel_source = R"CL(
-#define MUL_RE(a,b) (a.x*b.x - a.y*b.y)
-#define MUL_IM(a,b) (a.x*b.y + a.y*b.x)
-#define SUM_RE(a,b) (a.x + b.x)
-#define SUM_IM(a,b) (a.y + b.y)
 
-__kernel void add_vectors(__global const float2* src1, __global const float2* src2, __global float2* dest)
+namespace
 {
-    int gid = get_global_id(0);
-    dest[gid] = (float2)(SUM_RE(src1[gid],src2[gid]),SUM_IM(src1[gid],src2[gid]));
+// The kernels work on a batch of Doppler bins: dimension 1 of the global work
+// size is the bin, and each bin has an FFT buffer of stride samples
+const char *const math_kernel_source = R"CL(
+// Carrier wipe-off of the input, into the first n samples of the FFT buffer of
+// each bin (the rest of it stays zero)
+__kernel void wipeoff_batch(__global const float2* in, __global const float2* wipeoffs,
+    __global float2* out, const uint n, const uint stride)
+{
+    const uint i = get_global_id(0);
+    const size_t bin = get_global_id(1);
+    const float2 a = in[i];
+    const float2 b = wipeoffs[bin * n + i];
+    out[bin * stride + i] = (float2)(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
-__kernel void mult_vectors(__global const float2* src1, __global const float2* src2, __global float2* dest)
+// x = x * codes, in the FFT buffer of each bin
+__kernel void code_product_batch(__global float2* x, __global const float2* codes, const uint stride)
 {
-    int gid = get_global_id(0);
-    dest[gid] = (float2)(MUL_RE(src1[gid],src2[gid]),MUL_IM(src1[gid],src2[gid]));
+    const uint k = get_global_id(0);
+    const size_t j = get_global_id(1) * stride + k;
+    const float2 a = x[j];
+    const float2 b = codes[k];
+    x[j] = (float2)(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
-__kernel void conj_vector(__global const float2* src, __global float2* dest)
+// Maximum of |x|^2 over the first n lags of each bin, its first lag, and the
+// sum of |x|^2 over those lags. One work-group per bin, with a power of two of
+// work-items
+__kernel void max_magnitude_batch(__global const float2* x, const uint n, const uint stride,
+    __global float* max_value, __global uint* max_index, __global float* power_sum,
+    __local float* lmax, __local uint* lidx, __local float* lsum)
 {
-    int gid = get_global_id(0);
-    dest[gid] = ((float2)(1,-1)) * src[gid];
-}
-
-__kernel void magnitude_squared(__global const float2* src, __global float* dest)
-{
-    int gid = get_global_id(0);
-    dest[gid] = src[gid].x*src[gid].x + src[gid].y*src[gid].y;
+    const uint lid = get_local_id(0);
+    const uint lsize = get_local_size(0);
+    const size_t bin = get_group_id(1);
+    __global const float2* corr = x + bin * stride;
+    float best = -1.0f;
+    uint best_i = 0;
+    float sum = 0.0f;
+    for (uint i = lid; i < n; i += lsize)
+        {
+            const float2 v = corr[i];
+            const float m = v.x * v.x + v.y * v.y;
+            sum += m;
+            if (m > best)
+                {
+                    best = m;
+                    best_i = i;
+                }
+        }
+    lmax[lid] = best;
+    lidx[lid] = best_i;
+    lsum[lid] = sum;
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (uint s = lsize / 2; s > 0; s >>= 1)
+        {
+            if (lid < s)
+                {
+                    lsum[lid] += lsum[lid + s];
+                    const float m = lmax[lid + s];
+                    const uint i = lidx[lid + s];
+                    if (m > lmax[lid] || (m == lmax[lid] && i < lidx[lid]))
+                        {
+                            lmax[lid] = m;
+                            lidx[lid] = i;
+                        }
+                }
+            barrier(CLK_LOCAL_MEM_FENCE);
+        }
+    if (lid == 0)
+        {
+            max_value[bin] = lmax[0];
+            max_index[bin] = lidx[0];
+            power_sum[bin] = lsum[0];
+        }
 }
 )CL";
+
+// Upper limit of each batch buffer: larger grids are searched in several batches
+constexpr size_t max_batch_buffer_bytes = 64 * 1024 * 1024;
+
+
+uint32_t next_power_of_two(uint32_t n)
+{
+    uint32_t p = 1;
+    while (p < n)
+        {
+            p <<= 1U;
+        }
+    return p;
+}
+}  // namespace
+
+
+/*
+ * The OpenCL objects of the block.
+ *
+ * The circular correlation over d_fft_size lags is computed with FFTs of
+ * d_fft_size_pow2 >= 2 * d_fft_size samples: the input, zero-padded, against
+ * the local code laid out as [code, zeros, code]. The Doppler bins are searched
+ * in batches of batch_bins, each with a single blocking read of the maximum of
+ * every bin. The kernel arguments are set once, except the Doppler wipe-offs of
+ * the batch.
+ */
+struct pcps_opencl_acquisition_cc::OpenClState
+{
+    struct FftPlanDeleter
+    {
+        void operator()(void *plan) const
+        {
+            clFFT_DestroyPlan(plan);
+        }
+    };
+
+    // Batched FFTs, always of batch_bins: the plan keeps its temporary buffer
+    void fft(clFFT_Direction dir, const cl::Buffer &input, const cl::Buffer &output)
+    {
+        const cl_int err = clFFT_ExecuteInterleaved(queue(), fft_plan.get(), static_cast<cl_int>(batch_bins), dir, input(), output(), 0, nullptr, nullptr);
+        if (err != CL_SUCCESS)
+            {
+                throw cl::Error(err, "clFFT_ExecuteInterleaved");
+            }
+    }
+
+    cl::Platform platform;
+    cl::Device device;
+    cl::Context context;
+    cl::CommandQueue queue;
+    cl::Program program;
+    size_t batch_bins{1};                            // Doppler bins searched at once
+    size_t reduction_size{1};                        // work-items per bin in the maximum search
+    cl::Buffer in;                                   // input dwell, d_fft_size samples
+    std::vector<cl::Buffer> wipeoffs;                // per batch: batch_bins x d_fft_size samples
+    cl::Buffer fft_in;                               // per bin: wiped-off input, zero-padded to d_fft_size_pow2 samples
+    cl::Buffer fft_out;                              // per bin: its FFT, times the code FFT, and its inverse FFT
+    cl::Buffer fft_codes;                            // conjugated FFT of the code layout, d_fft_size_pow2 samples
+    cl::Buffer max_value;                            // per bin: maximum |correlation|^2
+    cl::Buffer max_index;                            // per bin: its lag
+    cl::Buffer power_sum;                            // per bin: sum of |correlation|^2
+    cl::Kernel wipeoff;                              // fft_in = in * wipeoffs
+    cl::Kernel code_product;                         // fft_out = fft_out * fft_codes
+    cl::Kernel max_magnitude;                        // max_value, max_index, power_sum of |fft_out|^2
+    std::unique_ptr<gnss_fft_complex_fwd> code_fft;  // FFT of the code layout, on the CPU
+    std::vector<gr_complex> codes;                   // conjugated FFT of the code layout, d_fft_size_pow2 samples
+    std::unique_ptr<void, FftPlanDeleter> fft_plan;
+};
 
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(const Acq_Conf &conf, uint32_t max_dwells)
@@ -100,23 +237,27 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(const Acq_Conf &conf, uin
           gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * conf.sampled_ms * conf.samples_per_ms)),
           gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
       d_acq_params(conf),
-      d_cl_fft_batch_size(1),
+      d_gnss_synchro(nullptr),
       d_sample_counter(0ULL),
-      d_mag(0),
+      d_mag(0.0),
       d_input_power(0.0),
+      d_test_statistics(0.0),
       d_state(0),
       d_max_dwells(max_dwells),
       d_well_count(0),
-      d_fft_size(conf.sampled_ms * conf.samples_per_ms),
-      d_fft_size_pow2(pow(2, ceil(log2(2 * d_fft_size)))),
+      d_fft_size(static_cast<uint32_t>(conf.sampled_ms * conf.samples_per_ms)),
+      d_fft_size_pow2(next_power_of_two(2 * d_fft_size)),
       d_num_doppler_bins(0),
+      d_channel(0),
       d_in_dwell_count(0),
       d_active(false),
       d_core_working(false),
+      d_use_opencl(false),
+      d_fft_if(gnss_fft_fwd_make_unique(d_fft_size)),
+      d_ifft(gnss_fft_rev_make_unique(d_fft_size)),
       d_in_buffer(d_max_dwells, std::vector<gr_complex>(d_fft_size)),
-      d_magnitude(d_fft_size),
-      d_fft_codes(d_fft_size_pow2),
-      d_zero_vector(d_fft_size_pow2 - d_fft_size, 0.0)
+      d_fft_codes(d_fft_size),
+      d_magnitude(d_fft_size)
 {
     // A search needs its dwells beyond its first sample (GNSS-SDR.deterministic=true)
     d_det.require_span(static_cast<uint64_t>(d_fft_size) * std::max(1U, d_max_dwells));
@@ -125,73 +266,45 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(const Acq_Conf &conf, uin
 
     this->message_port_register_out(pmt::mp("events"));
 
-    d_opencl = init_opencl_environment("math_kernel.cl");
-
-    if (d_opencl != 0)
-        {
-            // Direct FFT
-            d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
-
-            // Inverse FFT
-            d_ifft = gnss_fft_rev_make_unique(d_fft_size);
-        }
-
     // Count the number of bins
     for (int doppler = -d_acq_params.doppler_max; doppler <= d_acq_params.doppler_max; doppler += d_acq_params.doppler_step)
         {
             d_num_doppler_bins++;
         }
 
+    d_bin_peak = std::vector<float>(d_num_doppler_bins);
+    d_bin_index = std::vector<uint32_t>(d_num_doppler_bins);
+    d_bin_power = std::vector<float>(d_num_doppler_bins);
+    d_doppler_bin_power = std::vector<float>(d_num_doppler_bins);
+
     // Create the carrier Doppler wipeoff signals
     d_grid_doppler_wipeoffs = std::vector<std::vector<gr_complex>>(d_num_doppler_bins, std::vector<gr_complex>(d_fft_size));
-    if (d_opencl == 0)
-        {
-            d_cl_buffer_grid_doppler_wipeoffs = new cl::Buffer *[d_num_doppler_bins];
-        }
-
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             int doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
             float phase_step_rad = static_cast<float>(TWO_PI) * doppler / static_cast<float>(d_acq_params.fs_in);
             std::array<float, 1> _phase{};
             volk_gnsssdr_s32f_sincos_32fc(d_grid_doppler_wipeoffs[doppler_index].data(), -phase_step_rad, _phase.data(), d_fft_size);
-
-            if (d_opencl == 0)
-                {
-                    d_cl_buffer_grid_doppler_wipeoffs[doppler_index] =
-                        new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex) * d_fft_size);
-
-                    d_cl_queue->enqueueWriteBuffer(*(d_cl_buffer_grid_doppler_wipeoffs[doppler_index]),
-                        CL_TRUE, 0, sizeof(gr_complex) * d_fft_size,
-                        d_grid_doppler_wipeoffs[doppler_index].data());
-                }
         }
 
-    // zero padding in buffer_1 (FFT input)
-    if (d_opencl == 0)
-        {
-            d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_1, CL_TRUE, sizeof(gr_complex) * d_fft_size,
-                sizeof(gr_complex) * (d_fft_size_pow2 - d_fft_size), d_zero_vector.data());
-        }
+    init_opencl();
 }
 
 
 pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
 {
-    if (d_opencl == 0)
+    try
         {
-            delete d_cl_queue;
-            delete d_cl_buffer_in;
-            delete d_cl_buffer_1;
-            delete d_cl_buffer_2;
-            delete d_cl_buffer_magnitude;
-            delete d_cl_buffer_fft_codes;
-            if (d_num_doppler_bins > 0)
-                {
-                    delete[] d_cl_buffer_grid_doppler_wipeoffs;
-                }
-
-            clFFT_DestroyPlan(d_cl_fft_plan);
+            {
+                std::lock_guard<std::mutex> lock(d_state_mutex);
+                d_state = 0;
+                d_active = false;
+            }
+            join_core();
+        }
+    catch (const std::exception &e)
+        {
+            std::cerr << "Error while waiting for the OpenCL acquisition core: " << e.what() << '\n';
         }
 
     try
@@ -212,143 +325,269 @@ pcps_opencl_acquisition_cc::~pcps_opencl_acquisition_cc()
 }
 
 
-int pcps_opencl_acquisition_cc::init_opencl_environment(const std::string &kernel_filename)
+void pcps_opencl_acquisition_cc::init_opencl()
 {
-    // get all platforms (drivers)
-    std::vector<cl::Platform> all_platforms;
-    cl::Platform::get(&all_platforms);
-
-    if (all_platforms.empty())
+    try
         {
-            std::cout << "No OpenCL platforms found. Check OpenCL installation!\n";
-            return 1;
+            auto cl_state = std::unique_ptr<OpenClState>(new OpenClState());
+
+            // The first GPU device of any platform: the FFT runs on GPU devices only
+            std::vector<cl::Platform> platforms;
+            cl::Platform::get(&platforms);
+            for (const auto &platform : platforms)
+                {
+                    std::vector<cl::Device> devices;
+                    try
+                        {
+                            platform.getDevices(CL_DEVICE_TYPE_GPU, &devices);
+                        }
+                    catch (const cl::Error &e)
+                        {
+                            LOG(WARNING) << "Cannot list the OpenCL devices of platform " << platform.getInfo<CL_PLATFORM_NAME>()
+                                         << ": " << e.what() << " (" << e.err() << ")";
+                        }
+                    if (!devices.empty())
+                        {
+                            cl_state->platform = platform;
+                            cl_state->device = devices[0];
+                            break;
+                        }
+                }
+            if (cl_state->device() == nullptr)
+                {
+                    LOG(WARNING) << "No OpenCL GPU device found. The OpenCL acquisition runs on the CPU";
+                    return;
+                }
+
+            cl_state->context = cl::Context(cl_state->device);
+            cl_state->queue = cl::CommandQueue(cl_state->context, cl_state->device);
+            cl_state->program = cl::Program(cl_state->context, std::string(math_kernel_source));
+            cl_state->program.build(std::vector<cl::Device>{cl_state->device});
+
+            const size_t n = d_fft_size;
+            const size_t n2 = d_fft_size_pow2;
+            const size_t bins = d_num_doppler_bins;
+            const size_t bin_bytes = sizeof(gr_complex) * n2;
+            const auto max_alloc = static_cast<size_t>(cl_state->device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>());
+            cl_state->batch_bins = std::max<size_t>(1, std::min<size_t>(bins, std::min(max_alloc, max_batch_buffer_bytes) / bin_bytes));
+            const size_t batch = cl_state->batch_bins;
+            const size_t num_batches = (bins + batch - 1) / batch;
+
+            cl_state->in = cl::Buffer(cl_state->context, CL_MEM_READ_ONLY, sizeof(gr_complex) * n);
+            std::vector<gr_complex> batch_wipeoffs(batch * n);
+            for (size_t b = 0; b < num_batches; b++)
+                {
+                    const size_t first = b * batch;
+                    const size_t count = std::min(batch, bins - first);
+                    for (size_t k = 0; k < count; k++)
+                        {
+                            std::copy(d_grid_doppler_wipeoffs[first + k].begin(), d_grid_doppler_wipeoffs[first + k].end(), batch_wipeoffs.begin() + k * n);
+                        }
+                    std::fill(batch_wipeoffs.begin() + count * n, batch_wipeoffs.end(), gr_complex(0.0, 0.0));  // unused bins of the last batch
+                    cl_state->wipeoffs.emplace_back(cl_state->context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(gr_complex) * batch * n, batch_wipeoffs.data());
+                }
+            {
+                // The zero padding is never written again. Not with
+                // enqueueFillBuffer(): it leaves old contents in macOS
+                const std::vector<gr_complex> zeros(n2 * batch, gr_complex(0.0, 0.0));
+                cl_state->fft_in = cl::Buffer(cl_state->context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, bin_bytes * batch, const_cast<gr_complex *>(zeros.data()));
+            }
+            cl_state->fft_out = cl::Buffer(cl_state->context, CL_MEM_READ_WRITE, bin_bytes * batch);
+            cl_state->fft_codes = cl::Buffer(cl_state->context, CL_MEM_READ_ONLY, bin_bytes);
+            cl_state->max_value = cl::Buffer(cl_state->context, CL_MEM_WRITE_ONLY, sizeof(cl_float) * batch);
+            cl_state->max_index = cl::Buffer(cl_state->context, CL_MEM_WRITE_ONLY, sizeof(cl_uint) * batch);
+            cl_state->power_sum = cl::Buffer(cl_state->context, CL_MEM_WRITE_ONLY, sizeof(cl_float) * batch);
+
+            const auto n_arg = static_cast<cl_uint>(n);
+            const auto stride_arg = static_cast<cl_uint>(n2);
+            cl_state->wipeoff = cl::Kernel(cl_state->program, "wipeoff_batch");
+            cl_state->wipeoff.setArg(0, cl_state->in);
+            cl_state->wipeoff.setArg(2, cl_state->fft_in);  // argument 1: the wipe-offs of the batch
+            cl_state->wipeoff.setArg(3, n_arg);
+            cl_state->wipeoff.setArg(4, stride_arg);
+            cl_state->code_product = cl::Kernel(cl_state->program, "code_product_batch");
+            cl_state->code_product.setArg(0, cl_state->fft_out);
+            cl_state->code_product.setArg(1, cl_state->fft_codes);
+            cl_state->code_product.setArg(2, stride_arg);
+            cl_state->max_magnitude = cl::Kernel(cl_state->program, "max_magnitude_batch");
+            const size_t max_work_items = std::min({static_cast<size_t>(256),
+                cl_state->max_magnitude.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(cl_state->device),
+                cl_state->device.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>()[0]});
+            while (cl_state->reduction_size * 2 <= max_work_items)
+                {
+                    cl_state->reduction_size *= 2;
+                }
+            cl_state->max_magnitude.setArg(0, cl_state->fft_out);
+            cl_state->max_magnitude.setArg(1, n_arg);
+            cl_state->max_magnitude.setArg(2, stride_arg);
+            cl_state->max_magnitude.setArg(3, cl_state->max_value);
+            cl_state->max_magnitude.setArg(4, cl_state->max_index);
+            cl_state->max_magnitude.setArg(5, cl_state->power_sum);
+            cl_state->max_magnitude.setArg(6, cl::Local(sizeof(cl_float) * cl_state->reduction_size));
+            cl_state->max_magnitude.setArg(7, cl::Local(sizeof(cl_uint) * cl_state->reduction_size));
+            cl_state->max_magnitude.setArg(8, cl::Local(sizeof(cl_float) * cl_state->reduction_size));
+
+            cl_state->code_fft = gnss_fft_fwd_make_unique(d_fft_size_pow2);
+            cl_state->codes = std::vector<gr_complex>(n2);
+
+            cl_int err = CL_SUCCESS;
+            const clFFT_Dim3 dim = {d_fft_size_pow2, 1, 1};
+            cl_state->fft_plan.reset(clFFT_CreatePlan(cl_state->context(), dim, clFFT_1D, clFFT_InterleavedComplexFormat, &err));
+            if (err != CL_SUCCESS || !cl_state->fft_plan)
+                {
+                    throw cl::Error(err, "clFFT_CreatePlan");
+                }
+
+            LOG(INFO) << "OpenCL acquisition on device " << cl_state->device.getInfo<CL_DEVICE_NAME>()
+                      << " (" << cl_state->device.getInfo<CL_DEVICE_VERSION>() << ") of platform "
+                      << cl_state->platform.getInfo<CL_PLATFORM_NAME>() << ", " << bins << " Doppler bins in "
+                      << num_batches << " batch(es) of " << batch;
+            d_cl = std::move(cl_state);
+            d_use_opencl = true;
         }
-
-    d_cl_platform = all_platforms[0];  // get default platform
-    std::cout << "Using platform: " << d_cl_platform.getInfo<CL_PLATFORM_NAME>()
-              << '\n';
-
-    // get default GPU device of the default platform
-    std::vector<cl::Device> gpu_devices;
-    d_cl_platform.getDevices(CL_DEVICE_TYPE_GPU, &gpu_devices);
-
-    if (gpu_devices.empty())
+    catch (const cl::BuildError &e)
         {
-            std::cout << "No GPU devices found. Check OpenCL installation!\n";
-            return 2;
+            for (const auto &log : e.getBuildLog())
+                {
+                    LOG(WARNING) << "OpenCL build log: " << log.second;
+                }
+            LOG(WARNING) << "Cannot build the OpenCL kernels (" << e.err() << "). The OpenCL acquisition runs on the CPU";
         }
-
-    d_cl_device = gpu_devices[0];
-
-    std::vector<cl::Device> device;
-    device.push_back(d_cl_device);
-    std::cout << "Using device: " << d_cl_device.getInfo<CL_DEVICE_NAME>() << '\n';
-
-    cl::Context context(device);
-    d_cl_context = context;
-
-    // build the program from the source in the file
-    std::ifstream kernel_file(kernel_filename, std::ifstream::in);
-    std::string kernel_code(std::istreambuf_iterator<char>(kernel_file),
-        (std::istreambuf_iterator<char>()));
-    kernel_file.close();
-    if (kernel_code.empty())
+    catch (const cl::Error &e)
         {
-            // Kernel file not found: fall back to the built-in copy
-            kernel_code = math_kernel_source;
+            LOG(WARNING) << "OpenCL error in " << e.what() << " (" << e.err() << "). The OpenCL acquisition runs on the CPU";
         }
-
-    cl::Program::Sources sources;
-
-    sources.emplace_back(kernel_code.c_str(), kernel_code.length());
-
-    cl::Program program(context, sources);
-    if (program.build(device) != CL_SUCCESS)
-        {
-            std::cout << " Error building: "
-                      << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device[0])
-                      << '\n';
-            return 3;
-        }
-    d_cl_program = program;
-
-    // create buffers on the device
-    d_cl_buffer_in = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex) * d_fft_size);
-    d_cl_buffer_fft_codes = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex) * d_fft_size_pow2);
-    d_cl_buffer_1 = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex) * d_fft_size_pow2);
-    d_cl_buffer_2 = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(gr_complex) * d_fft_size_pow2);
-    d_cl_buffer_magnitude = new cl::Buffer(d_cl_context, CL_MEM_READ_WRITE, sizeof(float) * d_fft_size);
-
-    // create queue to which we will push commands for the device.
-    d_cl_queue = new cl::CommandQueue(d_cl_context, d_cl_device);
-
-    // create FFT plan
-    cl_int err;
-    clFFT_Dim3 dim = {d_fft_size_pow2, 1, 1};
-
-    d_cl_fft_plan = clFFT_CreatePlan(d_cl_context(), dim, clFFT_1D,
-        clFFT_InterleavedComplexFormat, &err);
-
-    if (err != 0)
-        {
-            delete d_cl_queue;
-            delete d_cl_buffer_in;
-            delete d_cl_buffer_1;
-            delete d_cl_buffer_2;
-            delete d_cl_buffer_magnitude;
-            delete d_cl_buffer_fft_codes;
-
-            std::cout << "Error creating OpenCL FFT plan.\n";
-            return 4;
-        }
-
-    return 0;
 }
 
 
 void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> *code)
 {
-    if (d_opencl == 0)
+    // Not while an acquisition core uses the FFT engines or the code
+    std::lock_guard<std::mutex> core_lock(d_core_mutex);
+
+    // Conjugated FFT of the local code, for the CPU implementation and its fallback
+    std::copy(code, code + d_fft_size, d_fft_if->get_inbuf());
+    d_fft_if->execute();
+    volk_32fc_conjugate_32fc(d_fft_codes.data(), d_fft_if->get_outbuf(), d_fft_size);
+
+    if (d_use_opencl)
         {
-            d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, 0,
-                sizeof(gr_complex) * d_fft_size, code);
-
-            d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, sizeof(gr_complex) * d_fft_size,
-                sizeof(gr_complex) * (d_fft_size_pow2 - 2 * d_fft_size),
-                d_zero_vector.data());
-
-            d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_2, CL_TRUE, sizeof(gr_complex) * (d_fft_size_pow2 - d_fft_size),
-                sizeof(gr_complex) * d_fft_size, code);
-
-            clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
-                clFFT_Forward, (*d_cl_buffer_2)(), (*d_cl_buffer_2)(),
-                0, nullptr, nullptr);
-
-            // Conjucate the local code
-            cl::Kernel kernel = cl::Kernel(d_cl_program, "conj_vector");
-            kernel.setArg(0, *d_cl_buffer_2);          // input
-            kernel.setArg(1, *d_cl_buffer_fft_codes);  // output
-            d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size_pow2), cl::NullRange);
-        }
-    else
-        {
-            std::copy(code, code + d_fft_size, d_fft_if->get_inbuf());
-
-            d_fft_if->execute();  // We need the FFT of local code
-
-            // Conjugate the local code
-            volk_32fc_conjugate_32fc(d_fft_codes.data(), d_fft_if->get_outbuf(), d_fft_size);
+            try
+                {
+                    // [code, zeros, code], transformed on the CPU: the FFT plan of the
+                    // device runs batches of Doppler bins
+                    gr_complex *layout = d_cl->code_fft->get_inbuf();
+                    std::fill(layout, layout + d_fft_size_pow2, gr_complex(0.0, 0.0));
+                    std::copy(code, code + d_fft_size, layout);
+                    std::copy(code, code + d_fft_size, layout + (d_fft_size_pow2 - d_fft_size));
+                    d_cl->code_fft->execute();
+                    volk_32fc_conjugate_32fc(d_cl->codes.data(), d_cl->code_fft->get_outbuf(), d_fft_size_pow2);
+                    d_cl->queue.enqueueWriteBuffer(d_cl->fft_codes, CL_TRUE, 0, sizeof(gr_complex) * d_fft_size_pow2, d_cl->codes.data());
+                }
+            catch (const cl::Error &e)
+                {
+                    LOG(ERROR) << "OpenCL error in " << e.what() << " (" << e.err() << ") in channel " << d_channel
+                               << ". The OpenCL acquisition continues on the CPU";
+                    d_use_opencl = false;
+                }
         }
 }
 
 
-void pcps_opencl_acquisition_cc::acquisition_core_volk()
+void pcps_opencl_acquisition_cc::search_opencl(const gr_complex *in)
 {
+    OpenClState &cl_state = *d_cl;
+    const size_t batch = cl_state.batch_bins;
+    // Not modified until the blocking read below
+    cl_state.queue.enqueueWriteBuffer(cl_state.in, CL_FALSE, 0, sizeof(gr_complex) * d_fft_size, in);
+    for (size_t b = 0; b < cl_state.wipeoffs.size(); b++)
+        {
+            const size_t first = b * batch;
+            const size_t count = std::min<size_t>(batch, d_num_doppler_bins - first);
+            cl_state.wipeoff.setArg(1, cl_state.wipeoffs[b]);
+            cl_state.queue.enqueueNDRangeKernel(cl_state.wipeoff, cl::NullRange, cl::NDRange(d_fft_size, batch), cl::NullRange);
+            cl_state.fft(clFFT_Forward, cl_state.fft_in, cl_state.fft_out);
+            cl_state.queue.enqueueNDRangeKernel(cl_state.code_product, cl::NullRange, cl::NDRange(d_fft_size_pow2, batch), cl::NullRange);
+            cl_state.fft(clFFT_Inverse, cl_state.fft_out, cl_state.fft_out);
+            cl_state.queue.enqueueNDRangeKernel(cl_state.max_magnitude, cl::NullRange,
+                cl::NDRange(cl_state.reduction_size, batch), cl::NDRange(cl_state.reduction_size, 1));
+
+            // The blocking read waits for all the commands above
+            cl_state.queue.enqueueReadBuffer(cl_state.max_value, CL_FALSE, 0, sizeof(float) * count, &d_bin_peak[first]);
+            cl_state.queue.enqueueReadBuffer(cl_state.power_sum, CL_FALSE, 0, sizeof(float) * count, &d_bin_power[first]);
+            cl_state.queue.enqueueReadBuffer(cl_state.max_index, CL_TRUE, 0, sizeof(uint32_t) * count, &d_bin_index[first]);
+
+            if (d_acq_params.dump)
+                {
+                    // In the output buffer of the CPU inverse FFT, and with its scale
+                    gr_complex *corr = d_ifft->get_outbuf();
+                    const float scale = static_cast<float>(d_fft_size) / static_cast<float>(d_fft_size_pow2);
+                    for (size_t k = 0; k < count; k++)
+                        {
+                            cl_state.queue.enqueueReadBuffer(cl_state.fft_out, CL_TRUE, sizeof(gr_complex) * k * d_fft_size_pow2, sizeof(gr_complex) * d_fft_size, corr);
+                            std::transform(corr, corr + d_fft_size, corr, [scale](const gr_complex &v) { return v * scale; });
+                            dump_correlation(-d_acq_params.doppler_max + d_acq_params.doppler_step * static_cast<int>(first + k));
+                        }
+                }
+        }
+}
+
+
+void pcps_opencl_acquisition_cc::search_volk(const gr_complex *in)
+{
+    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+        {
+            correlate_volk(in, doppler_index);
+            volk_gnsssdr_32f_index_max_32u(&d_bin_index[doppler_index], d_magnitude.data(), d_fft_size);
+            d_bin_peak[doppler_index] = d_magnitude[d_bin_index[doppler_index]];
+            volk_32f_accumulator_s32f(&d_bin_power[doppler_index], d_magnitude.data(), d_fft_size);
+            if (d_acq_params.dump)
+                {
+                    dump_correlation(-d_acq_params.doppler_max + d_acq_params.doppler_step * static_cast<int>(doppler_index));
+                }
+        }
+}
+
+
+void pcps_opencl_acquisition_cc::correlate_volk(const gr_complex *in, uint32_t doppler_index)
+{
+    volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
+        d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size);
+
+    // Compute the FFT of the carrier wiped--off incoming signal
+    d_fft_if->execute();
+
+    // Multiply carrier wiped--off, Fourier transformed incoming signal
+    // with the local FFT'd code reference using SIMD operations with VOLK library
+    volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
+        d_fft_if->get_outbuf(), d_fft_codes.data(), d_fft_size);
+
+    // compute the inverse FFT
+    d_ifft->execute();
+
+    volk_32fc_magnitude_squared_32f(d_magnitude.data(), d_ifft->get_outbuf(), d_fft_size);
+}
+
+
+void pcps_opencl_acquisition_cc::dump_correlation(int doppler)
+{
+    std::stringstream filename;
+    std::streamsize n = 2 * sizeof(float) * (d_fft_size);  // complex file write
+    filename << "./test_statistics_" << d_gnss_synchro->System
+             << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
+             << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
+    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
+    d_dump_file.write(reinterpret_cast<char *>(d_ifft->get_outbuf()), n);  // write directly |abs(x)|^2 in this Doppler bin?
+    d_dump_file.close();
+}
+
+
+void pcps_opencl_acquisition_cc::acquisition_core()
+{
+    // Not while set_local_code() changes the code or uses the FFT engines
+    std::lock_guard<std::mutex> core_lock(d_core_mutex);
+
     // initialize acquisition algorithm
-    int doppler;
-    uint32_t indext = 0;
-    float magt = 0.0;
-    float fft_normalization_factor = static_cast<float>(d_fft_size) * static_cast<float>(d_fft_size);
     uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
     const gr_complex *in = d_in_buffer[d_well_count].data();
 
@@ -369,216 +608,99 @@ void pcps_opencl_acquisition_cc::acquisition_core_volk()
     volk_32f_accumulator_s32f(&d_input_power, d_magnitude.data(), d_fft_size);
     d_input_power /= static_cast<float>(d_fft_size);
 
-    // 2- Doppler frequency search loop
+    // 2- Doppler frequency search: in each bin, the maximum of the FFT-based
+    // circular correlation (parallel code phase search). The inverse FFTs are
+    // not normalized: they scale it by their size
+    bool searched = false;
+    auto ifft_size = static_cast<float>(d_fft_size);
+    if (d_use_opencl)
+        {
+            try
+                {
+                    search_opencl(in);
+                    ifft_size = static_cast<float>(d_fft_size_pow2);
+                    searched = true;
+                }
+            catch (const cl::Error &e)
+                {
+                    LOG(ERROR) << "OpenCL error in " << e.what() << " (" << e.err() << ") in channel " << d_channel
+                               << ". The OpenCL acquisition continues on the CPU";
+                    d_use_opencl = false;
+                }
+        }
+    if (!searched)
+        {
+            search_volk(in);
+        }
+
+    // 3- Normalize the maximum values and the mean power of the bins to correct
+    // the scale factor introduced by the inverse FFT, to |correlation|^2 /
+    // d_fft_size^2, and record the maximum peak of the dwell
+    const float fft_normalization_factor = ifft_size * static_cast<float>(d_fft_size);
+    const float scale = 1.0F / (fft_normalization_factor * fft_normalization_factor);
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            // doppler search steps
-            doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
-
-            volk_32fc_x2_multiply_32fc(d_fft_if->get_inbuf(), in,
-                d_grid_doppler_wipeoffs[doppler_index].data(), d_fft_size);
-
-            // 3- Perform the FFT-based convolution  (parallel time search)
-            // Compute the FFT of the carrier wiped--off incoming signal
-            d_fft_if->execute();
-
-            // Multiply carrier wiped--off, Fourier transformed incoming signal
-            // with the local FFT'd code reference using SIMD operations with VOLK library
-            volk_32fc_x2_multiply_32fc(d_ifft->get_inbuf(),
-                d_fft_if->get_outbuf(), d_fft_codes.data(), d_fft_size);
-
-            // compute the inverse FFT
-            d_ifft->execute();
-
-            // Search maximum
-            volk_32fc_magnitude_squared_32f(d_magnitude.data(), d_ifft->get_outbuf(), d_fft_size);
-            volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude.data(), d_fft_size);
-
-            // Normalize the maximum value to correct the scale factor introduced by FFTW
-            magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
-
-            // 4- record the maximum peak and the associated synchronization parameters
-            if (d_mag < magt)
+            const float magt = d_bin_peak[doppler_index] * scale;
+            d_doppler_bin_power[doppler_index] = d_bin_power[doppler_index] * scale / static_cast<float>(d_fft_size);
+            if (doppler_index == 0 || d_mag < magt)
                 {
                     d_mag = magt;
-
-                    // In case that d_bit_transition_flag = true, we compare the potentially
-                    // new maximum test statistics (d_mag/d_input_power) with the value in
-                    // d_test_statistics. When the second dwell is being processed, the value
-                    // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
-                    // the maximum test statistics in the previous dwell is greater than
-                    // current d_mag/d_input_power). Note that d_test_statistics is not
-                    // restarted between consecutive dwells in multidwell operation.
-                    if (d_test_statistics < (d_mag / d_input_power) || !d_acq_params.bit_transition_flag)
-                        {
-                            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % static_cast<int32_t>(d_acq_params.samples_per_code));
-                            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-                            d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
-                            d_gnss_synchro->Acq_doppler_step = d_acq_params.doppler_step;
-
-                            // 5- Compute the test statistics and compare to the threshold
-                            // d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
-                            d_test_statistics = d_mag / d_input_power;
-                        }
-                }
-
-            // Record results to file if required
-            if (d_acq_params.dump)
-                {
-                    std::stringstream filename;
-                    std::streamsize n = 2 * sizeof(float) * (d_fft_size);  // complex file write
-                    filename.str("");
-                    filename << "./test_statistics_" << d_gnss_synchro->System
-                             << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
-                             << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
-                    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                    d_dump_file.write(reinterpret_cast<char *>(d_ifft->get_outbuf()), n);  // write directly |abs(x)|^2 in this Doppler bin?
-                    d_dump_file.close();
+                    d_peak_code_phase = d_bin_index[doppler_index];
+                    d_peak_doppler_index = doppler_index;
                 }
         }
 
+    // 4- Compute the test statistics and compare to the threshold
+    compute_test_statistics(samplestamp);
     conclude_dwell(samplestamp);
 }
 
 
-void pcps_opencl_acquisition_cc::acquisition_core_opencl()
+uint32_t pcps_opencl_acquisition_cc::reference_doppler_index(uint32_t peak_doppler_index) const
 {
-    // initialize acquisition algorithm
-    int doppler;
-    uint32_t indext = 0;
-    float magt = 0.0;
-    float fft_normalization_factor = (static_cast<float>(d_fft_size_pow2) * static_cast<float>(d_fft_size));  // This works, but I am not sure why.
-    uint64_t samplestamp = d_sample_counter_buffer[d_well_count];
-    const gr_complex *in = d_in_buffer[d_well_count].data();
-
-    d_input_power = 0.0;
-    d_mag = 0.0;
-
-    // write input vector in buffer of OpenCL device
-    d_cl_queue->enqueueWriteBuffer(*d_cl_buffer_in, CL_TRUE, 0, sizeof(gr_complex) * d_fft_size, in);
-
-    d_well_count++;
-
-    //    struct timeval tv;
-    //    long long int begin = 0;
-    //    long long int end = 0;
-
-    //    gettimeofday(&tv, NULL);
-    //    begin = tv.tv_sec *1e6 + tv.tv_usec;
-
-    DLOG(INFO) << "Channel: " << d_channel
-               << " , doing acquisition of satellite: " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << " , sample stamp: " << d_sample_counter
-               << ", threshold: " << d_acq_params.threshold
-               << ", doppler_max: " << d_acq_params.doppler_max
-               << ", doppler_step: " << d_acq_params.doppler_step;
-
-    // 1- Compute the input signal power estimation
-    volk_32fc_magnitude_squared_32f(d_magnitude.data(), in, d_fft_size);
-    volk_32f_accumulator_s32f(&d_input_power, d_magnitude.data(), d_fft_size);
-    d_input_power /= static_cast<float>(d_fft_size);
-
-    cl::Kernel kernel;
-
-    // 2- Doppler frequency search loop
-    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+    // As in pcps_acquisition: the bin opposite to the peak in the wrapped
+    // grid, if it is beyond the reference_bin_min_sidelobes Doppler sidelobes
+    // of the peak, and otherwise the edge of the grid farthest from it
+    const uint32_t separation_bins = d_num_doppler_bins / 2U;
+    const float separation_hz = static_cast<float>(separation_bins) * static_cast<float>(d_acq_params.doppler_step);
+    const float min_separation_hz = (static_cast<float>(d_acq_params.reference_bin_min_sidelobes) + 0.5F) / (static_cast<float>(d_acq_params.sampled_ms) / 1000.0F);
+    if (separation_hz >= min_separation_hz)
         {
-            // doppler search steps
-            doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * doppler_index;
-
-            // Multiply input signal with doppler wipe-off
-            kernel = cl::Kernel(d_cl_program, "mult_vectors");
-            kernel.setArg(0, *d_cl_buffer_in);                                    // input 1
-            kernel.setArg(1, *d_cl_buffer_grid_doppler_wipeoffs[doppler_index]);  // input 2
-            kernel.setArg(2, *d_cl_buffer_1);                                     // output
-            d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size),
-                cl::NullRange);
-
-            // In the previous operation, we store the result in the first d_fft_size positions
-            // of d_cl_buffer_1. The rest d_fft_size_pow2-d_fft_size already have zeros
-            // (zero-padding is made in constructor for optimization purposes).
-            clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
-                clFFT_Forward, (*d_cl_buffer_1)(), (*d_cl_buffer_2)(),
-                0, nullptr, nullptr);
-
-            // Multiply carrier wiped--off, Fourier transformed incoming signal
-            // with the local FFT'd code reference
-            kernel = cl::Kernel(d_cl_program, "mult_vectors");
-            kernel.setArg(0, *d_cl_buffer_2);          // input 1
-            kernel.setArg(1, *d_cl_buffer_fft_codes);  // input 2
-            kernel.setArg(2, *d_cl_buffer_2);          // output
-            d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size_pow2),
-                cl::NullRange);
-
-            // compute the inverse FFT
-            clFFT_ExecuteInterleaved((*d_cl_queue)(), d_cl_fft_plan, d_cl_fft_batch_size,
-                clFFT_Inverse, (*d_cl_buffer_2)(), (*d_cl_buffer_2)(),
-                0, nullptr, nullptr);
-
-            // Compute magnitude
-            kernel = cl::Kernel(d_cl_program, "magnitude_squared");
-            kernel.setArg(0, *d_cl_buffer_2);          // input 1
-            kernel.setArg(1, *d_cl_buffer_magnitude);  // output
-            d_cl_queue->enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(d_fft_size),
-                cl::NullRange);
-
-            // This is the only function that blocks this thread until all previously enqueued
-            // OpenCL commands are completed.
-            d_cl_queue->enqueueReadBuffer(*d_cl_buffer_magnitude, CL_TRUE, 0,
-                sizeof(float) * d_fft_size, d_magnitude.data());
-
-            // Search maximum
-            // @TODO: find an efficient way to search the maximum with OpenCL in the GPU.
-            volk_gnsssdr_32f_index_max_32u(&indext, d_magnitude.data(), d_fft_size);
-
-            // Normalize the maximum value to correct the scale factor introduced by FFTW
-            magt = d_magnitude[indext] / (fft_normalization_factor * fft_normalization_factor);
-
-            // 4- record the maximum peak and the associated synchronization parameters
-            if (d_mag < magt)
-                {
-                    d_mag = magt;
-
-                    // In case that d_bit_transition_flag = true, we compare the potentially
-                    // new maximum test statistics (d_mag/d_input_power) with the value in
-                    // d_test_statistics. When the second dwell is being processed, the value
-                    // of d_mag/d_input_power could be lower than d_test_statistics (i.e,
-                    // the maximum test statistics in the previous dwell is greater than
-                    // current d_mag/d_input_power). Note that d_test_statistics is not
-                    // restarted between consecutive dwells in multidwell operation.
-                    if (d_test_statistics < (d_mag / d_input_power) || !d_acq_params.bit_transition_flag)
-                        {
-                            d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext % static_cast<int32_t>(d_acq_params.samples_per_code));
-                            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
-                            d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
-                            d_gnss_synchro->Acq_doppler_step = d_acq_params.doppler_step;
-
-                            // 5- Compute the test statistics and compare to the threshold
-                            // d_test_statistics = 2 * d_fft_size * d_mag / d_input_power;
-                            d_test_statistics = d_mag / d_input_power;
-                        }
-                }
-
-            // Record results to file if required
-            if (d_acq_params.dump)
-                {
-                    std::stringstream filename;
-                    std::streamsize n = 2 * sizeof(float) * (d_fft_size);  // complex file write
-                    filename.str("");
-                    filename << "./test_statistics_" << d_gnss_synchro->System
-                             << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
-                             << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
-                    d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-                    d_dump_file.write(reinterpret_cast<char *>(d_ifft->get_outbuf()), n);  // write directly |abs(x)|^2 in this Doppler bin?
-                    d_dump_file.close();
-                }
+            return (peak_doppler_index + separation_bins) % d_num_doppler_bins;
         }
+    const int peak_doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * static_cast<int>(peak_doppler_index);
+    return peak_doppler >= 0 ? 0U : d_num_doppler_bins - 1U;
+}
 
-    //    gettimeofday(&tv, NULL);
-    //    end = tv.tv_sec *1e6 + tv.tv_usec;
-    //    std::cout << "Acq time = " << (end-begin) << " us\n";
 
-    conclude_dwell(samplestamp);
+void pcps_opencl_acquisition_cc::compute_test_statistics(uint64_t samplestamp)
+{
+    if (d_acq_params.use_CFAR_algorithm_flag)
+        {
+            // CFAR, as in pcps_acquisition and for its threshold: the peak
+            // against half the mean |correlation|^2 of a Doppler bin clear of
+            // the peak and its sidelobes
+            d_input_power = d_doppler_bin_power[reference_doppler_index(d_peak_doppler_index)] / 2.0F;
+        }
+    // else, the peak against the input signal power, for a fixed threshold
+
+    const float test_statistics = d_input_power > 0.0F ? d_mag / d_input_power : 0.0F;
+
+    // In case that d_bit_transition_flag = true, we compare the new test
+    // statistics with the value in d_test_statistics. When the second dwell
+    // is being processed, its test statistics could be lower than
+    // d_test_statistics (i.e, the maximum test statistics in the previous
+    // dwell is greater). Note that d_test_statistics is not restarted between
+    // consecutive dwells in multidwell operation.
+    if (d_test_statistics < test_statistics || !d_acq_params.bit_transition_flag)
+        {
+            const int doppler = -d_acq_params.doppler_max + d_acq_params.doppler_step * static_cast<int>(d_peak_doppler_index);
+            d_gnss_synchro->Acq_delay_samples = static_cast<double>(d_peak_code_phase % static_cast<int32_t>(d_acq_params.samples_per_code));
+            d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
+            d_gnss_synchro->Acq_samplestamp_samples = samplestamp;
+            d_gnss_synchro->Acq_doppler_step = d_acq_params.doppler_step;
+            d_test_statistics = test_statistics;
+        }
 }
 
 
@@ -637,14 +759,7 @@ void pcps_opencl_acquisition_cc::run_acquisition_cores()
     // runs out of them (then general_work() starts it again for the next one)
     do
         {
-            if (d_opencl == 0)
-                {  // Use OpenCL implementation
-                    acquisition_core_opencl();
-                }
-            else
-                {  // Use Volk implementation
-                    acquisition_core_volk();
-                }
+            acquisition_core();
         }
     while (next_dwell_ready());
 }
@@ -657,8 +772,36 @@ bool pcps_opencl_acquisition_cc::next_dwell_ready()
         {
             return true;
         }
-    d_core_working = false;
+    d_core_working = false;  // the last access of the core thread to the block
     return false;
+}
+
+
+void pcps_opencl_acquisition_cc::join_core()
+{
+    if (d_core_thread.joinable())
+        {
+            d_core_thread.join();
+        }
+}
+
+
+bool pcps_opencl_acquisition_cc::stop()
+{
+    try
+        {
+            {
+                std::lock_guard<std::mutex> lock(d_state_mutex);
+                d_state = 0;
+                d_active = false;
+            }
+            join_core();
+        }
+    catch (const std::exception &e)
+        {
+            LOG(WARNING) << "Exception while waiting for the OpenCL acquisition core to terminate: " << e.what();
+        }
+    return acquisition_impl_interface::stop();
 }
 
 
@@ -749,7 +892,7 @@ int pcps_opencl_acquisition_cc::process_input(int noutput_items,
 
                         if (ninput_items[0] > static_cast<int>(num_dwells))
                             {
-                                d_sample_counter += static_cast<uint64_t>(d_fft_size * (ninput_items[0] - num_dwells));
+                                d_sample_counter += static_cast<uint64_t>(d_fft_size) * (ninput_items[0] - num_dwells);
                             }
                     }
                 else
@@ -774,7 +917,10 @@ int pcps_opencl_acquisition_cc::process_input(int noutput_items,
                     if (!d_core_working && (d_well_count < d_in_dwell_count) && d_state == 1)
                         {
                             d_core_working = true;
-                            boost::thread(&pcps_opencl_acquisition_cc::run_acquisition_cores, this);
+                            // The previous core thread, if any, has already
+                            // left the block (see next_dwell_ready())
+                            join_core();
+                            d_core_thread = std::thread(&pcps_opencl_acquisition_cc::run_acquisition_cores, this);
                         }
                 }
 

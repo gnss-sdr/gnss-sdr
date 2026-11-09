@@ -13,18 +13,26 @@
 #ifndef __CLFFT_H
 #define __CLFFT_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
+#include <stddef.h>
 #include <stdio.h>
 
+// This FFT only uses OpenCL 1.0 functions
+#ifndef CL_TARGET_OPENCL_VERSION
+#define CL_TARGET_OPENCL_VERSION 120
+#endif
+
 #ifdef __APPLE__
+#ifndef CL_SILENCE_DEPRECATION
 #define CL_SILENCE_DEPRECATION
+#endif
 #include <OpenCL/opencl.h>
 #else
 #include <CL/cl.h>
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 
     // XForm type

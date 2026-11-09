@@ -101,11 +101,14 @@ if(has_span)
 endif()
 
 if(ENABLE_OPENCL)
-    target_link_libraries(acquisition_gr_blocks PUBLIC OpenCL::OpenCL)
-    target_include_directories(acquisition_gr_blocks
-        PUBLIC
-            ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/opencl
-    )
+    target_link_libraries(acquisition_gr_blocks PRIVATE OpenCL::OpenCL)
+    if(NOT OPENCL_HAS_CPP_BINDINGS)
+        # CL/opencl.hpp not found in the system: use the bundled copy
+        target_include_directories(acquisition_gr_blocks
+            PRIVATE
+                ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/opencl/include
+        )
+    endif()
 endif()
 
 if(VOLK_VERSION)
@@ -128,5 +131,4 @@ endif()
 set_property(TARGET acquisition_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<BUILD_INTERFACE:${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/opencl>
 )

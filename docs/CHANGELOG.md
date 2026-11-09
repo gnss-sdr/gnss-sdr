@@ -91,6 +91,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   one item for complex streams, or fewer than the 20 samples of a 5-byte IFEN
   chunk), it produced nothing and GNU Radio polled it again only after 250 ms,
   which could stall a file replay for seconds.
+- `GPS_L1_CA_PCPS_OpenCl_Acquisition` now searches the Doppler bins in batches
+  on the GPU, with batched FFTs and the search of the maximum done on the
+  device, instead of one bin at a time with a blocking read of the whole
+  correlation for each.
 
 ### Improvements in Interoperability:
 
@@ -137,6 +141,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   Before, the signals of a satellite in the same band group shared one lock time
   (GPS L2C with L5, Galileo E5a with E5b), and lock times never restarted, so
   rovers could not detect cycle slips from them.
+
+### Improvements in Maintainability:
+
+- Replaced the bundled OpenCL 1.2 C++ bindings (`cl.hpp`, deprecated by Khronos)
+  with the current Khronos OpenCL C++ bindings (`CL/opencl.hpp`, from
+  OpenCL-CLHPP v2026.05.29). A system-wide `CL/opencl.hpp` is used if found, and
+  the bundled copy otherwise.
 
 ### Improvements in Reliability:
 

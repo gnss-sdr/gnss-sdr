@@ -16,9 +16,7 @@
 
 #include <string>
 
-using namespace std;
-
-static string baseKernels = string(
+static const std::string baseKernels = std::string(
     "#ifndef M_PI\n"
     "#define M_PI 0x1.921fb54442d18p+1\n"
     "#endif\n"
@@ -185,7 +183,7 @@ static string baseKernels = string(
     "    bitreverse32((a)); \\\n"
     "}\n\n");
 
-static string twistKernelInterleaved = string(
+static const std::string twistKernelInterleaved = std::string(
     "__kernel void \\\n"
     "clFFT_1DTwistInterleaved(__global float2 *in, unsigned int startRow, unsigned int numCols, unsigned int N, unsigned int numRowsToProcess, int dir) \\\n"
     "{ \\\n"
@@ -209,7 +207,7 @@ static string twistKernelInterleaved = string(
     "   }    \\\n"
     "} \\\n");
 
-static string twistKernelPlannar = string(
+static const std::string twistKernelPlannar = std::string(
     "__kernel void \\\n"
     "clFFT_1DTwistSplit(__global float *in_real, __global float *in_imag , unsigned int startRow, unsigned int numCols, unsigned int N, unsigned int numRowsToProcess, int dir) \\\n"
     "{ \\\n"

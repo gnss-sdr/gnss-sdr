@@ -13,6 +13,8 @@
 # OPENCL_FOUND - system has OpenCL
 # OPENCL_INCLUDE_DIRS - the OpenCL include directory
 # OPENCL_LIBRARIES - link these to use OpenCL
+# OPENCL_HAS_CPP_BINDINGS - TRUE if the Khronos C++ bindings (CL/opencl.hpp) were found
+# OPENCL_CPP_INCLUDE_DIR - the directory containing CL/opencl.hpp
 #
 # WIN32 should work, but is untested
 
@@ -28,7 +30,7 @@ function(_FIND_OPENCL_VERSION)
     set(CMAKE_REQUIRED_QUIET ${OPENCL_FIND_QUIETLY})
 
     cmake_push_check_state()
-    foreach(VERSION "2_2" "2_1" "2_0" "1_2" "1_1" "1_0")
+    foreach(VERSION "3_0" "2_2" "2_1" "2_0" "1_2" "1_1" "1_0")
         set(CMAKE_REQUIRED_INCLUDES "${OPENCL_INCLUDE_DIR}")
 
         if(APPLE)
@@ -77,9 +79,13 @@ find_path(OPENCL_INCLUDE_DIR
         "AMD APP/include"
 )
 
-find_path(_OPENCL_CPP_INCLUDE_DIRS
+# Khronos OpenCL C++ bindings (OpenCL-CLHPP >= 2.0.12). The deprecated
+# OpenCL 1.x bindings (CL/cl.hpp) and CL/cl2.hpp are not used.
+find_path(OPENCL_CPP_INCLUDE_DIR
     NAMES
-        CL/cl.hpp OpenCL/cl.hpp
+        CL/opencl.hpp
+    HINTS
+        ${OPENCL_INCLUDE_DIR}
     PATHS
         ENV "PROGRAMFILES(X86)"
         ENV AMDAPPSDKROOT
@@ -96,11 +102,13 @@ find_path(_OPENCL_CPP_INCLUDE_DIRS
 )
 
 set(OPENCL_INCLUDE_DIRS ${OPENCL_INCLUDE_DIR})
-if(_OPENCL_CPP_INCLUDE_DIRS)
+if(OPENCL_CPP_INCLUDE_DIR)
     set(OPENCL_HAS_CPP_BINDINGS TRUE)
-    list(APPEND OPENCL_INCLUDE_DIRS ${_OPENCL_CPP_INCLUDE_DIRS})
+    list(APPEND OPENCL_INCLUDE_DIRS ${OPENCL_CPP_INCLUDE_DIR})
     # This is often the same, so clean up
     list(REMOVE_DUPLICATES OPENCL_INCLUDE_DIRS)
+else()
+    set(OPENCL_HAS_CPP_BINDINGS FALSE)
 endif()
 
 _find_opencl_version()
@@ -176,6 +184,7 @@ find_package_handle_standard_args(OPENCL DEFAULT_MSG OPENCL_LIBRARIES OPENCL_INC
 mark_as_advanced(
   OPENCL_INCLUDE_DIRS
   OPENCL_LIBRARIES
+  OPENCL_CPP_INCLUDE_DIR
 )
 
 set_package_properties(OPENCL PROPERTIES

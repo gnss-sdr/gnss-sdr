@@ -277,7 +277,7 @@ jobs:
         with:
           clang-format-version: "22"
           check-path: ${{ matrix.path }}
-          exclude-regex: '(libs\/gsl\/)|(tmpl)|(cpu_features)|^.*\.(cu)$'
+          exclude-regex: '(libs\/gsl\/)|(libs\/opencl\/include\/)|(tmpl)|(cpu_features)|^.*\.(cu)$'
 
   clang-tidy:
     runs-on: ubuntu-26.04

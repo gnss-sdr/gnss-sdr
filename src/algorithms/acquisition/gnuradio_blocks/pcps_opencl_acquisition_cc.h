@@ -37,7 +37,6 @@
 #ifndef GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H
 #define GNSS_SDR_PCPS_OPENCL_ACQUISITION_CC_H
 
-#define CL_SILENCE_DEPRECATION
 #include "acq_conf.h"
 #include "acquisition_impl_interface.h"
 #include "channel_fsm.h"
@@ -45,16 +44,14 @@
 #include "gnss_block_interface.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_synchro.h"
-#include "opencl/fft_internal.h"
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>
-#include "opencl/cl.hpp"
 #include <atomic>
 #include <cstdint>
 #include <fstream>
-#include <memory>  // for weak_ptr
+#include <memory>  // for unique_ptr, weak_ptr
 #include <mutex>
-#include <string>
+#include <thread>
 #include <vector>
 
 /** \addtogroup Acquisition
@@ -74,6 +71,9 @@ pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(const Acq_Conf& 
  *
  * Check \ref Navitec2012 "An Open Source Galileo E1 Software Receiver",
  * Algorithm 1, for a pseudocode description of this implementation.
+ *
+ * The search runs on the first OpenCL GPU device found. Without one, or after
+ * an OpenCL error, it runs on the CPU.
  */
 class pcps_opencl_acquisition_cc : public acquisition_impl_interface
 {
@@ -147,19 +147,19 @@ public:
         d_channel_fsm = channel_fsm;
     }
 
+    /*!
+     * \brief True if the search runs on an OpenCL GPU device, false if it
+     * runs on the CPU.
+     */
     inline bool opencl_ready() const
     {
-        bool ready = false;
-        if (d_opencl == 0)
-            {
-                ready = true;
-            }
-        return ready;
+        return d_use_opencl;
     }
 
-    void acquisition_core_volk();
-
-    void acquisition_core_opencl();
+    /*!
+     * \brief Stops the search and waits for the acquisition core.
+     */
+    bool stop() override;
 
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.
@@ -174,32 +174,30 @@ private:
 
     explicit pcps_opencl_acquisition_cc(const Acq_Conf& conf, uint32_t max_dwells);
 
+    // OpenCL objects, defined in the .cc file so that the OpenCL headers do
+    // not reach the users of this block
+    struct OpenClState;
+
+    void init_opencl();
     int process_input(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items,
         gr_vector_void_star& output_items);
+    void acquisition_core();
+    void search_opencl(const gr_complex* in);
+    void search_volk(const gr_complex* in);
+    void correlate_volk(const gr_complex* in, uint32_t doppler_index);
+    void dump_correlation(int doppler);
+    // Test statistic of the dwell, once all its Doppler bins are searched
+    void compute_test_statistics(uint64_t samplestamp);
+
+    // Doppler bin whose correlation floor is the CFAR noise reference
+    uint32_t reference_doppler_index(uint32_t peak_doppler_index) const;
+
     void conclude_dwell(uint64_t samplestamp);
     void run_acquisition_cores();
     bool next_dwell_ready();
+    void join_core();
 
-    void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift, int doppler_offset);
-
-    int init_opencl_environment(const std::string& kernel_filename);
-
-    cl::Platform d_cl_platform;
-    cl::Device d_cl_device;
-    cl::Context d_cl_context;
-    cl::Program d_cl_program;
-    cl::Buffer* d_cl_buffer_in;
-    cl::Buffer* d_cl_buffer_fft_codes;
-    cl::Buffer* d_cl_buffer_1;
-    cl::Buffer* d_cl_buffer_2;
-    cl::Buffer* d_cl_buffer_magnitude;
-    cl::Buffer** d_cl_buffer_grid_doppler_wipeoffs;
-    cl::CommandQueue* d_cl_queue;
-    clFFT_Plan d_cl_fft_plan;
-    cl_int d_cl_fft_batch_size;
-
-    std::string d_satellite_str;
     const Acq_Conf d_acq_params;
 
     std::ofstream d_dump_file;
@@ -208,40 +206,50 @@ private:
 
     std::atomic<uint64_t> d_sample_counter;  // also read by the acquisition cores
 
-    int* d_max_doppler_indexs;
-
     float d_mag;
     float d_input_power;
     float d_test_statistics;
 
     std::atomic<int> d_state;  // set by the acquisition cores
-    int d_opencl;
 
     uint32_t d_max_dwells;
     std::atomic<uint32_t> d_well_count;  // dwells processed by the acquisition cores
     const uint32_t d_fft_size;
-    uint32_t d_fft_size_pow2;
+    const uint32_t d_fft_size_pow2;  // OpenCL FFT size: a power of two, at least 2 * d_fft_size
     uint32_t d_num_doppler_bins;
-    uint32_t d_code_phase;
     uint32_t d_channel;
     std::atomic<uint32_t> d_in_dwell_count;  // dwells in d_in_buffer
 
     std::atomic<bool> d_active;
     std::atomic<bool> d_core_working;
+    std::atomic<bool> d_use_opencl;  // false without a GPU device, or after an OpenCL error
     std::mutex d_state_mutex;        // a result and a deactivation do not cross
+    std::mutex d_core_mutex;         // the FFT engines and the local code, shared by set_local_code() and the acquisition core
+    std::thread d_core_thread;
     DeterministicAcquisition d_det;  // GNSS-SDR.deterministic=true
 
     std::weak_ptr<ChannelFsm> d_channel_fsm;
 
+    std::unique_ptr<OpenClState> d_cl;  // nullptr without a GPU device
+
+    // CPU implementation, also the fallback after an OpenCL error
     std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
     std::unique_ptr<gnss_fft_complex_rev> d_ifft;
 
     std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
     std::vector<std::vector<gr_complex>> d_in_buffer;
     std::vector<gr_complex> d_fft_codes;
-    std::vector<gr_complex> d_zero_vector;
     std::vector<uint64_t> d_sample_counter_buffer;
     std::vector<float> d_magnitude;
+    std::vector<float> d_bin_peak;      // per Doppler bin: maximum |correlation|^2
+    std::vector<uint32_t> d_bin_index;  // per Doppler bin: its lag
+    std::vector<float> d_bin_power;     // per Doppler bin: sum of |correlation|^2
+
+    // Mean |correlation|^2 / d_fft_size^2 of each Doppler bin of the dwell
+    std::vector<float> d_doppler_bin_power;
+    // Peak of the dwell (its value is d_mag)
+    uint32_t d_peak_code_phase{0};
+    uint32_t d_peak_doppler_index{0};
 };
 
 

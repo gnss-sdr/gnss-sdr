@@ -11,19 +11,17 @@
 
 #include "clFFT.h"
 #include "fft_internal.h"
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
-#include <sstream>
 #include <string>
 
-using namespace std;
-
-#define max(A, B) ((A) > (B) ? (A) : (B))
-#define min(A, B) ((A) < (B) ? (A) : (B))
+using std::max;
+using std::min;
+using std::string;
 
 static string
 num2str(int num)
@@ -729,7 +727,7 @@ insertLocalStores(string &kernelString, int numIter, int Nr, int numWorkItemsPer
 
 
 static void
-insertLocalLoads(string &kernelString, int n, int Nr, int Nrn, int Nprev, int Ncurr, int numWorkItemsPerXForm, int numWorkItemsReq, int offset, string &comp)
+insertLocalLoads(string &kernelString, int n, int Nr, int Nrn, int Nprev, int /* Ncurr */, int numWorkItemsPerXForm, int numWorkItemsReq, int offset, string &comp)
 {
     int numWorkItemsReqN = n / Nrn;
     int interBlockHNum = max(Nprev / numWorkItemsPerXForm, 1);
@@ -835,8 +833,8 @@ insertLocalStoreIndexArithmatic(string &kernelString, int numWorkItemsReq, int n
 static void
 createLocalMemfftKernelString(cl_fft_plan *plan)
 {
-    unsigned int radixArray[10];
-    unsigned int numRadix;
+    unsigned int radixArray[10] = {};
+    unsigned int numRadix = 0;
 
     unsigned int n = plan->n.x;
 
@@ -861,6 +859,7 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
             tmpLen *= radixArray[i];
         }
     assert(tmpLen == n && "product of radices choosen doesnt match the length of signal\n");
+    (void)tmpLen;  // only checked by assert()
 
     int offset;
     int midPad;
@@ -882,7 +881,7 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
 
     kernelName = string("fft") + num2str(kCount);
 
-    *kInfo = (cl_fft_kernel_info *)malloc(sizeof(cl_fft_kernel_info));
+    *kInfo = static_cast<cl_fft_kernel_info *>(malloc(sizeof(cl_fft_kernel_info)));
     (*kInfo)->kernel = nullptr;
     (*kInfo)->lmem_size = 0;
     (*kInfo)->num_workgroups = 0;
@@ -890,8 +889,8 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
     (*kInfo)->dir = cl_fft_kernel_x;
     (*kInfo)->in_place_possible = 1;
     (*kInfo)->next = nullptr;
-    (*kInfo)->kernel_name = (char *)malloc(sizeof(char) * (kernelName.size() + 1));
-    snprintf((*kInfo)->kernel_name, sizeof((*kInfo)->kernel_name), kernelName.c_str());
+    (*kInfo)->kernel_name = static_cast<char *>(malloc(sizeof(char) * (kernelName.size() + 1)));
+    memcpy((*kInfo)->kernel_name, kernelName.c_str(), kernelName.size() + 1);
 
     unsigned int numWorkItemsPerXForm = n / radixArray[0];
     unsigned int numWorkItemsPerWG = numWorkItemsPerXForm <= 64 ? 64 : numWorkItemsPerXForm;
@@ -1034,6 +1033,7 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
 
     int maxThreadsPerBlock = plan->max_work_item_per_workgroup;
     int maxArrayLen = plan->max_radix;
+    (void)maxArrayLen;  // only checked by assert()
     int batchSize = plan->min_mem_coalesce_width;
     clFFT_DataFormat dataFormat = plan->format;
     int vertical = (dir == cl_fft_kernel_x) ? 0 : 1;
@@ -1112,7 +1112,7 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                 }
 
             kernelName = string("fft") + num2str(kCount);
-            *kInfo = (cl_fft_kernel_info *)malloc(sizeof(cl_fft_kernel_info));
+            *kInfo = static_cast<cl_fft_kernel_info *>(malloc(sizeof(cl_fft_kernel_info)));
             (*kInfo)->kernel = nullptr;
             if (R2 == 1)
                 {
@@ -1142,8 +1142,8 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                     (*kInfo)->in_place_possible = 0;
                 }
             (*kInfo)->next = nullptr;
-            (*kInfo)->kernel_name = (char *)malloc(sizeof(char) * (kernelName.size() + 1));
-            snprintf((*kInfo)->kernel_name, sizeof((*kInfo)->kernel_name), kernelName.c_str());
+            (*kInfo)->kernel_name = static_cast<char *>(malloc(sizeof(char) * (kernelName.size() + 1)));
+            memcpy((*kInfo)->kernel_name, kernelName.c_str(), kernelName.size() + 1);
 
             insertVariables(localString, R1);
 

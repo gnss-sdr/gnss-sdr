@@ -16,11 +16,8 @@
 #define __CLFFT_INTERNAL_H
 
 #include "clFFT.h"
-#include <iostream>
-#include <sstream>
+#include <cstddef>
 #include <string>
-
-using namespace std;
 
 typedef enum kernel_dir_t
 {
@@ -58,7 +55,7 @@ typedef struct
 
     // string containing kernel source. Generated at runtime based on
     // n, dim, format and other parameters
-    string *kernel_string;
+    std::string *kernel_string;
 
     // CL program containing source and kernel this particular
     // n, dim, data format
@@ -125,5 +122,7 @@ typedef struct
 } cl_fft_plan;
 
 void FFT1D(cl_fft_plan *plan, cl_fft_kernel_dir dir);
+
+void getKernelWorkDimensions(cl_fft_plan *plan, cl_fft_kernel_info *kernelInfo, cl_int *batchSize, size_t *gWorkItems, size_t *lWorkItems);
 
 #endif

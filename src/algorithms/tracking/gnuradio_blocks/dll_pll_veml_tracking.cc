@@ -2412,10 +2412,8 @@ void dll_pll_veml_tracking::run_f_error_scan_step()
 
 void dll_pll_veml_tracking::begin_wide_tracking(uint64_t sample_count)
 {
-    if (d_state == 5)
+    if (d_state == 5 || sample_count > d_tracking_time_start_sample + static_cast<uint64_t>(d_trk_parameters.fs_in))
         {
-            // The passive scan must not consume the FLL pull-in or synchronization budget.
-            // Keep the acquisition timestamp unchanged for sample/code alignment.
             d_tracking_time_start_sample = sample_count;
             d_pull_in_transitory = true;
             d_carrier_lock_fail_counter = 0;

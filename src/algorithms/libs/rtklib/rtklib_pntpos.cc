@@ -1052,29 +1052,48 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     // Rough first estimation to initialize the algorithm
     if (opt->bancroft_init && (std::sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) < 0.1))
         {
+            // Only satellites with a valid position, usable ephemeris and a
+            // pseudorange enter the solution. satposs() leaves the position of
+            // the others at zero. Pseudoranges are corrected for the satellite
+            // clock offset, which is worth up to hundreds of kilometers.
             arma::mat B = arma::mat(n, 4, arma::fill::zeros);
+            arma::uword nb = 0;
             for (i = 0; i < n; i++)
                 {
-                    B(i, 0) = rs[0 + i * 6];
-                    B(i, 1) = rs[1 + i * 6];
-                    B(i, 2) = rs[2 + i * 6];
-                    if (obs[i].code[0] != CODE_NONE)
+                    if (!satsys(obs[i].sat, nullptr) || satexclude(obs[i].sat, svh[i], opt) || norm_rtk(rs + i * 6, 3) < RE_WGS84)
                         {
-                            B(i, 3) = obs[i].P[0];
+                            continue;
                         }
-                    else if (obs[i].code[1] != CODE_NONE)
+                    double pr = 0.0;
+                    for (j = 0; j < NFREQ; j++)
                         {
-                            B(i, 3) = obs[i].P[1];
+                            if (obs[i].code[j] != CODE_NONE && obs[i].P[j] != 0.0)
+                                {
+                                    pr = obs[i].P[j];
+                                    break;
+                                }
                         }
-                    else
+                    if (pr == 0.0 || !std::isfinite(pr))
                         {
-                            B(i, 3) = obs[i].P[2];
+                            continue;
+                        }
+                    B(nb, 0) = rs[0 + i * 6];
+                    B(nb, 1) = rs[1 + i * 6];
+                    B(nb, 2) = rs[2 + i * 6];
+                    B(nb, 3) = pr + SPEED_OF_LIGHT_M_S * dts[i * 2];
+                    nb++;
+                }
+            if (nb >= 4)
+                {
+                    const arma::mat B_valid = B.head_rows(nb);
+                    const arma::vec pos = rough_bancroft(B_valid);
+                    if (pos.is_finite())
+                        {
+                            x[0] = pos(0);
+                            x[1] = pos(1);
+                            x[2] = pos(2);
                         }
                 }
-            arma::vec pos = rough_bancroft(B);
-            x[0] = pos(0);
-            x[1] = pos(1);
-            x[2] = pos(2);
         }
 
     for (i = 0; i < MAXITR; i++)

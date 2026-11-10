@@ -991,7 +991,7 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
             possible_pos.col(i) = r(i) * BBBe + BBBalpha;
             possible_pos(3, i) = -possible_pos(3, i);
         }
-    arma::vec abs_omc(2);
+    arma::vec abs_omc = arma::zeros<arma::vec>(2);
     for (int j = 0; j < m; j++)
         {
             for (int i = 0; i < 2; i++)
@@ -999,7 +999,7 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
                     const double c_dt = possible_pos(3, i);
                     const double calc = arma::norm(B_pass.row(j).head(3).t() - possible_pos.head_rows(3).col(i)) + c_dt;
                     const double omc = B_pass(j, 3) - calc;
-                    abs_omc(i) = std::abs(omc);
+                    abs_omc(i) += std::abs(omc);
                 }
         }
 

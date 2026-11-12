@@ -246,7 +246,9 @@ Evk1029SignalSource::Evk1029SignalSource(
         }
     else
         {
-            reader = std::make_unique<FileStreamReader>(filename, bytes_to_skip);
+            // Recordings start with a metadata header written by EVK1029_CtrlApp
+            constexpr uint64_t record_header_bytes = 16384;
+            reader = std::make_unique<FileStreamReader>(filename, record_header_bytes + bytes_to_skip);
         }
     evk1029_source_ = evk1029_make_source(std::move(reader), queue, static_cast<double>(fs), freq_xlating_bands);
 

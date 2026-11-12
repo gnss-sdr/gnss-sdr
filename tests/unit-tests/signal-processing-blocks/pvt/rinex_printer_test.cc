@@ -275,7 +275,7 @@ std::string find_line_starting_with(const std::string& filename, const std::stri
 }
 
 
-std::string find_line_containing(const std::string& filename, const std::string& text)
+std::string find_line_containing(const std::string& filename, const std::string& text, bool data_records_only = false)
 {
     std::fstream fstr(filename.c_str(), std::fstream::in);
     if (!fstr.is_open())
@@ -285,9 +285,18 @@ std::string find_line_containing(const std::string& filename, const std::string&
     fstr.seekg(0);
 
     std::string line_str;
+    bool in_header = data_records_only;
     while (!fstr.eof())
         {
             std::getline(fstr, line_str);
+            if (in_header)
+                {
+                    if (line_str.find("END OF HEADER", 60) != std::string::npos)
+                        {
+                            in_header = false;
+                        }
+                    continue;
+                }
             if (line_str.find(text) != std::string::npos)
                 {
                     return line_str;
@@ -561,10 +570,42 @@ TEST_F(RinexPrinterTest, Rinex4GpsNavAndObs)
     const std::string sto_line = find_line_containing(navfile, "GPUT");
     EXPECT_NE(std::string::npos, sto_line.find("UTC(USNO)"));
 
-    // RINEX 4 navigation records use the 'e' exponent indicator instead of 'D'
-    EXPECT_TRUE(find_line_containing(navfile, "D+0").empty());
-    EXPECT_TRUE(find_line_containing(navfile, "D-0").empty());
-    EXPECT_FALSE(find_line_containing(navfile, "e+0").empty());
+    // RINEX 4 navigation records use the 'e' exponent indicator instead of 'D'.
+    // Ignore header comments: a version containing HEAD-0 is not an exponent.
+    EXPECT_TRUE(find_line_containing(navfile, "D+0", true).empty());
+    EXPECT_TRUE(find_line_containing(navfile, "D-0", true).empty());
+    EXPECT_FALSE(find_line_containing(navfile, "e+0", true).empty());
+}
+
+
+TEST_F(RinexPrinterTest, NavigationExponentSearchSkipsHeader)
+{
+    auto rp = make_rinex_printer(GPS_1C, 4);
+    const std::string navfile = rp->get_navfilename()[0];
+    rp = nullptr;
+
+    {
+        std::ofstream out(navfile);
+        ASSERT_TRUE(out.is_open());
+        const std::string version = "GNSS-SDR VERSION 0.0.22.git-HEAD-068cc29";
+        out << version << std::string(60 - version.size(), ' ') << "COMMENT\n";
+        out << std::string(60, ' ') << "END OF HEADER\n";
+        out << "> EPH G01 LNAV\n 1.000000000000e+00\n";
+    }
+
+    EXPECT_FALSE(find_line_containing(navfile, "D-0").empty());
+    EXPECT_TRUE(find_line_containing(navfile, "D-0", true).empty());
+    EXPECT_TRUE(find_line_containing(navfile, "D+0", true).empty());
+    EXPECT_FALSE(find_line_containing(navfile, "e+0", true).empty());
+
+    {
+        std::ofstream out(navfile, std::ios::app);
+        ASSERT_TRUE(out.is_open());
+        out << " 1.000000000000D-01\n 1.000000000000D+01\n";
+    }
+
+    EXPECT_EQ(" 1.000000000000D-01", find_line_containing(navfile, "D-0", true));
+    EXPECT_EQ(" 1.000000000000D+01", find_line_containing(navfile, "D+0", true));
 }
 
 

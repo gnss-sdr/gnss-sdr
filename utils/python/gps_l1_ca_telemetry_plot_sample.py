@@ -200,14 +200,15 @@ def main():
     plt.gcf().canvas.manager.set_window_title(
         f"Telem_Current_Symbol_TOW_{args.channel_a}_{args.channel_b}.png"
     )
+    # The dump writer stores seconds; "tow_current_symbol_ms" is a legacy key.
     plt.plot(
         data_a["tracking_sample_counter"],
-        [x / 1000 for x in data_a["tow_current_symbol_ms"]],
+        data_a["tow_current_symbol_ms"],
         "b",
     )
     plt.plot(
         data_b["tracking_sample_counter"],
-        [x / 1000 for x in data_b["tow_current_symbol_ms"]],
+        data_b["tow_current_symbol_ms"],
         "r",
     )
     plt.grid(True)

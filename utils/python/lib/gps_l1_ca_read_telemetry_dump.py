@@ -12,6 +12,8 @@
 
       Return:
         telemetry       - A dictionary with the processed data
+                          Empty files return empty lists. An incomplete
+                          trailing record is ignored.
 
  -----------------------------------------------------------------------------
 
@@ -26,61 +28,28 @@
 
 import struct
 
+# Fields are written separately by gps_l1_ca_telemetry_decoder_gs.cc through
+# write_value(): native byte order, standard sizes, and no alignment padding.
+_RECORD_FORMAT = '=dQdii'
+_FIELD_NAMES = [
+    'tow_current_symbol_ms', 'tracking_sample_counter', 'tow', 'nav_simbols',
+    'prn',
+]
+
 
 def gps_l1_ca_read_telemetry_dump(filename):
 
-    double_size_bytes = 8
-    int_size_bytes = 4
-    bytes_shift = 0
+    record_size = struct.calcsize(_RECORD_FORMAT)
+    columns = [[] for _ in _FIELD_NAMES]
 
-    tow_current_symbol_ms = []
-    tracking_sample_counter = []
-    tow = []
-    nav_simbols = []
-    prn = []
-
-    f = open(filename, 'rb')
-    if f is None:
-        return None
-    else:
+    with open(filename, 'rb') as f:
         while True:
-            f.seek(bytes_shift, 0)
-
-            tow_current_symbol_ms.append(struct.unpack(
-                'd', f.read(double_size_bytes))[0])
-            bytes_shift += double_size_bytes
-            f.seek(bytes_shift, 0)
-
-            tracking_sample_counter.append(struct.unpack(
-                'Q', f.read(double_size_bytes))[0])
-            bytes_shift += double_size_bytes
-            f.seek(bytes_shift, 0)
-
-            tow.append(struct.unpack(
-                'd', f.read(double_size_bytes))[0])
-            bytes_shift += double_size_bytes
-            f.seek(bytes_shift, 0)
-
-            nav_simbols.append(struct.unpack(
-                'I', f.read(int_size_bytes))[0])
-            bytes_shift += int_size_bytes
-            f.seek(bytes_shift, 0)
-
-            prn.append(struct.unpack('I', f.read(int_size_bytes))[0])
-            bytes_shift += int_size_bytes
-            f.seek(bytes_shift, 0)
-
-            # Check file
-            linea = f.readline()
-            if not linea:
+            record = f.read(record_size)
+            if len(record) < record_size:
+                # Clean end of file (or a trailing partial record).
                 break
+            for column, value in zip(columns, struct.unpack(_RECORD_FORMAT,
+                                                           record)):
+                column.append(value)
 
-        telemetry = {
-            'tow_current_symbol_ms': tow_current_symbol_ms,
-            'tracking_sample_counter': tracking_sample_counter,
-            'tow': tow,
-            'nav_simbols': nav_simbols,
-            'prn': prn
-        }
-
-    return telemetry
+    return dict(zip(_FIELD_NAMES, columns))

@@ -246,6 +246,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   nothing for `SignalSource.shm_stall_timeout_s` seconds (default 5, 0 waits
   forever) and, with `SignalSource.shm_stop_on_buffer_overflow=true`, when it
   reports a buffer overflow. Linux only. Contributed by @joebre.
+- `EVK1029_Signal_Source` now skips the 16 KiB metadata header that
+  EVK1029_CtrlApp writes at the start of every recording, instead of decoding it
+  as samples. `SignalSource.seconds_to_skip` counts from the end of the header.
 - The accumulated carrier phase is now stored as a `double` in the tracking
   dumps (binary and `.mat`) of all tracking implementations, instead of a
   `float` whose resolution drops to 0.0625 rad at 10^6 rad. Each binary record

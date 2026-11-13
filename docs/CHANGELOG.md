@@ -53,13 +53,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   instead of holding each CM chip across the CL slot. The CL half of the signal
   no longer adds noise to the correlation.
 - Fixed the preamble search of the GPS CNAV message decoder used by the GPS L2C
-  and L5 telemetry decoders. The search did not test the first position of the
-  decoded bits buffer nor its last complete 8-bit window, so a preamble starting
-  at 2 out of every 32 positions with respect to the 32-bit blocks delivered by
-  the Viterbi decoder was missed and the first message after the start of
-  tracking was lost. In short captures, the satellite could end up without a
-  complete ephemeris set. The first position is now skipped only in the rescan
-  that follows a CRC failure.
+  and L5 telemetry decoders, which could miss the first message after the start
+  of tracking. Contributed by @BenGant.
 
 ### Improvements in Efficiency:
 

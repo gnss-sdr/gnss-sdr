@@ -111,18 +111,19 @@ static uint32_t cnav_extract_crc_(const cnav_v27_part_t *part)
  * - When found, the preamble octet is moved into the head of the buffer.
  * - When not found, only 7 bits are left in the buffer.
  *
- * \param[in,out] part Decoded component.
+ * \param[in,out] part       Decoded component.
+ * \param[in]     skip_first When true, the head of the buffer is not tested
+ *                           (rescan after a CRC failure).
  *
  * \return None
  *
  * \private
  */
-static void cnav_rescan_preamble_(cnav_v27_part_t *part)
+static void cnav_rescan_preamble_(cnav_v27_part_t *part, bool skip_first)
 {
     /* The head of the buffer is skipped only when it holds the preamble of a
      * message that has just failed the CRC check. */
-    const size_t first = part->skip_first ? 1 : 0;
-    part->skip_first = false;
+    const size_t first = skip_first ? 1 : 0;
     part->preamble_seen = false;
 
     if (part->n_decoded >= GPS_CNAV_PREAMBLE_LENGTH)
@@ -222,6 +223,7 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
      */
 
     bool retry = true;
+    bool skip_first = false;
     while (retry)
         {
             retry = false;
@@ -230,7 +232,8 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
                 {
                     /* Scan for preamble if possible. The first bit is ignored only
                      * when rescanning after a CRC failure. */
-                    cnav_rescan_preamble_(part);
+                    cnav_rescan_preamble_(part, skip_first);
+                    skip_first = false;
                 }
             if (part->preamble_seen && GPS_CNAV_MSG_LENGTH <= part->n_decoded)
                 {
@@ -258,7 +261,7 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
                                             part->n_crc_fail = 0;
                                             part->message_lock = false;
                                             part->preamble_seen = false;
-                                            part->skip_first = true;
+                                            skip_first = true;
                                             /* Try to find a new preamble, reuse data from buffer. */
                                             retry = true;
                                         }
@@ -277,7 +280,7 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
                              * false positive lock - rescan for preamble. */
                             part->crc_ok = false;
                             part->preamble_seen = false;
-                            part->skip_first = true;
+                            skip_first = true;
 
                             /* CRC mismatch - try to re-scan for preamble */
                             retry = true;
@@ -396,8 +399,6 @@ void cnav_msg_decoder_init(cnav_msg_decoder_t *dec)
         0);
     dec->part1.init = true;
     dec->part2.init = true;
-    dec->part1.skip_first = false;
-    dec->part2.skip_first = false;
     cnav_add_symbol_(&dec->part2, 0x80);
 }
 

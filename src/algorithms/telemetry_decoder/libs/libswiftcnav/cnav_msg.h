@@ -84,6 +84,9 @@ typedef struct
     size_t n_crc_fail;  /**< Counter for CRC failures */
     bool init;          /**< Initial state flag. When true, initial bits
                          *   do not produce output. */
+    bool skip_first;    /**< When true, the next preamble scan skips the
+                         *   head of the decode buffer (rescan after a CRC
+                         *   failure). */
 } cnav_v27_part_t;
 
 /**

@@ -52,6 +52,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   code with the CL slots zeroed, the same replica that tracking already uses,
   instead of holding each CM chip across the CL slot. The CL half of the signal
   no longer adds noise to the correlation.
+- Fixed the preamble search of the GPS CNAV message decoder used by the GPS L2C
+  and L5 telemetry decoders, which could miss the first message after the start
+  of tracking. Contributed by @BenGant.
 
 ### Improvements in Efficiency:
 

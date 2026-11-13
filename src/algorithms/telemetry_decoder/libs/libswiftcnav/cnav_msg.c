@@ -101,28 +101,36 @@ static uint32_t cnav_extract_crc_(const cnav_v27_part_t *part)
 
 
 /**
- * Helper to rescan for preamble in the received buffer.
+ * Helper to scan for preamble in the received buffer.
+ * Every complete preamble-sized window of the buffer is tested, from the head
+ * of the buffer up to the last \a GPS_CNAV_PREAMBLE_LENGTH bits.
  * Occasionally there could be a false lock on message contents if it the
- * preamble sequence is encountered in the message body. For this case, the
- * function performs for a scan for a preamble with a different offset:
+ * preamble sequence is encountered in the message body. For this case
+ * (\a skip_first is set), the function performs for a scan for a preamble
+ * with a different offset, so the head of the buffer is not tested again.
  * - When found, the preamble octet is moved into the head of the buffer.
  * - When not found, only 7 bits are left in the buffer.
  *
- * \param[in,out] part Decoded component.
+ * \param[in,out] part       Decoded component.
+ * \param[in]     skip_first When true, the head of the buffer is not tested
+ *                           (rescan after a CRC failure).
  *
  * \return None
  *
  * \private
  */
-static void cnav_rescan_preamble_(cnav_v27_part_t *part)
+static void cnav_rescan_preamble_(cnav_v27_part_t *part, bool skip_first)
 {
+    /* The head of the buffer is skipped only when it holds the preamble of a
+     * message that has just failed the CRC check. */
+    const size_t first = skip_first ? 1 : 0;
     part->preamble_seen = false;
 
-    if (part->n_decoded > GPS_CNAV_PREAMBLE_LENGTH + 1)
+    if (part->n_decoded >= GPS_CNAV_PREAMBLE_LENGTH)
         {
             size_t i = 0;
             size_t j = 0;
-            for (i = 1, j = part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH; i < j; ++i)
+            for (i = first, j = part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH; i <= j; ++i)
                 {
                     const uint32_t c = getbitu(part->decoded, i, GPS_CNAV_PREAMBLE_LENGTH);
                     if (GPS_CNAV_PREAMBLE1 == c || GPS_CNAV_PREAMBLE2 == c)
@@ -215,14 +223,17 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
      */
 
     bool retry = true;
+    bool skip_first = false;
     while (retry)
         {
             retry = false;
 
             if (!part->preamble_seen)
                 {
-                    /* Rescan for preamble if possible. The first bit is ignored. */
-                    cnav_rescan_preamble_(part);
+                    /* Scan for preamble if possible. The first bit is ignored only
+                     * when rescanning after a CRC failure. */
+                    cnav_rescan_preamble_(part, skip_first);
+                    skip_first = false;
                 }
             if (part->preamble_seen && GPS_CNAV_MSG_LENGTH <= part->n_decoded)
                 {
@@ -250,6 +261,7 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
                                             part->n_crc_fail = 0;
                                             part->message_lock = false;
                                             part->preamble_seen = false;
+                                            skip_first = true;
                                             /* Try to find a new preamble, reuse data from buffer. */
                                             retry = true;
                                         }
@@ -268,6 +280,7 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
                              * false positive lock - rescan for preamble. */
                             part->crc_ok = false;
                             part->preamble_seen = false;
+                            skip_first = true;
 
                             /* CRC mismatch - try to re-scan for preamble */
                             retry = true;

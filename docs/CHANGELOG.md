@@ -25,6 +25,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed the Galileo E5b BGD scaling and the ionospheric scaling of E5b
   measurements in GPS L5 + Galileo E5b receivers, where the factors were
   referenced to the E5a wavelength held in the first slot instead of to E1.
+- The BeiDou DNAV (B1I, B3I) and GLONASS GNAV (L1, L2 C/A) telemetry decoders
+  now report the 180-degree carrier phase lock they detect from the sign of the
+  preamble (or time mark) in `Flag_PLL_180_deg_phase_locked`, and add half a
+  cycle to the carrier phase while it is set, as the GPS and Galileo telemetry
+  decoders already did. Before, they inverted the decoded symbols but left the
+  flag the tracking block had set.
 
 ### Improvements in Availability:
 

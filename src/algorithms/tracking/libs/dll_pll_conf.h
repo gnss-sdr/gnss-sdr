@@ -93,6 +93,7 @@ public:
     bool dump{false};
     bool dump_mat{true};
     bool f_error_dump{false};
+    bool keep_phase_at_secondary_lock{false};
     bool tow_to_trk{false};
     bool bs_use_phase_dot_detector{true};
     // GPS L1C-specific options.

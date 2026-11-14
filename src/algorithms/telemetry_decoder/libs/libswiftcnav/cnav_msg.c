@@ -154,6 +154,40 @@ static void cnav_rescan_preamble_(cnav_v27_part_t *part, bool skip_first)
 
 
 /**
+ * Checks whether a message that fails the CRC check is a valid message with
+ * the opposite symbol polarity.
+ * This is what a decoder component with message lock gets after a half-cycle
+ * slip of the carrier tracking loop: the message starts with the other preamble
+ * and its CRC matches once the bits are inverted. When that is the case, the
+ * polarity of the component is updated.
+ *
+ * \param[in,out] part Decoder component with 300 bits of a message.
+ *
+ * \retval true  The message is valid with the opposite polarity, and the
+ *               component now uses it.
+ * \retval false The message is not valid with the opposite polarity either.
+ *
+ * \private
+ */
+static bool cnav_polarity_changed_(cnav_v27_part_t *part)
+{
+    const uint32_t preamble = getbitu(part->decoded, 0, GPS_CNAV_PREAMBLE_LENGTH);
+    const uint32_t other_preamble = part->invert ? GPS_CNAV_PREAMBLE1 : GPS_CNAV_PREAMBLE2;
+    if (preamble != other_preamble)
+        {
+            return false;
+        }
+    part->invert = !part->invert;
+    if (cnav_compute_crc_(part) == cnav_extract_crc_(part))
+        {
+            return true;
+        }
+    part->invert = !part->invert;
+    return false;
+}
+
+
+/**
  * Feed a symbol into Viterbi decoder instance.
  *
  * The method uses block Viterbi decoder. It first accumulates initial number of
@@ -163,12 +197,15 @@ static void cnav_rescan_preamble_(cnav_v27_part_t *part, bool skip_first)
  * \param[in,out] part Decoder object
  * \param[in]     s    Symbol (0x00 - Hard 0, 0xFF - Hard 1)
  *
- * \return None
+ * \retval true  A message has failed the CRC check while the component had
+ *               message lock.
+ * \retval false Otherwise.
  *
  * \private
  */
-static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
+static bool cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
 {
+    bool crc_failed = false;
     part->symbols[part->n_symbols++] = ch;
 
     if (part->init)
@@ -176,14 +213,14 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
             /* Initial step - load more symbols without decoding. */
             if (part->n_symbols < (GPS_L2C_V27_INIT_BITS + GPS_L2C_V27_DECODE_BITS) * 2)
                 {
-                    return;
+                    return false;
                 }
             part->init = false;
         }
     else if (part->n_symbols < GPS_L2C_V27_DECODE_BITS * 2)
         {
             /* Wait until decoding block is accumulated */
-            return;
+            return false;
         }
 
     /* Feed accumulated symbols into the buffer, reset the number of accumulated
@@ -219,6 +256,8 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
      * - If message lock
      *   - If 300 bits collected, compute CRC
      *     - If CRC is OK, message can be decoded
+     *     - If CRC is OK with the opposite polarity, the polarity is updated
+     *       and the message can be decoded
      *     - If CRC is not OK, discard data
      */
 
@@ -244,8 +283,10 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
 
                     if (part->message_lock)
                         {
-                            /* We have message lock */
-                            part->crc_ok = (crc == crc2);
+                            /* We have message lock. A message that only passes the CRC
+                             * check with the opposite polarity follows a half-cycle slip
+                             * of the carrier tracking loop. */
+                            part->crc_ok = (crc == crc2) || cnav_polarity_changed_(part);
                             if (part->crc_ok)
                                 {
                                     /* Reset message lock counter */
@@ -253,6 +294,7 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
                                 }
                             else
                                 {
+                                    crc_failed = true;
                                     /* Increment message lock counter */
                                     part->n_crc_fail++;
                                     if (part->n_crc_fail > GPS_CNAV_LOCK_MAX_CRC_FAILS)
@@ -291,6 +333,7 @@ static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
                     /* No preamble or preamble and less than 300 bits decoded */
                 }
         }
+    return crc_failed;
 }
 
 
@@ -322,7 +365,7 @@ static void cnav_msg_invert_(cnav_v27_part_t *part)
  * - Message data CRC matches one in the buffer.
  *
  * In case the message starts with inverted preamble, the data is inverted
- * before parsing.
+ * before parsing, and \a msg reports it.
  *
  * \param[in,out] part Decoder component.
  * \param[out]    msg  Container for a decoded message.
@@ -350,6 +393,10 @@ static bool cnav_msg_decode_(cnav_v27_part_t *part, cnav_msg_t *msg, uint32_t *d
                     msg->msg_id = getbitu(part->decoded, 14, 6);
                     msg->tow = getbitu(part->decoded, 20, 17);
                     msg->alert = getbitu(part->decoded, 37, 1) ? true : false;
+                    /* Polarity of the decoder component that delivers the message. The
+                     * other component is not aligned to the symbol pairs, and its
+                     * invert flag only holds the last chance preamble match. */
+                    msg->inverted = part->invert;
 
                     /* copy RAW message for GNSS-SDR */
                     memcpy(msg->raw_msg, part->decoded, GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS);
@@ -399,7 +446,7 @@ void cnav_msg_decoder_init(cnav_msg_decoder_t *dec)
         0);
     dec->part1.init = true;
     dec->part2.init = true;
-    cnav_add_symbol_(&dec->part2, 0x80);
+    (void)cnav_add_symbol_(&dec->part2, 0x80);
 }
 
 /**
@@ -414,6 +461,8 @@ void cnav_msg_decoder_init(cnav_msg_decoder_t *dec)
  * symbolTime_ms = msg->tow * 6000 + *pdelay * 20 (L2)
  * symbolTime_ms = msg->tow * 6000 + *pdelay * 10 (L5)
  * \endcode
+ * Every message checked under message lock is reported once: a pass by the
+ * return value, a failure by the \a crc_failed flag of \a dec.
  *
  * \param[in,out] dec    Decoder object.
  * \param[in]     symbol Symbol value probability, where 0x00 - 100% of 0,
@@ -430,8 +479,9 @@ bool cnav_msg_decoder_add_symbol(cnav_msg_decoder_t *dec,
     cnav_msg_t *msg,
     uint32_t *pdelay)
 {
-    cnav_add_symbol_(&dec->part1, symbol);
-    cnav_add_symbol_(&dec->part2, symbol);
+    const bool crc_failed1 = cnav_add_symbol_(&dec->part1, symbol);
+    const bool crc_failed2 = cnav_add_symbol_(&dec->part2, symbol);
+    dec->crc_failed = crc_failed1 || crc_failed2;
 
     if (dec->part1.message_lock)
         {

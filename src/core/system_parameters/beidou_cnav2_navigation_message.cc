@@ -164,6 +164,7 @@ bool Beidou_Cnav2_Navigation_Message::decode_frame_symbols(const float* symbols,
             return false;
         }
     d_last_crc_ok = true;
+    d_last_frame_inverted = corr < 0.0;
     d_last_nav_bits.clear();
     d_last_nav_bits.reserve(static_cast<size_t>(BEIDOU_CNAV2_INFO_BITS));
     for (int32_t i = 0; i < BEIDOU_CNAV2_INFO_BITS; i++)
@@ -234,6 +235,7 @@ void Beidou_Cnav2_Navigation_Message::reset()
     d_have_published = false;
     d_flag_new_eph = false;
     d_last_crc_ok = false;
+    d_last_frame_inverted = false;
 }
 
 

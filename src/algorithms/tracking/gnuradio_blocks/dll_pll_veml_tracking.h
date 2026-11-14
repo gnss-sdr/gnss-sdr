@@ -156,6 +156,7 @@ private:
     double d_cfo_phase_step_rad;
     double d_carrier_doppler_hz;
     double d_acc_carrier_phase_rad;
+    double d_ref_carrier_phase_offset_rad;
     double d_rem_code_phase_chips;
     double d_T_chip_seconds;
     double d_T_prn_seconds;

@@ -133,6 +133,7 @@ void gps_l2c_telemetry_decoder_gs::reset()
     d_TOW_at_current_symbol = 0;
     d_sent_tlm_failed_msg = false;
     d_flag_valid_word = false;
+    d_flag_PLL_180_deg_phase_locked = false;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
@@ -153,12 +154,17 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // add the symbol to the decoder
     const uint8_t symbol_clip = static_cast<uint8_t>(in[0].Prompt_I > 0) * 255;
     flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
-    if (d_dump_crc_stats && (d_cnav_decoder.part1.message_lock || d_cnav_decoder.part2.message_lock))
+    if (d_dump_crc_stats)
         {
-            // update CRC statistics
-            d_Tlm_CRC_Stats->update_CRC_stats((d_cnav_decoder.part1.crc_ok || d_cnav_decoder.part2.crc_ok));
-            d_cnav_decoder.part1.message_lock = false;
-            d_cnav_decoder.part2.message_lock = false;
+            // update CRC statistics: one test per message checked under message lock
+            if (d_cnav_decoder.crc_failed)
+                {
+                    d_Tlm_CRC_Stats->update_CRC_stats(false);
+                }
+            if (flag_new_cnav_frame)
+                {
+                    d_Tlm_CRC_Stats->update_CRC_stats(true);
+                }
         }
 
     consume_each(1);  // one by one
@@ -193,14 +199,8 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // check if new CNAV frame is available
     if (flag_new_cnav_frame == true)
         {
-            if (d_cnav_decoder.part1.invert == true || d_cnav_decoder.part2.invert == true)
-                {
-                    d_flag_PLL_180_deg_phase_locked = true;
-                }
-            else
-                {
-                    d_flag_PLL_180_deg_phase_locked = false;
-                }
+            // polarity of the symbols of this message, which has passed the CRC check
+            d_flag_PLL_180_deg_phase_locked = msg.inverted;
             std::bitset<GPS_L2_CNAV_DATA_PAGE_BITS> raw_bits;
             // Expand packet bits to bitsets. Notice the reverse order of the bits sequence, required by the CNAV message decoder
             for (uint32_t i = 0; i < GPS_L2_CNAV_DATA_PAGE_BITS; i++)

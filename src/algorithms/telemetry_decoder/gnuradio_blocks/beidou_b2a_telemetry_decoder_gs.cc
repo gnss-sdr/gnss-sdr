@@ -17,6 +17,7 @@
 #include "beidou_b2a_telemetry_decoder_gs.h"
 #include "Beidou_B2a.h"
 #include "Beidou_DNAV.h"
+#include "MATH_CONSTANTS.h"
 #include "beidou_cnav1_ephemeris.h"
 #include "display.h"
 #include "gnss_satellite.h"
@@ -115,6 +116,7 @@ void beidou_b2a_telemetry_decoder_gs::reset()
     d_symbol_history.clear();
     d_flag_frame_sync = false;
     d_flag_valid_word = false;
+    d_flag_PLL_180_deg_phase_locked = false;
     d_CRC_error_counter = 0;
     d_sample_counter = 0;
     d_preamble_index = 0;
@@ -246,6 +248,7 @@ int beidou_b2a_telemetry_decoder_gs::general_work(
                             d_flag_frame_sync = true;
                             d_CRC_error_counter = 0;
                             d_flag_valid_word = true;
+                            d_flag_PLL_180_deg_phase_locked = d_nav.last_frame_inverted();
                             d_preamble_index = d_sample_counter;
                             const int32_t sow = d_nav.last_sow();
                             LOG(INFO) << "B-CNAV2 CRC ok ch " << d_channel
@@ -301,6 +304,16 @@ int beidou_b2a_telemetry_decoder_gs::general_work(
         {
             current.Flag_valid_word = true;
             current.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            if (d_flag_PLL_180_deg_phase_locked)
+                {
+                    // correct the accumulated phase for the Costas loop phase shift, if required
+                    current.Carrier_phase_rads += GNSS_PI;
+                    current.Flag_PLL_180_deg_phase_locked = true;
+                }
+            else
+                {
+                    current.Flag_PLL_180_deg_phase_locked = false;
+                }
             if (d_tow_to_trk)
                 {
                     const auto tow_obj = std::make_shared<TOW_to_trk>(TOW_to_trk(

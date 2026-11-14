@@ -25,12 +25,14 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed the Galileo E5b BGD scaling and the ionospheric scaling of E5b
   measurements in GPS L5 + Galileo E5b receivers, where the factors were
   referenced to the E5a wavelength held in the first slot instead of to E1.
-- The BeiDou DNAV (B1I, B3I) and GLONASS GNAV (L1, L2 C/A) telemetry decoders
-  now report the 180-degree carrier phase lock they detect from the sign of the
-  preamble (or time mark) in `Flag_PLL_180_deg_phase_locked`, and add half a
-  cycle to the carrier phase while it is set, as the GPS and Galileo telemetry
-  decoders already did. Before, they inverted the decoded symbols but left the
-  flag the tracking block had set.
+- Fixed the half-cycle ambiguity of the carrier phase measurements for BeiDou
+  B1I and B3I and GLONASS L1 and L2 C/A signals, which their telemetry decoders
+  left unresolved.
+- Fixed the half-cycle ambiguity of the carrier phase measurements for the
+  BeiDou B2a signal, which its telemetry decoder left unresolved.
+- Fixed the half-cycle ambiguity of the carrier phase measurements for GPS L2C
+  and for GPS and QZSS L5 tracked on the data component, which the CNAV
+  telemetry decoder resolved wrongly for some satellites.
 
 ### Improvements in Availability:
 
@@ -61,6 +63,13 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed the preamble search of the GPS CNAV message decoder used by the GPS L2C
   and L5 telemetry decoders, which could miss the first message after the start
   of tracking. Contributed by @BenGant.
+- The GPS CNAV message decoder now follows a half-cycle slip of the carrier
+  tracking loop at the next message. Before, it decoded no more messages, and
+  the GPS L2C or L5 satellite was dropped one minute later.
+- Fixed the tracking of the data component (`track_pilot=false`) of GPS L5,
+  Galileo E5a and E5b, and QZSS L5 signals, which did not remove the secondary
+  code from the symbols delivered to the telemetry decoder. This weakened them,
+  and left the Galileo E5b carrier phase half a cycle off.
 
 ### Improvements in Efficiency:
 
@@ -150,6 +159,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   Before, the signals of a satellite in the same band group shared one lock time
   (GPS L2C with L5, Galileo E5a with E5b), and lock times never restarted, so
   rovers could not detect cycle slips from them.
+- Carrier phases are now aligned to the reference signal of the RINEX phase
+  alignment: those measured on the pilot component of GPS L5, Galileo E5a and
+  E5b, BeiDou B1C and B2a, and QZSS L5 signals to their data component, and GPS
+  L1C to L1 C/A. They were a quarter of a cycle off.
 
 ### Improvements in Maintainability:
 
@@ -189,6 +202,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   `Tracking_XX.max_carrier_lock_fail` was set above 300000 or 200000,
   respectively, so a false lock that the carrier lock test did not drop kept its
   channel until the end of the run.
+- Fixed `TelemetryDecoder_XX.dump_crc_stats=true` in the GPS L2C and L5
+  telemetry decoders, which never counted a failed CRC check.
 
 ### Improvements in Reproducibility:
 

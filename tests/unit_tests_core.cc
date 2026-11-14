@@ -52,8 +52,8 @@
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/beidou_dnav_telemetry_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/deterministic_telemetry_fault_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/galileo_fnav_inav_decoder_test.cc"
-#include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_cnav_msg_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/glonass_gnav_telemetry_decoder_test.cc"
+#include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_cnav_msg_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/gps_l1c_telemetry_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/sbas_l1_telemetry_decoder_test.cc"
 

@@ -1,0 +1,99 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Saqib Khan <11544614+saqibkh@users.noreply.github.com>
+name: CUDA on simulated H100
+
+# The hosted runners have no GPU, so the other workflows never build with
+# ENABLE_CUDA=ON. This builds run_tests with the CUDA blocks and runs the CUDA
+# unit tests on a simulated NVIDIA H100
+# (https://github.com/pantheongpu/pantheonsim). A simulator cannot reproduce
+# hardware-specific behavior or timing, so it complements real-GPU testing and
+# does not replace it.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "cmake/**"
+      - "CMakeLists.txt"
+      - ".github/workflows/gpu-sim.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  cuda-sim:
+    name: CUDA 13.0 on simulated H100
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      # library-path false: the build links the toolkit's cuFFT as usual, and
+      # the tests run under `vgpu run`, which supplies the simulator's libraries
+      - name: Set up the simulated H100 and CUDA toolkit
+        uses: pantheongpu/setup-pantheonsim@68edfd58c091361dd6baf060b63de412e544d858 # v0.1.7
+        with:
+          gpu: nvidia/h100
+          cuda-toolkit: "13.0"
+          library-path: "false"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build ccache \
+          libunwind-dev libboost-dev libboost-date-time-dev libboost-system-dev \
+          libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
+          libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr \
+          libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev \
+          libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libmatio-dev \
+          googletest protobuf-compiler libprotobuf-dev python3-mako liborc-0.4-dev
+
+      - name: Restore ccache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ccache
+          key: ccache-gpu-sim-${{ github.sha }}
+          restore-keys: |
+            ccache-gpu-sim-
+
+      # The simulator runs PTX (90-virtual) and needs the shared CUDA runtime
+      - name: Configure
+        run: |
+          cmake -S . -B build -GNinja \
+            -DENABLE_CUDA=ON \
+            -DCMAKE_CUDA_COMPILER=/usr/local/cuda-13.0/bin/nvcc \
+            -DCUDAToolkit_ROOT=/usr/local/cuda-13.0 \
+            -DCMAKE_CUDA_ARCHITECTURES=90-virtual \
+            -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache
+
+      - name: Build run_tests
+        run: |
+          ccache -z
+          cmake --build build -j3 --target run_tests
+          ccache -s
+
+      # MatchesCpuReferenceLongCoherentIntegration is left out: with 4 ms of
+      # coherent integration the local code holds 4 identical periods, so the
+      # grid has 4 equal maxima (code phase 524, 4524, 8524, 12524) and which
+      # one the CPU and the GPU pick depends only on FFT rounding.
+      - name: CUDA acquisition engine tests
+        run: |
+          vgpu run --gpu nvidia/h100 ./install/run_tests \
+            --gtest_filter='CudaPcpsEngineTest.*:-CudaPcpsEngineTest.MatchesCpuReferenceLongCoherentIntegration'
+
+      - name: CUDA PCPS acquisition block tests
+        run: vgpu run --gpu nvidia/h100 ./install/run_tests --gtest_filter='GpsL1CaPcpsAcquisitionCudaTest.*'
+
+      - name: CUDA multicorrelator test
+        run: vgpu run --gpu nvidia/h100 ./install/run_tests --gtest_filter='GpuMulticorrelatorTest.*'

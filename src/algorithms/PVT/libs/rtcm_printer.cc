@@ -56,21 +56,21 @@ constexpr uint32_t max_gps_prn = 32;
 
 struct MsmSignalSpec
 {
-    char system;
     const char* receiver_signal;
     uint32_t signal_flag;
+    char system;
 };
 
 
 const MsmSignalSpec msm_signal_specs[] = {
-    {'G', "1C", GPS_1C},
-    {'G', "2S", GPS_2S},
-    {'G', "L5", GPS_L5},
-    {'E', "1B", GAL_1B},
-    {'E', "7X", GAL_E5b},
-    {'E', "5X", GAL_E5a},
-    {'R', "1G", GLO_1G},
-    {'R', "2G", GLO_2G},
+    {"1C", GPS_1C, 'G'},
+    {"2S", GPS_2S, 'G'},
+    {"L5", GPS_L5, 'G'},
+    {"1B", GAL_1B, 'E'},
+    {"7X", GAL_E5b, 'E'},
+    {"5X", GAL_E5a, 'E'},
+    {"1G", GLO_1G, 'R'},
+    {"2G", GLO_2G, 'R'},
 };
 
 

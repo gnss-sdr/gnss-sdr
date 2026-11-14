@@ -49,6 +49,7 @@ eph_t make_bds_eph(int sat, int code, double tgd0, double tgd2, gtime_t toe)
 Gnss_Synchro make_bds_synchro(const char *signal, uint32_t prn, double pr_m)
 {
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Pilot;
     gs.System = 'C';
     gs.Signal[0] = signal[0];
     gs.Signal[1] = signal[1];

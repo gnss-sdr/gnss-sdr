@@ -554,6 +554,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                     current_synchro_data.Signal[1] = 'C';
                     current_synchro_data.Signal[2] = '\0';
                     current_synchro_data.fs = d_fs_in;
+                    current_synchro_data.tracking_component = Gnss_Synchro::TrackingComponent::Data;
                     *out[0] = std::move(current_synchro_data);
                     d_P_bit_accu = gr_complex(0.0, 0.0);
                     produced = 1;

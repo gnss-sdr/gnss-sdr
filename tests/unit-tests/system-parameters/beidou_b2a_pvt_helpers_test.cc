@@ -53,6 +53,7 @@ eph_t make_bds_b2a_eph(int sat, int code, double tgd0, double tgd1, double tgd2,
 Gnss_Synchro make_bds_b2a_synchro(const char *signal, uint32_t prn, double pr_m)
 {
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.System = 'C';
     gs.Signal[0] = signal[0];
     gs.Signal[1] = signal[1];
@@ -175,4 +176,25 @@ TEST(BeidouB2aPvtHelpersTest, Cnav1AndCnav2MapsAreIndependent)
     EXPECT_EQ(cnav2[27].sig_type, BDS_EPH_SOURCE_CNAV2);
     EXPECT_EQ(cnav1[27].toe, 3000);
     EXPECT_EQ(cnav2[27].toe, 6000);
+}
+
+
+TEST(BeidouB2aPvtHelpersTest, PilotCodeDoesNotApplyDataInterSignalCorrection)
+{
+    const int sat = satno(SYS_BDS, 27);
+    eph_t eph{};
+    eph.sat = sat;
+    eph.code = BDS_EPH_SOURCE_CNAV2;
+    eph.tgd[1] = 2.0e-9;
+    eph.tgd[2] = 3.0e-9;
+    nav_t nav{};
+    nav.eph = &eph;
+    nav.n = 1;
+    Gnss_Synchro pilot = make_bds_b2a_synchro("5D", 27, 2.3e7);
+    pilot.tracking_component = Gnss_Synchro::TrackingComponent::Pilot;
+    obsd_t obs{};
+    insert_obs_to_rtklib(obs, pilot, 800, 2);
+    EXPECT_EQ(CODE_L5P, obs.code[2]);
+    EXPECT_STREQ("5P", code2obs(obs.code[2], nullptr));
+    EXPECT_NEAR(SPEED_OF_LIGHT_M_S * 2.0e-9, gettgd_bds_by_obs_code(sat, &nav, obs.code[2]), 1e-6);
 }

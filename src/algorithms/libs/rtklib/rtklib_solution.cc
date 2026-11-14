@@ -147,7 +147,8 @@ static int nmea_gsv_signal_id(int sys, unsigned char code, int fallback_signal_i
             switch (code)
                 {
                 case CODE_L1C:
-                    return 1; /* L1 C/A */
+                case CODE_L1E: /* L1 C/B has no NMEA signal ID */
+                    return 1;  /* L1 C/A */
                 case CODE_L1S:
                     return 2; /* L1C (D) */
                 case CODE_L1L:

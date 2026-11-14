@@ -2554,7 +2554,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {
                                                         // An L2C or L5 observation came first: L1C fills the first
                                                         // slot, and its ISC replaces the L1 C/A one
-                                                        eph_data[i].isc[0] = cnav2_iter->second.ISCL1CP;
+                                                        eph_data[i].isc[0] = gnss_observables_iter->second.tracking_component == Gnss_Synchro::TrackingComponent::Data ? cnav2_iter->second.ISCL1CD : cnav2_iter->second.ISCL1CP;
                                                         d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
                                                             cnav2_iter->second.WN,
@@ -2566,6 +2566,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         if (!found_existing_obs)
                                             {
                                                 eph_data[valid_obs] = eph_to_rtklib(cnav2_iter->second);
+                                                if (gnss_observables_iter->second.tracking_component == Gnss_Synchro::TrackingComponent::Data)
+                                                    {
+                                                        eph_data[valid_obs].isc[0] = cnav2_iter->second.ISCL1CD;
+                                                    }
                                                 obsd_t newobs{};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
@@ -3443,6 +3447,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     info.prn = static_cast<uint32_t>(prn);
                                     info.system = sys_char;
                                     info.signal = std::string(synchro->Signal, 2);
+                                    info.observation_code = synchro->observation_code();
                                     info.azimuth_deg = az_deg;
                                     info.elevation_deg = pvt_ssat[sat_idx].azel[1] * R2D;
                                     const auto band_it = d_rtklib_band_index.find(info.signal);
@@ -3451,7 +3456,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     // solver input (B1I next to B1C, the non-selected E5, E6 per
                                     // PVT.use_e6_for_pvt) or dropped by the fixed-base path fails this.
                                     const bool in_record = obs_record != nullptr && signal_slot >= 0 && signal_slot < NFREQ &&
-                                                           obs_record->code[signal_slot] == rtklib_obs_code(sys_char, info.signal, signal_slot);
+                                                           obs_record->code[signal_slot] != CODE_NONE &&
+                                                           obs_record->code[signal_slot] == obs2code(synchro->observation_code(), nullptr);
                                     info.combined = false;
                                     info.used = false;
                                     if (in_record && spp_solution)

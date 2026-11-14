@@ -36,7 +36,7 @@ constexpr uint32_t CODE_L1M = 5;   //!<   obs code: L1M        (GPS)
 constexpr uint32_t CODE_L1N = 6;   //!<   obs code: L1codeless (GPS)
 constexpr uint32_t CODE_L1S = 7;   //!<   obs code: L1C(D)     (GPS,QZS)
 constexpr uint32_t CODE_L1L = 8;   //!<   obs code: L1C(P)     (GPS,QZS)
-constexpr uint32_t CODE_L1E = 9;   //!<   (not used)
+constexpr uint32_t CODE_L1E = 9;   //!<   obs code: L1C/B      (QZS)
 constexpr uint32_t CODE_L1A = 10;  //!<   obs code: E1A        (GAL)
 constexpr uint32_t CODE_L1B = 11;  //!<   obs code: E1B        (GAL)
 constexpr uint32_t CODE_L1X = 12;  //!<   obs code: E1B+C,L1C(D+P) (GAL,QZS)
@@ -85,7 +85,8 @@ constexpr uint32_t CODE_L9C = 54;  //!<   obs code: SC RS(P)   (IRN)
 constexpr uint32_t CODE_L9X = 55;  //!<   obs code: SB+C       (IRN)
 constexpr uint32_t CODE_L1D = 56;  //!<   obs code: B1C data   (BDS)
 constexpr uint32_t CODE_L5D = 57;  //!<   obs code: B2a data   (BDS)
-constexpr int32_t MAXCODE = 57;    //!<   max number of obs code
+constexpr uint32_t CODE_L5P = 58;  //!<   obs code: B2a pilot  (BDS)
+constexpr int32_t MAXCODE = 58;    //!<   max number of obs code
 
 
 /** \} */

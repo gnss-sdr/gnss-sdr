@@ -555,6 +555,7 @@ void add_beidou_to_relative_epoch(Rtklib_Solver& solver,
 Gnss_Synchro make_rover_observation(unsigned int prn)
 {
     Gnss_Synchro observation;
+    observation.tracking_component = Gnss_Synchro::TrackingComponent::Pilot;
     observation.System = 'G';
     std::memcpy(observation.Signal, "1C", 3);
     observation.PRN = prn;

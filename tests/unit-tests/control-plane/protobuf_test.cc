@@ -16,6 +16,9 @@
 
 
 #include "serdes_gnss_synchro.h"
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <sstream>
 
 TEST(Protobuf, Works)
 {
@@ -167,4 +170,61 @@ TEST(Protobuf, CarrierPhaseContinuitySurvivesCopyAndMove)
     Gnss_Synchro move_assigned = Gnss_Synchro();
     move_assigned = std::move(copy_constructed);
     EXPECT_FALSE(move_assigned.Flag_carrier_phase_continuous);
+}
+
+
+TEST(Protobuf, TrackingComponentSurvivesSerializationAndCopy)
+{
+    Gnss_Synchro pilot;
+    pilot.System = 'E';
+    std::memcpy(pilot.Signal, "1B", 3);
+    pilot.tracking_component = Gnss_Synchro::TrackingComponent::Pilot;
+    Gnss_Synchro data = pilot;
+    data.tracking_component = Gnss_Synchro::TrackingComponent::Data;
+    Gnss_Synchro copied;
+    copied = pilot;
+    Gnss_Synchro moved;
+    moved = std::move(copied);
+    EXPECT_STREQ("1C", moved.observation_code());
+    Serdes_Gnss_Synchro serdes;
+    gnss_sdr::Observables message;
+    ASSERT_TRUE(message.ParseFromString(serdes.createProtobuffer({data, moved})));
+    const auto restored = serdes.readProtobuffer(message);
+    ASSERT_EQ(2U, restored.size());
+    EXPECT_STREQ("1B", restored[0].observation_code());
+    EXPECT_STREQ("1C", restored[1].observation_code());
+    message.mutable_observable(1)->clear_tracking_component();
+    EXPECT_STREQ("", serdes.readProtobuffer(message)[1].observation_code());
+}
+
+
+TEST(Protobuf, TrackingComponentBoostArchivesPreserveUnknownLegacyState)
+{
+    Gnss_Synchro pilot;
+    pilot.System = 'G';
+    std::memcpy(pilot.Signal, "L5", 3);
+    pilot.tracking_component = Gnss_Synchro::TrackingComponent::Pilot;
+    std::stringstream stream;
+    {
+        boost::archive::text_oarchive output(stream);
+        output << pilot;
+    }
+    Gnss_Synchro restored;
+    {
+        boost::archive::text_iarchive input(stream);
+        input >> restored;
+    }
+    EXPECT_STREQ("5Q", restored.observation_code());
+
+    std::stringstream legacy;
+    {
+        boost::archive::text_oarchive output(legacy);
+        pilot.serialize(output, 0);
+    }
+    {
+        boost::archive::text_iarchive input(legacy);
+        restored.serialize(input, 0);
+    }
+    EXPECT_EQ(Gnss_Synchro::TrackingComponent::Unknown, restored.tracking_component);
+    EXPECT_STREQ("", restored.observation_code());
 }

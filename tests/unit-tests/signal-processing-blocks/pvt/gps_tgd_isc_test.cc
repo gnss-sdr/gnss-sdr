@@ -15,10 +15,15 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "gnss_synchro.h"
+#include "rtklib_conversions.h"
 #include "rtklib_pntpos.h"
 #include "rtklib_rtkcmn.h"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <cmath>
+#include <map>
+#include <string>
 
 namespace
 {
@@ -510,4 +515,94 @@ TEST(SppVarerrTest, SnrWeightingFollowsTheMeasurementSlot)
     zero_snr_observation.P[0] = 22.0e6;
     const double variance_zero_snr = varerr(&opt, &zero_snr_observation, elevation_rad, SYS_GPS);
     EXPECT_GT(variance_zero_snr, 100.0 * variance_slot2);
+}
+
+
+TEST(GpsTgdIscTest, L5DataAndPilotUseTheirOwnInterSignalCorrections)
+{
+    for (const int system : {SYS_GPS, SYS_QZS})
+        {
+            nav_t nav{};
+            eph_t eph{};
+            const int sat = satno(system, system == SYS_GPS ? 1 : 193);
+            set_gps_test_ephemeris(nav, eph, sat);
+            eph.isc[3] = 9.0e-9;
+            nav.lam[sat - 1][0] = L1_WAVELENGTH_M;
+            nav.lam[sat - 1][2] = L5_WAVELENGTH_M;
+            for (const int ionoopt : {IONOOPT_BRDC, IONOOPT_IFLC})
+                {
+                    obsd_t obs{};
+                    obs.sat = sat;
+                    obs.P[2] = 24000000.0;
+                    if (ionoopt == IONOOPT_IFLC)
+                        {
+                            obs.P[0] = 23999999.0;
+                            obs.code[0] = CODE_L1C;
+                        }
+                    prcopt_t options{};
+                    options.ionoopt = ionoopt;
+                    const double azel[2] = {0.0, 1.0};
+                    double variance = 0.0;
+                    double iono_scale = 0.0;
+                    obs.code[2] = CODE_L5I;
+                    const double data = prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale);
+                    obs.code[2] = CODE_L5Q;
+                    const double pilot = prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale);
+                    const double gamma = std::pow(L5_WAVELENGTH_M / L1_WAVELENGTH_M, 2.0);
+                    const double expected = SPEED_OF_LIGHT_M_S * (eph.isc[3] - eph.isc[2]) /
+                                            (ionoopt == IONOOPT_IFLC ? 1.0 - gamma : 1.0);
+                    EXPECT_NEAR(expected, pilot - data, 1e-7);
+                }
+        }
+}
+
+
+TEST(GpsTgdIscTest, HasBiasSelectionPrefersTheTrackedComponent)
+{
+    struct Case
+    {
+        char system;
+        const char* signal;
+        const char* data;
+        const char* pilot;
+    };
+    const Case cases[] = {
+        {'G', "L5", "L5 I", "L5 Q"},
+        {'E', "1B", "E1-B I/NAV OS", "E1-C"},
+        {'E', "5X", "E5a-I F/NAV OS", "E5a-Q"},
+        {'E', "7X", "E5b-I I/NAV OS", "E5b-Q"},
+        {'E', "E6", "E6-B C/NAV HAS", "E6-C"}};
+    for (const auto& test : cases)
+        {
+            SCOPED_TRACE(test.signal);
+            Gnss_Synchro measurement;
+            measurement.System = test.system;
+            std::copy_n(test.signal, 3, measurement.Signal);
+            measurement.PRN = 1;
+            measurement.Pseudorange_m = 22000000.0;
+            std::map<std::string, std::map<int, HAS_obs_corrections>> corrections;
+            corrections[test.data][1].code_bias_m = 1.0F;
+            corrections[test.pilot][1].code_bias_m = 2.0F;
+            corrections[test.data][1].phase_bias_cycle = 0.25F;
+            corrections[test.pilot][1].phase_bias_cycle = 0.5F;
+            obsd_t obs{};
+            measurement.tracking_component = Gnss_Synchro::TrackingComponent::Data;
+            insert_obs_to_rtklib(obs, measurement, corrections, 2200, 0);
+            EXPECT_DOUBLE_EQ(22000001.0, obs.P[0]);
+            EXPECT_DOUBLE_EQ(0.25, obs.L[0]);
+            measurement.tracking_component = Gnss_Synchro::TrackingComponent::Pilot;
+            insert_obs_to_rtklib(obs, measurement, corrections, 2200, 0);
+            EXPECT_DOUBLE_EQ(22000002.0, obs.P[0]);
+            EXPECT_DOUBLE_EQ(0.5, obs.L[0]);
+            // Only the other component of the same signal is broadcast (Galileo
+            // HAS sends pilot biases only): it is used instead of no bias at all
+            corrections.erase(test.pilot);
+            insert_obs_to_rtklib(obs, measurement, corrections, 2200, 0);
+            EXPECT_DOUBLE_EQ(22000001.0, obs.P[0]);
+            EXPECT_DOUBLE_EQ(0.25, obs.L[0]);
+            corrections.erase(test.data);
+            insert_obs_to_rtklib(obs, measurement, corrections, 2200, 0);
+            EXPECT_DOUBLE_EQ(measurement.Pseudorange_m, obs.P[0]);
+            EXPECT_DOUBLE_EQ(0.0, obs.L[0]);
+        }
 }

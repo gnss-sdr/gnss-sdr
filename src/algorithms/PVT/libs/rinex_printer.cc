@@ -69,7 +69,9 @@
 
 namespace
 {
-using Constellation_Observables_Map = std::map<char, std::map<uint32_t, std::map<signal_flag, Gnss_Synchro>>>;
+using Observation_Key = std::pair<signal_flag, std::string>;
+using Observation_Schema = std::map<char, std::set<Observation_Key>>;
+using Constellation_Observables_Map = std::map<char, std::map<uint32_t, std::map<Observation_Key, Gnss_Synchro>>>;
 
 const std::unordered_map<std::string, char> satelliteSystem = {
     {"GPS", 'G'},
@@ -145,22 +147,85 @@ signal_flag string_to_signal_flag(const std::string& signal_str)
 }
 
 
-std::map<char, std::set<signal_flag>> get_constel_signal_flags(const Signal_Enabled_Flags& flags)
+// Observation code of a measurement in the requested RINEX version. RINEX 3.02
+// names BeiDou B1I as 1I, and has no code for QZSS L1 C/B, which stays in the
+// L1 C/A columns there.
+std::string rinex_observation_code(const Gnss_Synchro& synchro, signal_flag flag, int version)
 {
-    std::map<char, std::set<signal_flag>> constel_signal_flags;
-
-    for (const auto& it : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5, GPS_L1C}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3, BDS_B1C, BDS_B2A}}, {'J', {QZS_J1, QZS_J5}}})
+    std::string code = synchro.observation_code();
+    if (version == 3)
         {
-            for (const auto flag : it.second)
+            if (flag == BDS_B1)
                 {
-                    if (flags.check_any_enabled(flag))
+                    code = "1I";
+                }
+            else if (flag == QZS_J1 && code == "1E")
+                {
+                    code = "1C";
+                }
+        }
+    return code;
+}
+
+
+Observation_Schema get_observation_schema(const Signal_Enabled_Flags& flags, int version, uint32_t data_signals, uint32_t pilot_signals)
+{
+    Observation_Schema schema;
+    for (const auto& constellation : std::map<char, std::set<signal_flag>>{{'G', {GPS_1C, GPS_2S, GPS_L5, GPS_L1C}}, {'E', {GAL_1B, GAL_E5a, GAL_E5b, GAL_E6}}, {'R', {GLO_1G, GLO_2G}}, {'C', {BDS_B1, BDS_B3, BDS_B1C, BDS_B2A}}, {'J', {QZS_J1, QZS_J5}}})
+        {
+            for (const auto flag : constellation.second)
+                {
+                    if (!flags.check_any_enabled(flag))
                         {
-                            constel_signal_flags[it.first].insert(flag);
+                            continue;
+                        }
+                    Gnss_Synchro synchro;
+                    synchro.System = constellation.first;
+                    const auto signal = signal_flag_to_string(flag);
+                    std::copy_n(signal.data(), 2, synchro.Signal);
+                    // Reserve the components that the channels of this signal can
+                    // measure: channels may start late, and data and pilot tracking
+                    // may coexist. Both when nothing is known about the signal.
+                    const bool any_known = ((data_signals | pilot_signals) & flag) != 0U;
+                    for (const auto component : {Gnss_Synchro::TrackingComponent::Data, Gnss_Synchro::TrackingComponent::Pilot})
+                        {
+                            const uint32_t component_signals = component == Gnss_Synchro::TrackingComponent::Data ? data_signals : pilot_signals;
+                            if (any_known && (component_signals & flag) == 0U)
+                                {
+                                    continue;
+                                }
+                            synchro.tracking_component = component;
+                            schema[constellation.first].emplace(flag, rinex_observation_code(synchro, flag, version));
+                        }
+                    if (flag == QZS_J1 && version == 4)
+                        {
+                            // L1 C/B, which some satellites broadcast instead of L1 C/A
+                            schema[constellation.first].emplace(flag, "1E");
                         }
                 }
         }
+    return schema;
+}
 
-    return constel_signal_flags;
+// Reference signal of each band for the carrier phase alignment (RINEX 3.02,
+// Table A19). GPS L2C is not one: the reference of the L2 band is L2 P(Y).
+bool is_phase_reference_signal(char system, const std::string& code)
+{
+    switch (system)
+        {
+        case 'G':
+            return code == "1C" || code == "5I";
+        case 'E':
+            return code == "1B" || code == "5I" || code == "7I" || code == "6B";
+        case 'R':
+            return code == "1C" || code == "2C";
+        case 'C':
+            return code == "1I" || code == "6I";
+        case 'J':
+            return code == "1C" || code == "5I";
+        default:
+            return false;
+        }
 }
 
 
@@ -371,55 +436,48 @@ int32_t expand_truncated_week(int32_t week, int32_t reference_week, int32_t modu
 
 
 Constellation_Observables_Map get_constellation_observables_map(
-    const std::map<char, std::set<signal_flag>>& constel_signal_flags,
-    const std::map<int32_t, Gnss_Synchro>& observables)
+    const Observation_Schema& schema,
+    const std::map<int32_t, Gnss_Synchro>& observables,
+    int version,
+    std::set<std::string>& undeclared_codes_reported)
 {
-    Constellation_Observables_Map constel_observables;
-
-    // Create an entry for each constellation
-    for (const auto& it : constel_signal_flags)
+    Constellation_Observables_Map result;
+    for (const auto& constellation : schema)
         {
-            constel_observables[it.first] = {};
+            result[constellation.first] = {};
         }
-
-    for (const auto& observables_iter : observables)
+    for (const auto& entry : observables)
         {
-            // Find active signals for observable constellation
-            const auto& signal_flags_it = constel_signal_flags.find(observables_iter.second.System);
-
-            if (signal_flags_it != constel_signal_flags.end())
+            const auto& synchro = entry.second;
+            const auto constellation = schema.find(synchro.System);
+            if (constellation == schema.end() || synchro.observation_code()[0] == '\0')
                 {
-                    // Find if the observable signal is active
-                    const auto signal_flag = string_to_signal_flag(observables_iter.second.Signal);
-                    if (signal_flags_it->second.find(signal_flag) != signal_flags_it->second.end())
+                    continue;
+                }
+            const auto flag = string_to_signal_flag(std::string(synchro.Signal, 2));
+            const Observation_Key key(flag, rinex_observation_code(synchro, flag, version));
+            if (constellation->second.count(key) == 0)
+                {
+                    const std::string code = std::string(1, synchro.System) + " " + key.second;
+                    if (undeclared_codes_reported.insert(code).second)
                         {
-                            // Create an entry for the Constellation / PRN if it doesn't exist
-                            auto& signal_obs_map = constel_observables[observables_iter.second.System][observables_iter.second.PRN];
-
-                            // Check if the signal entry exist
-                            const auto& signal_obs_it = signal_obs_map.find(signal_flag);
-
-                            // If it doesn't, it's the first one and we create an entry for each active signal, otherwise just update
-                            if (signal_obs_it == signal_obs_map.end())
-                                {
-                                    for (const auto cosntel_signal_flag : signal_flags_it->second)
-                                        {
-                                            signal_obs_map[cosntel_signal_flag] = Gnss_Synchro{};
-                                        }
-
-                                    signal_obs_map[signal_flag] = observables_iter.second;
-                                }
-                            else
-                                {
-                                    signal_obs_it->second = observables_iter.second;
-                                }
+                            LOG(WARNING) << "RINEX: " << code << " measurements are left out of the observation file, "
+                                         << "whose header does not declare that observation code";
+                        }
+                    continue;
+                }
+            auto& satellite = result[synchro.System][synchro.PRN];
+            if (satellite.empty())
+                {
+                    for (const auto& column : constellation->second)
+                        {
+                            satellite.emplace(column, Gnss_Synchro{});
                         }
                 }
+            satellite[key] = synchro;
         }
-
-    return constel_observables;
+    return result;
 }
-
 
 std::map<std::string, std::string> getObservationCodes()
 {
@@ -2313,107 +2371,6 @@ void add_wavelength(std::fstream& out)
 }
 
 
-void add_obs_sys_obs_type(std::fstream& out,
-    const std::string& constellation,
-    const Signal_Enabled_Flags& flags,
-    const std::map<std::string, std::string>& observationType,
-    const std::map<std::string, std::string>& observationCode,
-    const std::map<uint32_t, std::string>& signal_to_code_map)
-{
-    std::vector<std::string> obsCodes;
-    uint32_t number_of_observations = 0;
-
-    for (const auto& it : signal_to_code_map)
-        {
-            if (flags.check_any_enabled(it.first))
-                {
-                    obsCodes.emplace_back(observationCode.at(it.second));
-                    number_of_observations += 4;
-                }
-        }
-
-    const auto& sys_char = satelliteSystem.at(constellation);
-    add_obs_sys_obs_type(out, sys_char, number_of_observations, observationType, obsCodes);
-}
-
-
-void add_obs_sys_obs_type_gps(std::fstream& out,
-    const Signal_Enabled_Flags& flags,
-    const std::map<std::string, std::string>& observationType,
-    const std::map<std::string, std::string>& observationCode)
-{
-    const std::map<uint32_t, std::string> signal_to_code_map = {
-        {GPS_1C, "GPS_L1_CA"},
-        {GPS_2S, "GPS_L2_L2CM"},
-        {GPS_L5, "GPS_L5_Q"},
-        {GPS_L1C, "GPS_L1C_P"},  // Code and carrier are tracked on the L1C pilot
-    };
-
-    add_obs_sys_obs_type(out, "GPS", flags, observationType, observationCode, signal_to_code_map);
-}
-
-
-void add_obs_sys_obs_type_galileo(std::fstream& out,
-    const Signal_Enabled_Flags& flags,
-    const std::map<std::string, std::string>& observationType,
-    const std::map<std::string, std::string>& observationCode)
-{
-    const std::map<uint32_t, std::string> signal_to_code_map = {
-        {GAL_1B, "GALILEO_E1_B"},
-        {GAL_E5a, "GALILEO_E5a_IQ"},
-        {GAL_E5b, "GALILEO_E5b_IQ"},
-        {GAL_E6, "GALILEO_E56_B"},
-    };
-
-    add_obs_sys_obs_type(out, "Galileo", flags, observationType, observationCode, signal_to_code_map);
-}
-
-
-void add_obs_sys_obs_type_glonass(std::fstream& out,
-    const Signal_Enabled_Flags& flags,
-    const std::map<std::string, std::string>& observationType,
-    const std::map<std::string, std::string>& observationCode)
-{
-    const std::map<uint32_t, std::string> signal_to_code_map = {
-        {GLO_1G, "GLONASS_G1_CA"},
-        {GLO_2G, "GLONASS_G2_CA"},
-    };
-
-    add_obs_sys_obs_type(out, "GLONASS", flags, observationType, observationCode, signal_to_code_map);
-}
-
-
-void add_obs_sys_obs_type_beidou(std::fstream& out,
-    const Signal_Enabled_Flags& flags,
-    const std::map<std::string, std::string>& observationType,
-    const std::map<std::string, std::string>& observationCode,
-    int version)
-{
-    const std::map<uint32_t, std::string> signal_to_code_map = {
-        {BDS_B1, version == 4 ? "BEIDOU_B1_I_RINEX4" : "BEIDOU_B1_I"},
-        {BDS_B1C, "BEIDOU_B1C_D"},
-        {BDS_B2A, "BEIDOU_B2A_D"},
-        {BDS_B3, "BEIDOU_B3_I"},
-    };
-
-    add_obs_sys_obs_type(out, "Beidou", flags, observationType, observationCode, signal_to_code_map);
-}
-
-
-void add_obs_sys_obs_type_qzss(std::fstream& out,
-    const Signal_Enabled_Flags& flags,
-    const std::map<std::string, std::string>& observationType,
-    const std::map<std::string, std::string>& observationCode)
-{
-    const std::map<uint32_t, std::string> signal_to_code_map = {
-        {QZS_J1, "QZSS_L1_CA"},
-        {QZS_J5, "QZSS_L5_I"},
-    };
-
-    add_obs_sys_obs_type(out, "QZSS", flags, observationType, observationCode, signal_to_code_map);
-}
-
-
 void add_obs_sys_obs_type_v2(std::fstream& out,
     const std::string& codeKey,
     const std::map<std::string, std::string>& observationType,
@@ -2633,6 +2590,12 @@ void update_nav_header_from_info(std::fstream& out, const std::string& filename,
 
 int get_version(const Signal_Enabled_Flags& flags, int version)
 {
+    if (version != 4 && flags.check_any_enabled(BDS_B1C, BDS_B2A))
+        {
+            std::cout << "WARNING: Changing RINEX version to 4.02 because RINEX 2.11/3.02 do not define BeiDou B1C/B2a observation codes.\n";
+            return 4;
+        }
+
     // GPS L1C carries CNAV-2, whose ephemeris records only exist from RINEX 4 on
     const bool gps_requires_cnav = flags.check_any_enabled(GPS_2S, GPS_L5, GPS_L1C) && !flags.check_any_enabled(GPS_1C);
     const bool qzss_requires_cnav = flags.check_any_enabled(QZS_J5) && !flags.check_any_enabled(QZS_J1);
@@ -2683,6 +2646,8 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
                             d_flags(signal_enabled_flags),
                             d_version(get_version(d_flags, version)),
                             d_stringVersion(d_version == 2 ? "2.11" : (d_version == 4 ? "4.02" : "3.02")),  // Only versions 2.11, 3.02 and 4.02
+                            d_data_component_signals(0xFFFFFFFFU),
+                            d_pilot_component_signals(0xFFFFFFFFU),
                             d_ref_gps_week(ref_gps_week),
                             navfilename(getNavFilePath(d_flags, d_version, base_name, base_rinex_path)),
                             obsfilename(getFilePath("RINEX_FILE_TYPE_OBS", base_name, base_rinex_path)),
@@ -2770,6 +2735,46 @@ Rinex_Printer::~Rinex_Printer() noexcept
     if (d_version == 2 && navfilename != navGlofilename)
         {
             close_and_remove_if_empty(navGlofilename, navGloFile);
+        }
+}
+
+
+void Rinex_Printer::set_tracked_components(uint32_t data_signals, uint32_t pilot_signals)
+{
+    d_data_component_signals = data_signals;
+    d_pilot_component_signals = pilot_signals;
+}
+
+
+void Rinex_Printer::add_measured_components(const std::map<int, Gnss_Synchro>& gnss_observables_map)
+{
+    // The header declares the components that the channels are set to track.
+    // The measurements at hand have the last word, should they differ.
+    static const auto signal_flags = string_to_signal_flag_map();
+    for (const auto& observable : gnss_observables_map)
+        {
+            const auto& synchro = observable.second;
+            const auto signal = signal_flags.find(std::string(synchro.Signal, 2));
+            if (signal == signal_flags.end())
+                {
+                    continue;
+                }
+            uint32_t* component_signals = nullptr;
+            if (synchro.tracking_component == Gnss_Synchro::TrackingComponent::Data)
+                {
+                    component_signals = &d_data_component_signals;
+                }
+            else if (synchro.tracking_component == Gnss_Synchro::TrackingComponent::Pilot)
+                {
+                    component_signals = &d_pilot_component_signals;
+                }
+            const bool any_known = ((d_data_component_signals | d_pilot_component_signals) & signal->second) != 0U;
+            if (component_signals != nullptr && any_known && (*component_signals & signal->second) == 0U)
+                {
+                    *component_signals |= signal->second;
+                    LOG(WARNING) << "RINEX: adding the " << synchro.System << " " << synchro.observation_code()
+                                 << " observation types found in the measurements, which the tracking configuration did not announce";
+                }
         }
 }
 
@@ -3030,6 +3035,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                         }
                 }
 
+            add_measured_components(gnss_observables_map);
             rinex_obs_header(obsFile, system_time_str, system_time, seconds);
             rinex_nav_header(navFile, iono_lines, time_corr_lines, leap_second_line);
 
@@ -3080,8 +3086,8 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
 
     if (d_rinex_header_written && flag_write_RINEX_obs_output)  // The header is already written, we can now log the navigation message data
         {
-            const auto constel_signal_flags = get_constel_signal_flags(d_flags);
-            const auto constel_observables = get_constellation_observables_map(constel_signal_flags, gnss_observables_map);
+            const auto schema = get_observation_schema(d_flags, d_version, d_data_component_signals, d_pilot_component_signals);
+            const auto constel_observables = get_constellation_observables_map(schema, gnss_observables_map, d_version, d_undeclared_codes_reported);
             add_obs_epoch_record(obsFile, system_time, seconds, d_version, constel_observables);
             add_constellation_obs_sat_record_lines(obsFile, d_flags, constel_observables, d_version);
 
@@ -4428,26 +4434,21 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
         }
     else
         {
-            // -------- SYS / OBS TYPES
-            if (d_flags.has_gps)
+            // Header and records share exactly the same component-aware schema.
+            const auto schema = get_observation_schema(d_flags, d_version, d_data_component_signals, d_pilot_component_signals);
+            for (const char system : {'G', 'E', 'R', 'C', 'J'})
                 {
-                    add_obs_sys_obs_type_gps(out, d_flags, observationType, observationCode);
-                }
-            if (d_flags.has_galileo)
-                {
-                    add_obs_sys_obs_type_galileo(out, d_flags, observationType, observationCode);
-                }
-            if (d_flags.has_glonass)
-                {
-                    add_obs_sys_obs_type_glonass(out, d_flags, observationType, observationCode);
-                }
-            if (d_flags.has_beidou)
-                {
-                    add_obs_sys_obs_type_beidou(out, d_flags, observationType, observationCode, d_version);
-                }
-            if (d_flags.has_qzss)
-                {
-                    add_obs_sys_obs_type_qzss(out, d_flags, observationType, observationCode);
+                    const auto constellation = schema.find(system);
+                    if (constellation == schema.end())
+                        {
+                            continue;
+                        }
+                    std::vector<std::string> codes;
+                    for (const auto& column : constellation->second)
+                        {
+                            codes.push_back(column.second);
+                        }
+                    add_obs_sys_obs_type(out, system, 4 * codes.size(), observationType, codes);
                 }
 
             // -------- Signal Strength units
@@ -4457,7 +4458,35 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
     // -------- TIME OF FIRST OBS
     add_obs_time_first_obs(out, time_constellation, system_time, seconds);
 
-    // -------- SYS /PHASE SHIFTS
+    // -------- SYS / PHASE SHIFT
+    // Mandatory in RINEX 3.02 (section 9.1). Tracking and telemetry decoding
+    // already align the carrier phases, so no correction is applied here: the
+    // field is left blank for the reference signal of each band and is zero for
+    // the signals aligned to it. RINEX 4.02 (section 5.2.12) deprecates the
+    // record and tells encoders to ignore it, so it is not written there.
+    if (d_version == 3)
+        {
+            const auto schema = get_observation_schema(d_flags, d_version, d_data_component_signals, d_pilot_component_signals);
+            for (const char system : {'G', 'E', 'R', 'C', 'J'})
+                {
+                    const auto constellation = schema.find(system);
+                    if (constellation == schema.end())
+                        {
+                            continue;
+                        }
+                    for (const auto& column : constellation->second)
+                        {
+                            std::string line = std::string(1, system) + " L" + column.second;
+                            if (!is_phase_reference_signal(system, column.second))
+                                {
+                                    line += " " + rightJustify("0.00000", 8);
+                                }
+                            line.resize(60, ' ');
+                            line += leftJustify("SYS / PHASE SHIFT", 20);
+                            out << line << '\n';
+                        }
+                }
+        }
 
     if (d_version >= 3 && d_flags.has_glonass)
         {

@@ -45,6 +45,7 @@
 #include <cstdlib>  // for strtol, strtod
 #include <fstream>  // for fstream
 #include <map>      // for map
+#include <set>      // for set
 #include <string>   // for string
 #include <vector>   // for vector
 
@@ -107,6 +108,15 @@ public:
      * the first time.
      *
      */
+    /*!
+     * \brief Sets the signals (signal_flag) whose channels track the data
+     * component and those whose channels track the pilot one. The observation
+     * file header then declares only those observation types, plus any other
+     * found in the measurements when the header is written. Both components are
+     * declared by default, and for a signal that is in neither set.
+     */
+    void set_tracked_components(uint32_t data_signals, uint32_t pilot_signals);
+
     void print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         const std::map<int, Gnss_Synchro>& gnss_observables_map,
         double rx_time,
@@ -276,6 +286,8 @@ private:
 
     void update_obs_header(std::fstream& out, const std::string& leap_second_line) const;
 
+    void add_measured_components(const std::map<int, Gnss_Synchro>& gnss_observables_map);
+
     const std::map<std::string, std::string> observationType;  // PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     const std::map<std::string, std::string> observationCode;  // GNSS observation descriptors
 
@@ -283,6 +295,10 @@ private:
 
     const int d_version;                // RINEX version (2 for 2.11, 3 for 3.02, 4 for 4.02)
     const std::string d_stringVersion;  // RINEX version (2.11, 3.02 or 4.02)
+
+    std::set<std::string> d_undeclared_codes_reported;  // observation codes left out of the file, already logged
+    uint32_t d_data_component_signals;                  // signals whose data component gets observation types
+    uint32_t d_pilot_component_signals;                 // signals whose pilot component gets observation types
 
     std::string d_last_gps_lnav_iono_signature;
     std::string d_last_gps_lnav_sto_signature;

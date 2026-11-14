@@ -124,10 +124,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   TMBOC(6,1,4/33) pilot waveform (`Acquisition_1S.tmboc`, `Tracking_1S.tmboc`,
   default `false`). When a satellite is tracked on both L1 C/A and L1C,
   positioning uses L1 C/A. RINEX observation files contain
-  `C1L`/`L1L`/`D1L`/`S1L` observables, and RINEX 4.02 navigation files contain
-  CNV2 records. A sample configuration file is provided at
-  `conf/File_input/GPS/gnss-sdr_GPS_L1C_file.conf`. Based on initial work by
-  @tatjam.
+  `C1S`/`L1S`/`D1S`/`S1S` data or `C1L`/`L1L`/`D1L`/`S1L` pilot observables, and
+  RINEX 4.02 navigation files contain CNV2 records. A sample configuration file
+  is provided at `conf/File_input/GPS/gnss-sdr_GPS_L1C_file.conf`. Based on
+  initial work by @tatjam.
 - Fixed `Labsat_Signal_Source` for LabSat 4 (`.LS4`) recordings whose RF
   channels have different bandwidths (different `BW_DIV` values). Hardened the
   parsing of LabSat 4 (`.LS4`) `.ini` files. The source now exits with a
@@ -161,8 +161,16 @@ All notable changes to GNSS-SDR will be documented in this file.
   rovers could not detect cycle slips from them.
 - Carrier phases are now aligned to the reference signal of the RINEX phase
   alignment: those measured on the pilot component of GPS L5, Galileo E5a and
-  E5b, BeiDou B1C and B2a, and QZSS L5 signals to their data component, and GPS
-  L1C to L1 C/A. They were a quarter of a cycle off.
+  E5b, BeiDou B1C and B2a, and QZSS L5 signals to their data component, GPS L1C
+  to L1 C/A, and GPS L2C to L2 P(Y). They were a quarter of a cycle off.
+- RINEX, RTCM MSM, RTKLIB, and Monitor outputs now identify the effective data
+  or pilot tracking component instead of inferring it from the channel routing
+  label. RINEX declares the data or pilot columns of each signal as configured
+  with `Tracking_XX.track_pilot`, writes the phase-alignment records that
+  version 3.02 requires, and promotes BeiDou B1C/B2a selections to 4.02, where
+  QZSS L1 C/B is reported as `1E`. RTCM cell masks, splitting, and lock
+  histories distinguish both components. GPS L5/L1C and BeiDou B2a inter-signal
+  corrections follow the reported component.
 
 ### Improvements in Maintainability:
 

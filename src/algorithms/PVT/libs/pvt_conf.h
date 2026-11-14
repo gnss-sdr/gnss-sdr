@@ -63,6 +63,10 @@ public:
     Secure_String ntrip_password_env;
 
     uint32_t signal_enabled_flags = 0;
+    // Signals (signal_flag) whose channels are set to track the data or the
+    // pilot component. RINEX declares both for a signal that is in neither.
+    uint32_t data_component_signals = 0xFFFFFFFFU;
+    uint32_t pilot_component_signals = 0xFFFFFFFFU;
     uint32_t observable_interval_ms = 20;
 
     int32_t output_rate_ms = 0;

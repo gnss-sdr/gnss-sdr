@@ -69,7 +69,7 @@ bool is_supported_lock_time_prn(const Gnss_Synchro& gnss_synchro)
 
 std::tuple<char, uint32_t, std::string> lock_time_key(const Gnss_Synchro& gnss_synchro)
 {
-    return std::make_tuple(gnss_synchro.System, gnss_synchro.PRN, std::string(gnss_synchro.Signal, 2));
+    return std::make_tuple(gnss_synchro.System, gnss_synchro.PRN, std::string(gnss_synchro.Signal, 2) + std::to_string(static_cast<unsigned int>(gnss_synchro.tracking_component)));
 }
 
 
@@ -102,19 +102,20 @@ struct MsmSignalSpec
     double frequency_hz;
     double glonass_frequency_step_hz;
     uint32_t rtcm_signal_id;
+    uint32_t pilot_rtcm_signal_id;
     char system;
 };
 
 
 const MsmSignalSpec msm_signal_specs[] = {
-    {"1C", GPS_L1_FREQ_HZ, 0.0, 2, 'G'},
-    {"2S", GPS_L2_FREQ_HZ, 0.0, 15, 'G'},
-    {"L5", GPS_L5_FREQ_HZ, 0.0, 24, 'G'},
-    {"1B", GALILEO_E1_FREQ_HZ, 0.0, 4, 'E'},
-    {"7X", GALILEO_E5B_FREQ_HZ, 0.0, 16, 'E'},
-    {"5X", GALILEO_E5A_FREQ_HZ, 0.0, 24, 'E'},
-    {"1G", GLONASS_L1_CA_FREQ_HZ, GLONASS_L1_CA_DFREQ_HZ, 2, 'R'},
-    {"2G", GLONASS_L2_CA_FREQ_HZ, GLONASS_L2_CA_DFREQ_HZ, 8, 'R'},
+    {"1C", GPS_L1_FREQ_HZ, 0.0, 2, 2, 'G'},
+    {"2S", GPS_L2_FREQ_HZ, 0.0, 15, 15, 'G'},
+    {"L5", GPS_L5_FREQ_HZ, 0.0, 22, 23, 'G'},
+    {"1B", GALILEO_E1_FREQ_HZ, 0.0, 4, 2, 'E'},
+    {"7X", GALILEO_E5B_FREQ_HZ, 0.0, 14, 15, 'E'},
+    {"5X", GALILEO_E5A_FREQ_HZ, 0.0, 22, 23, 'E'},
+    {"1G", GLONASS_L1_CA_FREQ_HZ, GLONASS_L1_CA_DFREQ_HZ, 2, 2, 'R'},
+    {"2G", GLONASS_L2_CA_FREQ_HZ, GLONASS_L2_CA_DFREQ_HZ, 8, 8, 'R'},
 };
 }  // namespace
 
@@ -4426,7 +4427,11 @@ uint32_t Rtcm::get_msm_signal_id(const Gnss_Synchro& gnss_synchro)
         {
             if ((signal_spec.system == gnss_synchro.System) && (signal == signal_spec.receiver_signal))
                 {
-                    return signal_spec.rtcm_signal_id;
+                    if (gnss_synchro.observation_code()[0] == '\0')
+                        {
+                            return 0;
+                        }
+                    return gnss_synchro.tracking_component == Gnss_Synchro::TrackingComponent::Pilot ? signal_spec.pilot_rtcm_signal_id : signal_spec.rtcm_signal_id;
                 }
         }
     return 0;

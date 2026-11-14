@@ -323,6 +323,7 @@ private:
     std::string d_local_time_str;
 
     std::vector<bool> d_channel_initialized;
+    std::vector<bool> d_unknown_component_reported;
     std::vector<double> d_initial_carrier_phase_offset_estimation_rads;
 
     std::map<int, Gnss_Synchro> d_gnss_observables_map;

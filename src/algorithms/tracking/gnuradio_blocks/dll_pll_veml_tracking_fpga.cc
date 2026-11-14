@@ -817,7 +817,11 @@ void dll_pll_veml_tracking_fpga::check_carrier_phase_coherent_initialization()
 {
     if (d_acc_carrier_phase_initialized == false)
         {
-            d_acc_carrier_phase_rad = -d_rem_carr_phase_rad;
+            // Align quadrature pilots to the data reference, and GPS L2C to
+            // L2 P(Y), as in software tracking.
+            const bool quadrature_pilot = d_trk_parameters.track_pilot && (d_signal_type == "L5" || d_signal_type == "5X");
+            const double reference_offset = (quadrature_pilot || d_signal_type == "2S") ? HALF_PI : 0.0;
+            d_acc_carrier_phase_rad = -(d_rem_carr_phase_rad + reference_offset);
             d_acc_carrier_phase_initialized = true;
             d_carrier_phase_discontinuity = true;  // the carrier phase ambiguity starts again
         }
@@ -2079,6 +2083,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 {
                     d_carrier_phase_discontinuity = false;
                 }
+            current_synchro_data.tracking_component = d_trk_parameters.track_pilot ? Gnss_Synchro::TrackingComponent::Pilot : Gnss_Synchro::TrackingComponent::Data;
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

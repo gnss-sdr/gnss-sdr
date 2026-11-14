@@ -773,6 +773,15 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
             // L1S, L1L and L1X in RINEX 3.05, Table A23)
             d_ref_carrier_phase_offset_rad = -HALF_PI;
         }
+    else if (d_signal_type == "2S")
+        {
+            // The reference signal of GPS L2 is L2 P(Y), whose carrier is a
+            // quarter of a cycle ahead of the L2C one (-1/4 cycle for L2S, L2L
+            // and L2X in RINEX 3.05, Table A23). The shift is kept whatever the
+            // L2C phasing flag of the CNAV message says (RINEX 4.02, Table A45,
+            // note 1)
+            d_ref_carrier_phase_offset_rad = HALF_PI;
+        }
 
     // Initial code frequency basis of NCO
     d_code_freq_chips = d_code_chip_rate;
@@ -3017,6 +3026,7 @@ int dll_pll_veml_tracking::process_input(int noutput_items __attribute__((unused
                 }
 
             d_det.record_output(this->nitems_written(0), current_synchro_data.Tracking_sample_counter);
+            current_synchro_data.tracking_component = d_trk_parameters.track_pilot ? Gnss_Synchro::TrackingComponent::Pilot : Gnss_Synchro::TrackingComponent::Data;
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

@@ -154,7 +154,8 @@ bool glonass_gnav_is_healthy(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, boo
 geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model, bool glonass_strict_health = true);
 
 /*!
- * \brief RTKLIB observation code that insert_obs_to_rtklib() stores for a signal
+ * \brief RTKLIB data-component code used for configured-frequency preflight.
+ * Runtime observations use Gnss_Synchro::observation_code().
  * \param system GNSS-SDR system identifier ('G', 'E', 'R', 'C', 'J', 'S')
  * \param signal GNSS-SDR two-character signal identifier (e.g. "1C", "5X", "B3")
  * \param band RTKLIB band slot the signal is stored in

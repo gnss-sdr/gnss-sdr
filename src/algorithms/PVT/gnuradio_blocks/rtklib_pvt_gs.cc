@@ -362,6 +362,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     d_initial_carrier_phase_offset_estimation_rads = std::vector<double>(nchannels, 0.0);
     d_channel_initialized = std::vector<bool>(nchannels, false);
+    d_unknown_component_reported = std::vector<bool>(nchannels, false);
 
     std::string dump_ls_pvt_filename = conf_.dump_filename;
 
@@ -536,6 +537,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     if (d_rinex_output_enabled)
         {
             d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.ref_gps_week);
+            d_rp->set_tracked_components(conf_.data_component_signals, conf_.pilot_component_signals);
         }
     else
         {
@@ -3091,8 +3093,11 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         {
                             // QZSS L1 C/B is broadcast with a dedicated PRN (203-206), but the
                             // transmitting satellite is identified by the PRN of its nominal PNT
-                            // signals (RINEX 4.00, Table 6: QZSS PRN to RINEX Satellite Identifier)
-                            gnss_synchro.PRN = qzss_l1cb_prn_to_nominal_prn(gnss_synchro.PRN);
+                            // signals (RINEX 4.00, Table 6: QZSS PRN to RINEX Satellite Identifier).
+                            // The flag keeps the measurement apart from L1 C/A (RINEX code 1E)
+                            const uint32_t nominal_prn = qzss_l1cb_prn_to_nominal_prn(gnss_synchro.PRN);
+                            gnss_synchro.Flag_qzss_l1cb = nominal_prn != gnss_synchro.PRN;
+                            gnss_synchro.PRN = nominal_prn;
                         }
                     if (gnss_synchro.Flag_valid_pseudorange)
                         {
@@ -3254,6 +3259,15 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             if (store_valid_observable)
                                 {
+                                    if (gnss_synchro.observation_code()[0] == '\0' && !d_unknown_component_reported[i])
+                                        {
+                                            // RINEX and RTCM cannot label this measurement, and RTKLIB gets CODE_NONE
+                                            d_unknown_component_reported[i] = true;
+                                            LOG(WARNING) << "Channel " << i << ": the tracking block does not report whether the "
+                                                         << gnss_synchro.System << " " << std::string(gnss_synchro.Signal, 2)
+                                                         << " measurements come from the data or the pilot component. "
+                                                         << "They are left out of the PVT solution and of the RINEX and RTCM outputs.";
+                                        }
                                     // store valid observables in a map.
                                     d_gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, gnss_synchro));
                                 }

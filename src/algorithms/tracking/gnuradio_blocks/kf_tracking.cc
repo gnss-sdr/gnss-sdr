@@ -2104,6 +2104,7 @@ int kf_tracking::process_input(int noutput_items __attribute__((unused)), gr_vec
             current_synchro_data.Flag_carrier_phase_continuous = !d_carrier_phase_discontinuity;
             d_carrier_phase_discontinuity = false;
             d_det.record_output(this->nitems_written(0), current_synchro_data.Tracking_sample_counter);
+            current_synchro_data.tracking_component = d_trk_parameters.track_pilot ? Gnss_Synchro::TrackingComponent::Pilot : Gnss_Synchro::TrackingComponent::Data;
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

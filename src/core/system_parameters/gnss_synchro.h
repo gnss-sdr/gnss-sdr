@@ -20,7 +20,9 @@
 #ifndef GNSS_SDR_GNSS_SYNCHRO_H
 #define GNSS_SDR_GNSS_SYNCHRO_H
 
+#include "qzss.h"
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/version.hpp>
 #include <cstdint>
 #include <utility>
 
@@ -47,6 +49,67 @@ public:
     char Signal[3]{};      //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
     uint32_t PRN{};        //!< Set by Channel::set_signal(Gnss_Signal gnss_signal)
     int32_t Channel_ID{};  //!< Set by Channel constructor
+
+    enum class TrackingComponent : uint8_t
+    {
+        Unknown = 0,
+        Data = 1,
+        Pilot = 2
+    };
+
+    //! Actual code/carrier tracking component, after tracking implementation overrides.
+    TrackingComponent tracking_component{TrackingComponent::Unknown};
+
+    //! RINEX 4 / RTCM observation code; Signal remains the receiver's routing label.
+    //! An empty code means that the measurement cannot be identified safely.
+    const char* observation_code() const noexcept
+    {
+        struct SignalCode
+        {
+            char system;
+            const char* signal;
+            const char* data;
+            const char* pilot;
+        };
+        static const SignalCode codes[] = {
+            {'G', "1C", "1C", "1C"},
+            {'G', "2S", "2S", "2S"},
+            {'G', "L5", "5I", "5Q"},
+            {'G', "1S", "1S", "1L"},
+            {'E', "1B", "1B", "1C"},
+            {'E', "5X", "5I", "5Q"},
+            {'E', "7X", "7I", "7Q"},
+            {'E', "E6", "6B", "6C"},
+            {'R', "1G", "1C", "1C"},
+            {'R', "2G", "2C", "2C"},
+            {'C', "B1", "2I", "2I"},
+            {'C', "B3", "6I", "6I"},
+            {'C', "1D", "1D", "1P"},
+            {'C', "5D", "5D", "5P"},
+            {'J', "J1", "1C", "1C"},
+            {'J', "J5", "5I", "5Q"},
+            {'S', "S1", "1C", "1C"}};
+        // QZSS L1 C/B shares the J1 routing label with L1 C/A. Its own PRNs
+        // identify it until the PVT block replaces them by the nominal PRN
+        // of the satellite, and Flag_qzss_l1cb from then on.
+        if (System == 'J' && Signal[0] == 'J' && Signal[1] == '1' &&
+            (Flag_qzss_l1cb || qzss_l1cb_prn_to_nominal_prn(PRN) != PRN))
+            {
+                return "1E";
+            }
+        for (const auto& code : codes)
+            {
+                if (System == code.system && Signal[0] == code.signal[0] && Signal[1] == code.signal[1])
+                    {
+                        if (code.data[1] == code.pilot[1] || tracking_component == TrackingComponent::Data)
+                            {
+                                return code.data;
+                            }
+                        return tracking_component == TrackingComponent::Pilot ? code.pilot : "";
+                    }
+            }
+        return "";
+    }
 
     // Acquisition
     double Acq_delay_samples{};          //!< Set by Acquisition processing block
@@ -91,6 +154,12 @@ public:
     //! the carrier phase ambiguity of the channel has changed
     bool Flag_carrier_phase_continuous{true};
 
+    //! Set by the PVT processing block when it replaces the PRN of a QZSS
+    //! L1 C/B measurement (203-206) by the nominal PRN of its satellite, so
+    //! that the signal can still be told apart from L1 C/A. Not serialized:
+    //! Monitor clients receive the transmitted PRN
+    bool Flag_qzss_l1cb{};
+
     /// Copy constructor
     Gnss_Synchro(const Gnss_Synchro& other) noexcept = default;
 
@@ -106,6 +175,7 @@ public:
                 this->Signal[2] = rhs.Signal[2];
                 this->PRN = rhs.PRN;
                 this->Channel_ID = rhs.Channel_ID;
+                this->tracking_component = rhs.tracking_component;
                 this->Acq_delay_samples = rhs.Acq_delay_samples;
                 this->Acq_doppler_hz = rhs.Acq_doppler_hz;
                 this->Acq_samplestamp_samples = rhs.Acq_samplestamp_samples;
@@ -131,6 +201,7 @@ public:
                 this->Flag_cycle_slip = rhs.Flag_cycle_slip;
                 this->Flag_half_cycle_slip = rhs.Flag_half_cycle_slip;
                 this->Flag_carrier_phase_continuous = rhs.Flag_carrier_phase_continuous;
+                this->Flag_qzss_l1cb = rhs.Flag_qzss_l1cb;
             }
         return *this;
     };
@@ -149,6 +220,7 @@ public:
                 this->Signal[2] = other.Signal[2];
                 this->PRN = other.PRN;
                 this->Channel_ID = other.Channel_ID;
+                this->tracking_component = other.tracking_component;
                 this->Acq_delay_samples = other.Acq_delay_samples;
                 this->Acq_doppler_hz = other.Acq_doppler_hz;
                 this->Acq_samplestamp_samples = other.Acq_samplestamp_samples;
@@ -174,8 +246,10 @@ public:
                 this->Flag_cycle_slip = other.Flag_cycle_slip;
                 this->Flag_half_cycle_slip = other.Flag_half_cycle_slip;
                 this->Flag_carrier_phase_continuous = other.Flag_carrier_phase_continuous;
+                this->Flag_qzss_l1cb = other.Flag_qzss_l1cb;
 
                 // Leave the source object in a valid but unspecified state
+                other.tracking_component = TrackingComponent::Unknown;
                 other.Signal[0] = '\0';
                 other.Signal[1] = '\0';
                 other.Signal[2] = '\0';
@@ -207,6 +281,7 @@ public:
                 other.Flag_cycle_slip = false;
                 other.Flag_half_cycle_slip = false;
                 other.Flag_carrier_phase_continuous = true;
+                other.Flag_qzss_l1cb = false;
             }
         return *this;
     };
@@ -219,9 +294,6 @@ public:
 
     void serialize(Archive& ar, const unsigned int version)
     {
-        if (version)
-            {
-            };
         // Satellite and signal info
         ar& BOOST_SERIALIZATION_NVP(System);
         ar& BOOST_SERIALIZATION_NVP(Signal);
@@ -257,9 +329,19 @@ public:
         ar& BOOST_SERIALIZATION_NVP(Flag_cycle_slip);
         ar& BOOST_SERIALIZATION_NVP(Flag_half_cycle_slip);
         ar& BOOST_SERIALIZATION_NVP(Flag_carrier_phase_continuous);
+        if (version > 0)
+            {
+                ar& BOOST_SERIALIZATION_NVP(tracking_component);
+            }
+        else if (Archive::is_loading::value)
+            {
+                tracking_component = TrackingComponent::Unknown;
+            }
     }
 };
 
+
+BOOST_CLASS_VERSION(Gnss_Synchro, 1)
 
 /** \} */
 /** \} */

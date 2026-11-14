@@ -59,19 +59,18 @@ struct MsmSignalSpec
     char system;
     const char* receiver_signal;
     uint32_t signal_flag;
-    uint32_t rtcm_signal_id;
 };
 
 
 const MsmSignalSpec msm_signal_specs[] = {
-    {'G', "1C", GPS_1C, 2},
-    {'G', "2S", GPS_2S, 15},
-    {'G', "L5", GPS_L5, 24},
-    {'E', "1B", GAL_1B, 4},
-    {'E', "7X", GAL_E5b, 16},
-    {'E', "5X", GAL_E5a, 24},
-    {'R', "1G", GLO_1G, 2},
-    {'R', "2G", GLO_2G, 8},
+    {'G', "1C", GPS_1C},
+    {'G', "2S", GPS_2S},
+    {'G', "L5", GPS_L5},
+    {'E', "1B", GAL_1B},
+    {'E', "7X", GAL_E5b},
+    {'E', "5X", GAL_E5a},
+    {'R', "1G", GLO_1G},
+    {'R', "2G", GLO_2G},
 };
 
 
@@ -113,7 +112,8 @@ std::string msm_signal_key(const Signal_Enabled_Flags& flags, const Gnss_Synchro
         {
             return {};
         }
-    return std::string(1, signal_spec->system) + std::to_string(signal_spec->rtcm_signal_id);
+    const std::string code = observable.observation_code();
+    return code.empty() ? std::string{} : std::string(1, signal_spec->system) + code;
 }
 
 

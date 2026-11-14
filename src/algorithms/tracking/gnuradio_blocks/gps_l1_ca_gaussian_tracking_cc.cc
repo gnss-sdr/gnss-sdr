@@ -862,6 +862,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::process_input(int noutput_items __attribute_
                     current_synchro_data.correlation_length_ms = 1;
                     current_synchro_data.fs = d_fs_in;
                     d_det.record_output(this->nitems_written(0), current_synchro_data.Tracking_sample_counter);
+                    current_synchro_data.tracking_component = Gnss_Synchro::TrackingComponent::Data;
                     *out[0] = std::move(current_synchro_data);
                     d_P_bit_accu = gr_complex(0.0, 0.0);
                     produced = 1;

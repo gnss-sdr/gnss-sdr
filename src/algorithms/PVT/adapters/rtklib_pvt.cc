@@ -228,6 +228,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const int rtcm_MT1019_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), pvt_output_parameters.output_rate_ms);
     const int rtcm_MT1020_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1020_rate_ms", 5000), pvt_output_parameters.output_rate_ms);
     const int rtcm_MT1045_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), pvt_output_parameters.output_rate_ms);
+    const int rtcm_MT1046_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1046_rate_ms", rtcm_MT1045_rate_ms), pvt_output_parameters.output_rate_ms);
     const int rtcm_MSM_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), pvt_output_parameters.output_rate_ms);
     const int rtcm_MT1077_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), pvt_output_parameters.output_rate_ms);
     const int rtcm_MT1087_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1087_rate_ms", rtcm_MSM_rate_ms), pvt_output_parameters.output_rate_ms);
@@ -236,6 +237,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.rtcm_msg_rate_ms[1019] = rtcm_MT1019_rate_ms;
     pvt_output_parameters.rtcm_msg_rate_ms[1020] = rtcm_MT1020_rate_ms;
     pvt_output_parameters.rtcm_msg_rate_ms[1045] = rtcm_MT1045_rate_ms;
+    pvt_output_parameters.rtcm_msg_rate_ms[1046] = rtcm_MT1046_rate_ms;
     for (int k = 1071; k < 1078; k++)  // All GPS MSM
         {
             pvt_output_parameters.rtcm_msg_rate_ms[k] = rtcm_MT1077_rate_ms;

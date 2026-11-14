@@ -403,6 +403,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
     bool rtcm_MT1019_enabled,
     bool rtcm_MT1020_enabled,
     bool rtcm_MT1045_enabled,
+    bool rtcm_MT1046_enabled,
     bool rtcm_MT1077_enabled,
     bool rtcm_MT1087_enabled,
     bool rtcm_MT1097_enabled,
@@ -410,6 +411,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
     bool flag_write_RTCM_1019_output,
     bool flag_write_RTCM_1020_output,
     bool flag_write_RTCM_1045_output,
+    bool flag_write_RTCM_1046_output,
     bool enable_rx_clock_correction)
 {
     try
@@ -417,6 +419,7 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
             const auto print_MT1019 = (!d_rtcm_has_written_once && rtcm_MT1019_enabled) || flag_write_RTCM_1019_output;
             const auto print_MT1020 = (!d_rtcm_has_written_once && rtcm_MT1020_enabled) || flag_write_RTCM_1020_output;
             const auto print_MT1045 = (!d_rtcm_has_written_once && rtcm_MT1045_enabled) || flag_write_RTCM_1045_output;
+            const auto print_MT1046 = (!d_rtcm_has_written_once && rtcm_MT1046_enabled) || flag_write_RTCM_1046_output;
             const auto print_MSM = (!d_rtcm_has_written_once && rtcm_MSM_enabled) || flag_write_RTCM_MSM_output;
 
             if (print_MT1019 && d_flags.check_any_enabled(GPS_1C))
@@ -451,6 +454,25 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                                     if (gal_eph_iter.second.nav_message_type != Galileo_Nav_Message_Type::INAV)
                                         {
                                             Print_Rtcm_MT1045(gal_eph_iter.second);
+                                        }
+                                }
+                        }
+                }
+            if (print_MT1046 && d_flags.has_galileo)
+                {
+                    // RTCM MT1046 carries Galileo I/NAV ephemerides.
+                    for (const auto& gal_eph_iter : pvt_solver->galileo_ephemeris_store.inav())
+                        {
+                            Print_Rtcm_MT1046(gal_eph_iter.second);
+                        }
+                    if (pvt_solver->galileo_ephemeris_store.inav().empty() &&
+                        pvt_solver->galileo_nav_message_type_for_pvt() == Galileo_Nav_Message_Type::INAV)
+                        {
+                            for (const auto& gal_eph_iter : pvt_solver->galileo_ephemeris_map)
+                                {
+                                    if (gal_eph_iter.second.nav_message_type != Galileo_Nav_Message_Type::FNAV)
+                                        {
+                                            Print_Rtcm_MT1046(gal_eph_iter.second);
                                         }
                                 }
                         }
@@ -775,6 +797,18 @@ bool Rtcm_Printer::Print_Rtcm_MT1045(const Galileo_Ephemeris& gal_eph)
             return false;
         }
     Rtcm_Printer::Print_Message(m1045);
+    return true;
+}
+
+
+bool Rtcm_Printer::Print_Rtcm_MT1046(const Galileo_Ephemeris& gal_eph)
+{
+    const std::string m1046 = rtcm->print_MT1046(gal_eph);
+    if (m1046.empty())
+        {
+            return false;
+        }
+    Rtcm_Printer::Print_Message(m1046);
     return true;
 }
 

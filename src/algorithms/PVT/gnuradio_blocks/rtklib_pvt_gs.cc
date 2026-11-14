@@ -492,6 +492,14 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 {
                     d_rtcm_MT1045_rate_ms = bc::lcm(5000, d_output_rate_ms);  // default value if not set
                 }
+            if (rtcm_msg_rate_ms.find(1046) != rtcm_msg_rate_ms.end())
+                {
+                    d_rtcm_MT1046_rate_ms = rtcm_msg_rate_ms[1046];
+                }
+            else
+                {
+                    d_rtcm_MT1046_rate_ms = d_rtcm_MT1045_rate_ms;  // default value if not set
+                }
             if (rtcm_msg_rate_ms.find(1077) != rtcm_msg_rate_ms.end())  // whatever between 1071 and 1077
                 {
                     d_rtcm_MT1077_rate_ms = rtcm_msg_rate_ms[1077];
@@ -524,6 +532,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         {
             d_rtcm_MT1019_rate_ms = 0;
             d_rtcm_MT1045_rate_ms = 0;
+            d_rtcm_MT1046_rate_ms = 0;
             d_rtcm_MT1020_rate_ms = 0;
             d_rtcm_MT1077_rate_ms = 0;
             d_rtcm_MT1087_rate_ms = 0;
@@ -3070,6 +3079,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             bool flag_write_RTCM_1019_output = false;
             bool flag_write_RTCM_1020_output = false;
             bool flag_write_RTCM_1045_output = false;
+            bool flag_write_RTCM_1046_output = false;
             bool flag_write_RTCM_MSM_output = false;
             bool flag_write_RINEX_obs_output = false;
             d_local_counter_ms += static_cast<uint64_t>(d_observable_interval_ms);
@@ -3580,6 +3590,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     const bool rtcm_MT1019_enabled = d_rtcm_MT1019_rate_ms != 0;
                                     const bool rtcm_MT1020_enabled = d_rtcm_MT1020_rate_ms != 0;
                                     const bool rtcm_MT1045_enabled = d_rtcm_MT1045_rate_ms != 0;
+                                    const bool rtcm_MT1046_enabled = d_rtcm_MT1046_rate_ms != 0;
                                     const bool rtcm_MT1077_enabled = d_rtcm_MT1077_rate_ms != 0;
                                     const bool rtcm_MT1087_enabled = d_rtcm_MT1087_rate_ms != 0;
                                     const bool rtcm_MT1097_enabled = d_rtcm_MT1097_rate_ms != 0;
@@ -3611,6 +3622,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             if (current_RX_time_ms % d_rtcm_MT1045_rate_ms == 0)
                                                 {
                                                     flag_write_RTCM_1045_output = true;
+                                                }
+                                        }
+                                    if (rtcm_MT1046_enabled)
+                                        {
+                                            if (current_RX_time_ms % d_rtcm_MT1046_rate_ms == 0)
+                                                {
+                                                    flag_write_RTCM_1046_output = true;
                                                 }
                                         }
 
@@ -3728,6 +3746,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 rtcm_MT1019_enabled,
                                                 rtcm_MT1020_enabled,
                                                 rtcm_MT1045_enabled,
+                                                rtcm_MT1046_enabled,
                                                 rtcm_MT1077_enabled,
                                                 rtcm_MT1087_enabled,
                                                 rtcm_MT1097_enabled,
@@ -3735,6 +3754,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 flag_write_RTCM_1019_output,
                                                 flag_write_RTCM_1020_output,
                                                 flag_write_RTCM_1045_output,
+                                                flag_write_RTCM_1046_output,
                                                 d_enable_rx_clock_correction);
                                         }
                                 }

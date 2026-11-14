@@ -171,6 +171,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   QZSS L1 C/B is reported as `1E`. RTCM cell masks, splitting, and lock
   histories distinguish both components. GPS L5/L1C and BeiDou B2a inter-signal
   corrections follow the reported component.
+- Added the RTCM message type 1046 (Galileo I/NAV ephemeris). Receivers tracking
+  only Galileo E1 or E5b sent Galileo observations without their ephemerides.
+  The message rate is set with `PVT.rtcm_MT1046_rate_ms`, which defaults to the
+  value of `PVT.rtcm_MT1045_rate_ms`.
+- Fixed the TCP/IP server of RTCM messages (`PVT.flag_rtcm_server=true`), which
+  since v0.0.19 delivered repeated ephemeris messages and no observation
+  messages to its clients.
 
 ### Improvements in Maintainability:
 

@@ -78,6 +78,7 @@ public:
         bool rtcm_MT1019_enabled,
         bool rtcm_MT1020_enabled,
         bool rtcm_MT1045_enabled,
+        bool rtcm_MT1046_enabled,
         bool rtcm_MT1077_enabled,
         bool rtcm_MT1087_enabled,
         bool rtcm_MT1097_enabled,
@@ -85,6 +86,7 @@ public:
         bool flag_write_RTCM_1019_output,
         bool flag_write_RTCM_1020_output,
         bool flag_write_RTCM_1045_output,
+        bool flag_write_RTCM_1046_output,
         bool enable_rx_clock_correction);
 
     uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
@@ -162,7 +164,8 @@ private:
     bool Print_Rtcm_MT1012(const Glonass_Gnav_Ephemeris& glonass_gnav_ephL1, const Glonass_Gnav_Ephemeris& glonass_gnav_ephL2, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
     bool Print_Rtcm_MT1019(const Gps_Ephemeris& gps_eph);      // GPS Ephemeris, should be broadcast in the event that the IODC does not match the IODE, and every 2 minutes.
-    bool Print_Rtcm_MT1045(const Galileo_Ephemeris& gal_eph);  // Galileo Ephemeris, should be broadcast every 2 minutes
+    bool Print_Rtcm_MT1045(const Galileo_Ephemeris& gal_eph);  // Galileo F/NAV Ephemeris, should be broadcast every 2 minutes
+    bool Print_Rtcm_MT1046(const Galileo_Ephemeris& gal_eph);  // Galileo I/NAV Ephemeris, should be broadcast every 2 minutes
 
     /*
      * \brief Prints GLONASS GNAV Ephemeris

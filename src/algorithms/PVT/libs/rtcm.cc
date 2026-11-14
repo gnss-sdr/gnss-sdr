@@ -2384,6 +2384,235 @@ int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph
 }
 
 
+// ********************************************************
+//
+//   MESSAGE TYPE 1046 (GALILEO I/NAV EPHEMERIS)
+//
+// ********************************************************
+
+std::string Rtcm::print_MT1046(const Galileo_Ephemeris& gal_eph)
+{
+    if (gal_eph.nav_message_type == Galileo_Nav_Message_Type::FNAV)
+        {
+            LOG(WARNING) << "RTCM MT1046 requires a Galileo I/NAV ephemeris";
+            return {};
+        }
+
+    const uint32_t msg_number = 1046;
+
+    Rtcm::set_DF002(msg_number);
+    Rtcm::set_DF252(gal_eph);
+    Rtcm::set_DF289(gal_eph);
+    Rtcm::set_DF290(gal_eph);
+    Rtcm::set_DF291(gal_eph);  // DF286, the SISA index for E1/E5b, has the format of DF291
+    Rtcm::set_DF292(gal_eph);
+    Rtcm::set_DF293(gal_eph);
+    Rtcm::set_DF294(gal_eph);
+    Rtcm::set_DF295(gal_eph);
+    Rtcm::set_DF296(gal_eph);
+    Rtcm::set_DF297(gal_eph);
+    Rtcm::set_DF298(gal_eph);
+    Rtcm::set_DF299(gal_eph);
+    Rtcm::set_DF300(gal_eph);
+    Rtcm::set_DF301(gal_eph);
+    Rtcm::set_DF302(gal_eph);
+    Rtcm::set_DF303(gal_eph);
+    Rtcm::set_DF304(gal_eph);
+    Rtcm::set_DF305(gal_eph);
+    Rtcm::set_DF306(gal_eph);
+    Rtcm::set_DF307(gal_eph);
+    Rtcm::set_DF308(gal_eph);
+    Rtcm::set_DF309(gal_eph);
+    Rtcm::set_DF310(gal_eph);
+    Rtcm::set_DF311(gal_eph);
+    Rtcm::set_DF312(gal_eph);
+    Rtcm::set_DF313(gal_eph);
+    Rtcm::set_DF316(gal_eph);
+    Rtcm::set_DF317(gal_eph);
+    Rtcm::set_DF287(gal_eph);
+    Rtcm::set_DF288(gal_eph);
+    const uint32_t two_zero = 0;
+    const auto DF001_ = std::bitset<2>(two_zero);
+
+    const std::string data = DF002.to_string() +
+                             DF252.to_string() +
+                             DF289.to_string() +
+                             DF290.to_string() +
+                             DF291.to_string() +
+                             DF292.to_string() +
+                             DF293.to_string() +
+                             DF294.to_string() +
+                             DF295.to_string() +
+                             DF296.to_string() +
+                             DF297.to_string() +
+                             DF298.to_string() +
+                             DF299.to_string() +
+                             DF300.to_string() +
+                             DF301.to_string() +
+                             DF302.to_string() +
+                             DF303.to_string() +
+                             DF304.to_string() +
+                             DF305.to_string() +
+                             DF306.to_string() +
+                             DF307.to_string() +
+                             DF308.to_string() +
+                             DF309.to_string() +
+                             DF310.to_string() +
+                             DF311.to_string() +
+                             DF312.to_string() +
+                             DF313.to_string() +
+                             DF316.to_string() +
+                             DF317.to_string() +
+                             DF287.to_string() +
+                             DF288.to_string() +
+                             DF001_.to_string();
+
+    if (data.length() != 504)
+        {
+            LOG(WARNING) << "Bad-formatted RTCM MT1046 (504 bits expected, found " << data.length() << ")";
+            return {};
+        }
+
+    std::string msg = build_message(data);
+    if (server_is_running)
+        {
+            rtcm_message_queue->push(msg);
+        }
+    return msg;
+}
+
+
+int32_t Rtcm::read_MT1046(const std::string& message, Galileo_Ephemeris& gal_eph) const
+{
+    // Convert message to binary
+    const std::string message_bin = Rtcm::binary_data_to_bin(message);
+
+    if (!Rtcm::check_CRC(message))
+        {
+            LOG(WARNING) << " Bad CRC detected in RTCM message MT1046";
+            return 1;
+        }
+
+    const uint32_t preamble_length = 8;
+    const uint32_t reserved_field_length = 6;
+    uint32_t index = preamble_length + reserved_field_length;
+
+    const uint32_t read_message_length = Rtcm::bin_to_uint(message_bin.substr(index, 10));
+    index += 10;
+
+    if (read_message_length != 63)
+        {
+            LOG(WARNING) << " Invalid MT1046 payload length (63 bytes expected, " << read_message_length << " received)";
+            return 1;
+        }
+
+    // Check than the message number is correct
+    const uint32_t read_msg_number = Rtcm::bin_to_uint(message_bin.substr(index, 12));
+    index += 12;
+
+    if (1046 != read_msg_number)
+        {
+            LOG(WARNING) << " This is not a MT1046 message";
+            return 1;
+        }
+
+    // Fill Galileo Ephemeris with message data content
+    gal_eph.nav_message_type = Galileo_Nav_Message_Type::INAV;
+    gal_eph.PRN = Rtcm::bin_to_uint(message_bin.substr(index, 6));
+    index += 6;
+
+    gal_eph.WN = Rtcm::bin_to_uint(message_bin.substr(index, 12));
+    index += 12;
+
+    const auto iod_nav = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    gal_eph.IOD_nav = iod_nav;
+    gal_eph.IOD_ephemeris = iod_nav;
+    index += 10;
+
+    gal_eph.SISA = Rtcm::bin_to_uint(message_bin.substr(index, 8));
+    index += 8;
+
+    gal_eph.idot = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 14))) * I_DOT_2_LSB;
+    index += 14;
+
+    gal_eph.toc = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 14))) * T0C_4_LSB;
+    index += 14;
+
+    gal_eph.af2 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 6))) * AF2_4_LSB;
+    index += 6;
+
+    gal_eph.af1 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 21))) * AF1_4_LSB;
+    index += 21;
+
+    gal_eph.af0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 31))) * AF0_4_LSB;
+    index += 31;
+
+    gal_eph.Crs = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_RS_3_LSB;
+    index += 16;
+
+    gal_eph.delta_n = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * DELTA_N_3_LSB;
+    index += 16;
+
+    gal_eph.M_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * M0_1_LSB;
+    index += 32;
+
+    gal_eph.Cuc = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_UC_3_LSB;
+    index += 16;
+
+    gal_eph.ecc = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * E_1_LSB;
+    index += 32;
+
+    gal_eph.Cus = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_US_3_LSB;
+    index += 16;
+
+    gal_eph.sqrtA = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 32))) * A_1_LSB_GAL;
+    index += 32;
+
+    gal_eph.toe = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 14))) * T0E_1_LSB;
+    index += 14;
+
+    gal_eph.Cic = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_IC_4_LSB;
+    index += 16;
+
+    gal_eph.OMEGA_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * OMEGA_0_2_LSB;
+    index += 32;
+
+    gal_eph.Cis = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_IS_4_LSB;
+    index += 16;
+
+    gal_eph.i_0 = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * I_0_2_LSB;
+    index += 32;
+
+    gal_eph.Crc = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 16))) * C_RC_3_LSB;
+    index += 16;
+
+    gal_eph.omega = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 32))) * OMEGA_2_LSB;
+    index += 32;
+
+    gal_eph.OMEGAdot = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 24))) * OMEGA_DOT_3_LSB;
+    index += 24;
+
+    gal_eph.BGD_E1E5a = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 10))) * BGD_E1_E5A_5_LSB;
+    index += 10;
+
+    gal_eph.BGD_E1E5b = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 10))) * BGD_E1_E5B_5_LSB;
+    index += 10;
+
+    gal_eph.E5b_HS = Rtcm::bin_to_uint(message_bin.substr(index, 2));
+    index += 2;
+
+    gal_eph.E5b_DVS = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+    index += 1;
+
+    gal_eph.E1B_HS = Rtcm::bin_to_uint(message_bin.substr(index, 2));
+    index += 2;
+
+    gal_eph.E1B_DVS = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+
+    return 0;
+}
+
+
 // **********************************************************************************************
 //
 //   MESSAGE TYPE MSM1 (COMPACT observables)
@@ -6321,8 +6550,7 @@ int32_t Rtcm::set_DF312(const Galileo_Ephemeris& gal_eph)
 
 int32_t Rtcm::set_DF313(const Galileo_Ephemeris& gal_eph)
 {
-    const auto bdg_E5b_E1 = static_cast<uint32_t>(std::round(gal_eph.BGD_E1E5b));
-    // bdg_E5b_E1 = 0; // reserved
+    const auto bdg_E5b_E1 = static_cast<int32_t>(std::round(gal_eph.BGD_E1E5b / BGD_E1_E5B_5_LSB));
     DF313 = std::bitset<10>(bdg_E5b_E1);
     return 0;
 }
@@ -6338,6 +6566,34 @@ int32_t Rtcm::set_DF314(const Galileo_Ephemeris& gal_eph)
 int32_t Rtcm::set_DF315(const Galileo_Ephemeris& gal_eph)
 {
     DF315 = std::bitset<1>(gal_eph.E5a_DVS);
+    return 0;
+}
+
+
+int32_t Rtcm::set_DF316(const Galileo_Ephemeris& gal_eph)
+{
+    DF316 = std::bitset<2>(gal_eph.E5b_HS);
+    return 0;
+}
+
+
+int32_t Rtcm::set_DF317(const Galileo_Ephemeris& gal_eph)
+{
+    DF317 = std::bitset<1>(gal_eph.E5b_DVS);
+    return 0;
+}
+
+
+int32_t Rtcm::set_DF287(const Galileo_Ephemeris& gal_eph)
+{
+    DF287 = std::bitset<2>(gal_eph.E1B_HS);
+    return 0;
+}
+
+
+int32_t Rtcm::set_DF288(const Galileo_Ephemeris& gal_eph)
+{
+    DF288 = std::bitset<1>(gal_eph.E1B_DVS);
     return 0;
 }
 

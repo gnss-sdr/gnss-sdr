@@ -72,10 +72,10 @@ using b_io_context = boost::asio::io_service;
  *
  * Generation of the following Message Types:
  *   1001, 1002, 1003, 1004, 1005, 1006, 1008, 1019, 1020, 1029, 1045,
- *   1057, 1058, 1059, 1060
+ *   1046, 1057, 1058, 1059, 1060
  *
  * Decoding of the following Message Types:
- *   1019, 1045
+ *   1019, 1045, 1046
  *
  * Generation of the following Multiple Signal Messages:
  *   MSM1 (message types 1071, 1091)
@@ -232,6 +232,16 @@ public:
      * \brief Verifies and reads messages of type 1045 (Galileo Ephemeris). Returns 1 if anything goes wrong, 0 otherwise.
      */
     int32_t read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph) const;
+
+    /*!
+     * \brief Prints message type 1046 (Galileo I/NAV Ephemeris), should be broadcast every 2 minutes
+     */
+    std::string print_MT1046(const Galileo_Ephemeris& gal_eph);
+
+    /*!
+     * \brief Verifies and reads messages of type 1046 (Galileo I/NAV Ephemeris). Returns 1 if anything goes wrong, 0 otherwise.
+     */
+    int32_t read_MT1046(const std::string& message, Galileo_Ephemeris& gal_eph) const;
 
     /*!
      * \brief Prints messages of type MSM1 (Compact GNSS observables)
@@ -897,11 +907,12 @@ private:
         inline void write(const Rtcm_Message& msg)
         {
 #if BOOST_ASIO_USE_IOCONTEXT_POST
+            // msg is copied: the caller reuses its buffer before this handler runs
             io_context_.post(
-                [this, &msg]() {
+                [this, msg]() {
 #else
             boost::asio::post(io_context_,
-                [this, &msg]() {
+                [this, msg]() {
 #endif
                     bool write_in_progress = !write_msgs_.empty();
                     write_msgs_.push_back(msg);
@@ -1546,6 +1557,19 @@ private:
 
     std::bitset<1> DF315;
     int32_t set_DF315(const Galileo_Ephemeris& gal_eph);
+
+    // Fields of Galileo I/NAV Satellite Ephemeris Data, Message Type 1046, not in Message Type 1045
+    std::bitset<2> DF316;
+    int32_t set_DF316(const Galileo_Ephemeris& gal_eph);
+
+    std::bitset<1> DF317;
+    int32_t set_DF317(const Galileo_Ephemeris& gal_eph);
+
+    std::bitset<2> DF287;
+    int32_t set_DF287(const Galileo_Ephemeris& gal_eph);
+
+    std::bitset<1> DF288;
+    int32_t set_DF288(const Galileo_Ephemeris& gal_eph);
 
     std::bitset<2> DF364;
 

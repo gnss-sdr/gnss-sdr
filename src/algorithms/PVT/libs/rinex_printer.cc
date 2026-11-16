@@ -2676,7 +2676,7 @@ Rinex_Printer::Rinex_Printer(uint32_t signal_enabled_flags,
 
     for (const auto& it : fileMap)
         {
-            it.second.open(it.first, std::ios::out | std::ios::in | std::ios::app);
+            it.second.open(it.first, std::ios::out | std::ios::in | std::ios::trunc);
             all_open = all_open && it.second.is_open();
         }
 

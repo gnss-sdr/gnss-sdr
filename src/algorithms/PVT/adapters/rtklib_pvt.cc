@@ -16,7 +16,7 @@
 
 
 #include "rtklib_pvt.h"
-#include "MATH_CONSTANTS.h"            // for D2R
+#include "GNSS_MATH_CONSTANTS.h"       // for D2R
 #include "SBAS_L1.h"                   // for SBAS PRN limits
 #include "configuration_interface.h"   // for ConfigurationInterface
 #include "galileo_almanac.h"           // for Galileo_Almanac

@@ -16,7 +16,7 @@
  */
 
 #include "hybrid_observables_gs.h"
-#include "MATH_CONSTANTS.h"  // for SPEED_OF_LIGHT_M_S, TWO_PI
+#include "GNSS_MATH_CONSTANTS.h"  // for SPEED_OF_LIGHT_M_S, TWO_PI
 #include "gnss_circular_deque.h"
 #include "gnss_frequencies.h"
 #include "gnss_satellite.h"

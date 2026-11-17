@@ -16,7 +16,7 @@
  */
 
 #include "Beidou_DNAV.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "beidou_dnav_telemetry_decoder_gs.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"

@@ -16,7 +16,7 @@
  */
 
 #include "pvt_solution.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include <cmath>
 #include <cstddef>
 

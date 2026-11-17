@@ -16,8 +16,8 @@
  */
 
 #include "gps_l1c_telemetry_decoder_gs.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "GPS_L1C.h"
-#include "MATH_CONSTANTS.h"
 #include "deterministic_clock.h"
 #include "display.h"  // for colours in terminal: TEXT_RED, TEXT_RESET
 #include "dump_logger_helper.h"

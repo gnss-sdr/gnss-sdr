@@ -16,7 +16,7 @@
  */
 
 #include "GLONASS_L1_L2_CA.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "glonass_gnav_telemetry_decoder_gs.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"

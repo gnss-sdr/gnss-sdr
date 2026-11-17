@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "GNSS_MATH_CONSTANTS.h"
 #include "GPS_L1C.h"
-#include "MATH_CONSTANTS.h"
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"

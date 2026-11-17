@@ -18,7 +18,7 @@
 #ifndef GNSS_SDR_BEIDOU_DNAV_H
 #define GNSS_SDR_BEIDOU_DNAV_H
 
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include <cstddef>
 #include <cstdint>
 #include <utility>

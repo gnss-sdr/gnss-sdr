@@ -1,5 +1,5 @@
 /*!
- * \file MATH_CONSTANTS.h
+ * \file GNSS_MATH_CONSTANTS.h
  * \brief  Defines useful mathematical constants and their scaled versions
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_MATH_CONSTANTS_H
-#define GNSS_SDR_MATH_CONSTANTS_H
+#ifndef GNSS_SDR_GNSS_MATH_CONSTANTS_H
+#define GNSS_SDR_GNSS_MATH_CONSTANTS_H
 
 /** \addtogroup Core
  * \{ */
@@ -130,4 +130,4 @@ constexpr double AU = 149597870691.0;  //!< 1 Astronomical Unit AU (m) distance 
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_MATH_CONSTANTS_H
+#endif  // GNSS_SDR_GNSS_MATH_CONSTANTS_H

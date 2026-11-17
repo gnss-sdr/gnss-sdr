@@ -20,8 +20,8 @@
  */
 
 #include "pcps_acquisition.h"
-#include "GLONASS_L1_L2_CA.h"  // for GLONASS_PRN
-#include "MATH_CONSTANTS.h"    // for TWO_PI
+#include "GLONASS_L1_L2_CA.h"     // for GLONASS_PRN
+#include "GNSS_MATH_CONSTANTS.h"  // for TWO_PI
 #include "gnss_frequencies.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"

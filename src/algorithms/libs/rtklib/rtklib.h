@@ -33,7 +33,7 @@
 #ifndef GNSS_SDR_RTKLIB_H
 #define GNSS_SDR_RTKLIB_H
 
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
 #include <cctype>

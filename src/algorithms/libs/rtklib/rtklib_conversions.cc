@@ -17,7 +17,7 @@
 #include "rtklib_conversions.h"
 #include "Beidou_CNAV2.h"
 #include "Beidou_DNAV.h"             // for BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET
-#include "MATH_CONSTANTS.h"          // for GNSS_PI, TWO_PI
+#include "GNSS_MATH_CONSTANTS.h"     // for GNSS_PI, TWO_PI
 #include "beidou_cnav1_ephemeris.h"  // for Beidou_Cnav1_Ephemeris
 #include "beidou_dnav_almanac.h"     // for Beidou_Dnav_Almanac
 #include "beidou_dnav_ephemeris.h"   // for Beidou_Dnav_Ephemeris

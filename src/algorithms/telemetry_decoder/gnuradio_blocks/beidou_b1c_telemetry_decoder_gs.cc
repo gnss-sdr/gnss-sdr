@@ -19,7 +19,7 @@
 #include "Beidou_B1C_codes.h"
 #include "Beidou_CNAV1.h"
 #include "Beidou_DNAV.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "beidou_cnav1_ephemeris.h"
 #include "beidou_cnav1_iono.h"
 #include "beidou_cnav1_utc_model.h"

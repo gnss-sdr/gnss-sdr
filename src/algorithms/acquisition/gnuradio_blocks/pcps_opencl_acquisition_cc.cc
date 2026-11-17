@@ -35,7 +35,7 @@
  */
 
 #include "pcps_opencl_acquisition_cc.h"
-#include "MATH_CONSTANTS.h"  // TWO_PI
+#include "GNSS_MATH_CONSTANTS.h"  // TWO_PI
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>

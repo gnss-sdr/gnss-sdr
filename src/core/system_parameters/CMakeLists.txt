@@ -127,7 +127,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     Beidou_B3I.h
     Beidou_CNAV2.h
     Beidou_DNAV.h
-    MATH_CONSTANTS.h
+    GNSS_MATH_CONSTANTS.h
     reed_solomon.h
     galileo_has_page.h
     Galileo_OSNMA.h

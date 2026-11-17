@@ -18,7 +18,7 @@
 #ifndef GNSS_SDR_GPS_L1_CA_H
 #define GNSS_SDR_GPS_L1_CA_H
 
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <cstdint>
 #include <utility>  // std::pair

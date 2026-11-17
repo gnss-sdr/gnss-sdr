@@ -18,7 +18,7 @@
 #include "Beidou_B2a.h"
 #include "Beidou_CNAV1.h"
 #include "Beidou_CNAV2.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "beidou_cnav2_ldpc.h"
 #include <algorithm>
 #include <cmath>

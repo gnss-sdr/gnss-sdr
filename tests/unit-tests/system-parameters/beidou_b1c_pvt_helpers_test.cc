@@ -14,7 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 #include "Beidou_CNAV1.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include "gnss_obs_codes.h"
 #include "gnss_synchro.h"

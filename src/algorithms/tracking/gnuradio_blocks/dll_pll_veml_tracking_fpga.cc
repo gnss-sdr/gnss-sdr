@@ -21,13 +21,13 @@
  */
 
 #include "dll_pll_veml_tracking_fpga.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "Galileo_E6.h"
-#include "MATH_CONSTANTS.h"
 #include "fpga_multicorrelator.h"
 #include "galileo_e6_signal_replica.h"
 #include "gnss_satellite.h"

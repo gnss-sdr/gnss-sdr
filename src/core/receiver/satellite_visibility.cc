@@ -16,10 +16,10 @@
 
 #include "satellite_visibility.h"
 #include "Beidou_CNAV2.h"
-#include "GLONASS_L1_L2_CA.h"    // for GLONASS_PRN
-#include "MATH_CONSTANTS.h"      // for D2R, SPEED_OF_LIGHT_M_S
-#include "agnss_ref_location.h"  // for parse_agnss_ref_location
-#include "agnss_ref_time.h"      // for parse_agnss_ref_utc_time
+#include "GLONASS_L1_L2_CA.h"     // for GLONASS_PRN
+#include "GNSS_MATH_CONSTANTS.h"  // for D2R, SPEED_OF_LIGHT_M_S
+#include "agnss_ref_location.h"   // for parse_agnss_ref_location
+#include "agnss_ref_time.h"       // for parse_agnss_ref_utc_time
 #include "configuration_interface.h"
 #include "geofunctions.h"
 #include "gnss_frequencies.h"  // for SIGNAL_FREQ_MAP

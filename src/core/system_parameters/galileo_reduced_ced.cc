@@ -15,7 +15,7 @@
  */
 
 #include "galileo_reduced_ced.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include <cmath>
 
 

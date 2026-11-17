@@ -188,6 +188,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added a CI job that builds the CUDA processing blocks and runs their unit
   tests on a simulated GPU. Contributed by @saqibkh.
 
+### Improvements in Portability:
+
+- Fixed the CUDA build (`-DENABLE_CUDA=ON`) from a source tree stored in a
+  case-insensitive filesystem. The header `MATH_CONSTANTS.h`, which shadowed
+  CUDA's `math_constants.h`, has been renamed to `GNSS_MATH_CONSTANTS.h`.
+
 ### Improvements in Reliability:
 
 - The SUPL client now verifies the server certificate and DNS name or IP address

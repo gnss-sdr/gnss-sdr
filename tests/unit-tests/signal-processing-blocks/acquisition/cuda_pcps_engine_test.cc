@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "GNSS_MATH_CONSTANTS.h"
 #include "GPS_L1_CA.h"
-#include "MATH_CONSTANTS.h"
 #include "cuda_pcps_engine.h"
 #include "gnss_sdr_fft.h"
 #include "gps_sdr_signal_replica.h"

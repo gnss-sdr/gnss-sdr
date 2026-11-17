@@ -16,8 +16,8 @@
 
 #include "rtklib_pvt_gs.h"
 #include "Beidou_CNAV2.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "Galileo_CNAV.h"
-#include "MATH_CONSTANTS.h"
 #include "an_packet_printer.h"
 #include "beidou_cnav1_ephemeris.h"
 #include "beidou_cnav1_iono.h"

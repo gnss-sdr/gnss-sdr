@@ -17,7 +17,7 @@
 #ifndef GNSS_SDR_GALILEO_E5A_H
 #define GNSS_SDR_GALILEO_E5A_H
 
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <cstddef>  // for size_t
 #include <cstdint>

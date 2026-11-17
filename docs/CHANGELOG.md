@@ -300,6 +300,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   the receiver computed no position and wrote no RINEX files. When only some
   constellations provide a band pair, the log names those whose satellites are
   left out of the solution.
+- Added the option to write the receiver's GNU Radio flow graph to a file in
+  Graphviz DOT format. Set `GNSS-SDR.dump_flowgraph=true` and, optionally,
+  `GNSS-SDR.flowgraph_dump_filename` (default `flowgraph.dot`). Contributed by
+  @edmondj.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

@@ -185,6 +185,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   with the current Khronos OpenCL C++ bindings (`CL/opencl.hpp`, from
   OpenCL-CLHPP v2026.05.29). A system-wide `CL/opencl.hpp` is used if found, and
   the bundled copy otherwise.
+- Added a CI job that builds the CUDA processing blocks and runs their unit
+  tests on a simulated GPU. Contributed by @saqibkh.
 
 ### Improvements in Reliability:
 

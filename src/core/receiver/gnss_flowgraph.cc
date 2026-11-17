@@ -543,7 +543,24 @@ void GNSSFlowgraph::connect()
 
     connected_ = true;
     LOG(INFO) << "Flowgraph connected";
-    top_block_->dump();
+    if (configuration_->property("GNSS-SDR.dump_flowgraph", false))
+        {
+            auto dump_file = configuration_->property("GNSS-SDR.flowgraph_dump_filename", std::string("flowgraph.dot"));
+            auto graph = gr::dot_graph(top_block_);
+            auto* file = std::fopen(dump_file.c_str(), "w");
+            if (!file)
+                {
+                    LOG(ERROR) << "Failed to open flowgraph dump file " << dump_file << " for writing: " << std::strerror(errno);
+                    return;
+                }
+            auto written = std::fwrite(graph.c_str(), sizeof(char), graph.size(), file);
+            if (written != graph.size())
+                {
+                    LOG(WARNING) << "Failed to write to flowgraph dump file";
+                }
+            std::fclose(file);
+            LOG(INFO) << "Flowgraph dumped to " << dump_file;
+        }
 }
 
 

@@ -12,6 +12,8 @@ name: CUDA on simulated H100
 # A cache saved by a pull request run is only visible to that pull request. The
 # runs on pushes to next save the simulator build and the ccache where every
 # pull request targeting next can restore them.
+# Pull requests run this job only if they touch the CUDA code. A change
+# elsewhere that breaks the CUDA build is caught by the run on next.
 on:
   workflow_dispatch:
   push:
@@ -25,10 +27,18 @@ on:
       - ".github/workflows/gpu-sim.yml"
   pull_request:
     paths:
-      - "src/**"
-      - "tests/**"
-      - "cmake/**"
-      - "CMakeLists.txt"
+      # CUDA sources, the GPU tracking block and their tests
+      - "**/*cuda*"
+      - "**/*gpu*"
+      - "**/*.cu"
+      # Code with CUDA-specific branches
+      - "src/algorithms/acquisition/gnuradio_blocks/pcps_acquisition.*"
+      - "src/algorithms/acquisition/libs/acq_conf.*"
+      - "src/algorithms/signal_source/gnuradio_blocks/evk1029_source.*"
+      # Where the CUDA sources are added to the build
+      - "src/algorithms/acquisition/libs/CMakeLists.txt"
+      - "src/algorithms/tracking/libs/CMakeLists.txt"
+      - "src/algorithms/signal_source/libs/CMakeLists.txt"
       - ".github/workflows/gpu-sim.yml"
 
 # Runs on next are left to finish, so that they save their caches

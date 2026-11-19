@@ -3360,12 +3360,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // Bounded to rover_observation_count to skip any base-station entries past it.
                     // Which bands entered the fix depends on the estimator that produced it:
                     // pntpos()/prange() for a single-point fix, relpos() for DGPS/RTK.
-                    // pntpos() forces the broadcast iono model when it runs as the pre-pass
-                    // of a precise mode, so a single-point fix there never combines bands.
                     const bool spp_solution = d_rtk.opt.mode == PMODE_SINGLE ||
                                               pvt_sol.stat == SOLQ_SINGLE || pvt_sol.stat == SOLQ_SBAS;
                     const bool relative_solution = !spp_solution && d_rtk.opt.mode <= PMODE_FIXED;
-                    const int spp_ionoopt = (d_rtk.opt.mode == PMODE_SINGLE || use_single_fallback) ? d_rtk.opt.ionoopt : IONOOPT_BRDC;
+                    const int spp_ionoopt = d_rtk.opt.ionoopt;
                     std::array<int, MAXSAT> sat_to_obs_index{};
                     sat_to_obs_index.fill(-1);
                     for (int obs_idx = 0; obs_idx < rover_observation_count; obs_idx++)

@@ -799,7 +799,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                         }
                 }
             if (!ionocorr(obs[i].time, nav, obs[i].sat, pos, azel + i * 2,
-                    iter > 0 ? opt->ionoopt : IONOOPT_BRDC, &dion, &vion, iono_code))
+                    opt->ionoopt, &dion, &vion, iono_code))
                 {
                     trace(4, "ionocorr error\n");
                     continue;
@@ -825,7 +825,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             vion *= iono_scale * iono_scale;
             /* tropospheric corrections */
             if (!tropcorr(obs[i].time, nav, pos, azel + i * 2,
-                    iter > 0 ? opt->tropopt : TROPOPT_SAAS, &dtrp, &vtrp))
+                    opt->tropopt, &dtrp, &vtrp))
                 {
                     trace(4, "tropocorr error\n");
                     continue;
@@ -1478,14 +1478,6 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     azel_ = zeros(2, n);
     resp = mat(1, n);
 
-    if (opt_.mode != PMODE_SINGLE)
-        { /* for precise positioning */
-#if 0
-            opt_.sateph  = EPHOPT_BRDC;
-#endif
-            opt_.ionoopt = IONOOPT_BRDC;
-            opt_.tropopt = TROPOPT_SAAS;
-        }
     /* satellite positions, velocities and clocks */
     satposs(sol->time, obs, n, nav, opt_.sateph, rs, dts, var, svh.data());
 

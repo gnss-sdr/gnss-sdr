@@ -132,6 +132,7 @@ public:
                 pb_sat->set_combined(sat.combined);
                 pb_sat->set_used(sat.used);
                 pb_sat->set_healthy(sat.healthy);
+                pb_sat->set_has_corrected(sat.has_corrected);
             }
 
         if (!monitor_.SerializeToString(&data))
@@ -194,6 +195,7 @@ public:
                 sat.combined = pb_sat.combined();
                 sat.used = pb_sat.used();
                 sat.healthy = pb_sat.healthy();
+                sat.has_corrected = pb_sat.has_corrected();
                 monitor.tracked_satellites.push_back(sat);
             }
 

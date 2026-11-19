@@ -84,6 +84,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 /** \addtogroup PVT
  * \{ */
@@ -152,6 +153,25 @@ public:
     {
         return d_nav_data.ne > 0 && d_nav_data.nc > 0;
     }
+
+    //! Number of satellites in the last solution whose orbit and clock carry
+    //! Galileo HAS corrections (0 if the last call to get_PVT() gave no solution)
+    inline uint8_t get_num_has_corrected_satellites() const
+    {
+        return d_has_corrected_satellites_used;
+    }
+
+    /*!
+     * \brief true if a solution rests on precise orbits and clocks: precise
+     * products are loaded, or every satellite in the solution carries Galileo
+     * HAS orbit and clock corrections
+     * \param precise_products_loaded precise ephemeris and clock products are loaded
+     * \param satellites_used number of satellites in the solution
+     * \param has_corrected_satellites_used number of those whose orbit and clock carry HAS corrections
+     */
+    static bool uses_precise_orbits_and_clocks(bool precise_products_loaded,
+        unsigned int satellites_used,
+        unsigned int has_corrected_satellites_used);
 
     //! true if the last call to get_PVT() had what it takes to compute a
     //! solution, whether it succeeded or not; false if it returned without
@@ -364,7 +384,12 @@ private:
         uint32_t valid_from{};
         uint32_t valid_until{};
     };
-    std::map<std::string, std::map<int, Has_Do_Not_Use_Interval>> d_has_satellite_do_not_use_intervals;  // first key is system, second key is PRN
+    // Validity intervals of the messages that flagged each satellite as not to be
+    // used. Observations can precede the latest message, so each message keeps
+    // its own interval until the observations have passed it. First key is
+    // system, second key is PRN.
+    std::map<std::string, std::map<int, std::vector<Has_Do_Not_Use_Interval>>> d_has_satellite_do_not_use_intervals;
+    static void prune_has_do_not_use_intervals(std::vector<Has_Do_Not_Use_Interval>& intervals, uint32_t tow_obs);
 
     std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_code_bias_store_map;         // first key is signal, second key is PRN
     std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_phase_bias_store_map;        // first key is signal, second key is PRN
@@ -401,6 +426,10 @@ private:
     bool d_fixed_base_was_applied = false;
     bool d_duplicated_rover_observations_logged = false;
     bool d_solution_attempted = false;
+    // Satellites (RTKLIB satellite number - 1) whose orbit and clock carry HAS
+    // corrections in the last solution, and how many of them it used
+    std::array<bool, MAXSAT> d_has_corrected_satellite{};
+    uint8_t d_has_corrected_satellites_used{};
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
 };

@@ -84,3 +84,28 @@ TEST(Serdes_Monitor_Pvt_Test, TrackedObservationCodeSurvivesSerialization)
     EXPECT_EQ("1B", message.tracked_satellites(0).signal());
     EXPECT_EQ("1C", message.tracked_satellites(0).observation_code());
 }
+
+
+TEST(Serdes_Monitor_Pvt_Test, HasCorrectedFlagSurvivesSerialization)
+{
+    auto monitor = std::make_shared<Monitor_Pvt>();
+    Monitor_Pvt::TrackedSatelliteInfo satellite;
+    satellite.system = 'E';
+    satellite.prn = 1;
+    satellite.signal = "1B";
+    satellite.has_corrected = true;
+    monitor->tracked_satellites.push_back(satellite);
+    satellite.prn = 2;
+    satellite.has_corrected = false;
+    monitor->tracked_satellites.push_back(satellite);
+    Serdes_Monitor_Pvt serdes;
+    gnss_sdr::MonitorPvt message;
+    ASSERT_TRUE(message.ParseFromString(serdes.createProtobuffer(monitor.get())));
+    ASSERT_EQ(2, message.tracked_satellites_size());
+    EXPECT_TRUE(message.tracked_satellites(0).has_corrected());
+    EXPECT_FALSE(message.tracked_satellites(1).has_corrected());
+    const Monitor_Pvt restored = serdes.readProtobuffer(message);
+    ASSERT_EQ(2U, restored.tracked_satellites.size());
+    EXPECT_TRUE(restored.tracked_satellites[0].has_corrected);
+    EXPECT_FALSE(restored.tracked_satellites[1].has_corrected);
+}

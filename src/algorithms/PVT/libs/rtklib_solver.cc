@@ -420,7 +420,7 @@ bool Rtklib_Solver::save_matfile() const
     const std::string dump_filename = d_dump_filename;
     const int32_t number_of_double_vars = 21;
     const int32_t number_of_uint32_vars = 2;
-    const int32_t number_of_uint8_vars = 3;
+    const int32_t number_of_uint8_vars = 4;
     const int32_t number_of_float_vars = 2;
     const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
                                      sizeof(uint32_t) * number_of_uint32_vars +
@@ -479,6 +479,7 @@ bool Rtklib_Solver::save_matfile() const
     auto pdop = std::vector<double>(num_epoch);
     auto hdop = std::vector<double>(num_epoch);
     auto vdop = std::vector<double>(num_epoch);
+    auto has_corrected_sats = std::vector<uint8_t>(num_epoch);
 
     try
         {
@@ -514,6 +515,7 @@ bool Rtklib_Solver::save_matfile() const
                             dump_file.read(reinterpret_cast<char *>(&pdop[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&hdop[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&vdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&has_corrected_sats[i]), sizeof(uint8_t));
                         }
                 }
             dump_file.close();
@@ -560,6 +562,7 @@ bool Rtklib_Solver::save_matfile() const
             write_matlab_var<2>("pdop", pdop.data(), matfp, dims);
             write_matlab_var<2>("hdop", hdop.data(), matfp, dims);
             write_matlab_var<2>("vdop", vdop.data(), matfp, dims);
+            write_matlab_var<2>("has_corrected_sats", has_corrected_sats.data(), matfp, dims);
         }
 
     Mat_Close(matfp);
@@ -1062,6 +1065,7 @@ void Rtklib_Solver::update_has_do_not_use(const Galileo_HAS_data &new_has_data, 
             prns = new_has_data.get_PRNs_in_mask(system);
         }
 
+    const uint32_t tmt = new_has_data.get_time_of_message_s();
     for (const int prn : prns)
         {
             const float clock_correction_mult_m = clock_subset ? new_has_data.get_clock_subset_correction_mult_m(system, prn)
@@ -1069,14 +1073,53 @@ void Rtklib_Solver::update_has_do_not_use(const Galileo_HAS_data &new_has_data, 
             if (Galileo_HAS_data::is_clock_do_not_use(clock_correction_mult_m))
                 {
                     d_has_clock_corrections_store_map[system].erase(prn);
-                    auto &interval = d_has_satellite_do_not_use_intervals[system][prn];
-                    interval.valid_from = new_has_data.get_time_of_message_s();
-                    interval.valid_until = valid_until;
+                    // The flag holds over this message's validity interval. Earlier
+                    // messages keep theirs, for observations that precede this one.
+                    auto &intervals = d_has_satellite_do_not_use_intervals[system][prn];
+                    const auto same_message = std::find_if(intervals.begin(), intervals.end(),
+                        [tmt](const Has_Do_Not_Use_Interval &interval) { return interval.valid_from == tmt; });
+                    if (same_message != intervals.end())
+                        {
+                            same_message->valid_until = std::max(same_message->valid_until, valid_until);
+                        }
+                    else
+                        {
+                            intervals.push_back({tmt, valid_until});
+                        }
                 }
             else if (!Galileo_HAS_data::is_clock_unavailable(clock_correction_mult_m))
                 {
-                    // a clock correction for the satellite supersedes the flag
-                    d_has_satellite_do_not_use_intervals[system].erase(prn);
+                    // A clock correction for the satellite supersedes the flag from
+                    // this message's epoch on: earlier epochs stay excluded
+                    auto system_it = d_has_satellite_do_not_use_intervals.find(system);
+                    if (system_it == d_has_satellite_do_not_use_intervals.end())
+                        {
+                            continue;
+                        }
+                    auto prn_it = system_it->second.find(prn);
+                    if (prn_it == system_it->second.end())
+                        {
+                            continue;
+                        }
+                    auto &intervals = prn_it->second;
+                    for (auto interval_it = intervals.begin(); interval_it != intervals.end();)
+                        {
+                            if (Galileo_HAS_data::has_validity_interval_at_tow(interval_it->valid_from, interval_it->valid_until, tmt))
+                                {
+                                    const uint32_t elapsed_s = (tmt + GALILEO_HAS_SECONDS_PER_WEEK - interval_it->valid_from) % GALILEO_HAS_SECONDS_PER_WEEK;
+                                    if (elapsed_s == 0)
+                                        {
+                                            interval_it = intervals.erase(interval_it);
+                                            continue;
+                                        }
+                                    interval_it->valid_until = interval_it->valid_from + elapsed_s;
+                                }
+                            ++interval_it;
+                        }
+                    if (intervals.empty())
+                        {
+                            system_it->second.erase(prn_it);
+                        }
                 }
         }
 }
@@ -1101,7 +1144,50 @@ bool Rtklib_Solver::has_active_has_do_not_use(const std::string &system, int prn
         {
             return false;
         }
-    return Galileo_HAS_data::has_validity_interval_at_tow(it_prn->second.valid_from, it_prn->second.valid_until, tow_obs);
+    return std::any_of(it_prn->second.cbegin(), it_prn->second.cend(), [tow_obs](const Has_Do_Not_Use_Interval &interval) {
+        return Galileo_HAS_data::has_validity_interval_at_tow(interval.valid_from, interval.valid_until, tow_obs);
+    });
+}
+
+
+void Rtklib_Solver::prune_has_do_not_use_intervals(std::vector<Has_Do_Not_Use_Interval> &intervals, uint32_t tow_obs)
+{
+    // Observations come in time order: an interval is no longer needed once it
+    // has expired, or once another interval in force covers what is left of it
+    const auto active = [tow_obs](const Has_Do_Not_Use_Interval &interval) {
+        return Galileo_HAS_data::has_validity_interval_at_tow(interval.valid_from, interval.valid_until, tow_obs);
+    };
+    const auto remaining_s = [tow_obs](const Has_Do_Not_Use_Interval &interval) {
+        return (interval.valid_until % GALILEO_HAS_SECONDS_PER_WEEK + GALILEO_HAS_SECONDS_PER_WEEK - tow_obs % GALILEO_HAS_SECONDS_PER_WEEK) % GALILEO_HAS_SECONDS_PER_WEEK;
+    };
+    std::vector<Has_Do_Not_Use_Interval> kept;
+    for (size_t i = 0; i < intervals.size(); i++)
+        {
+            const Has_Do_Not_Use_Interval &interval = intervals[i];
+            if (Galileo_HAS_data::has_validity_interval_expired_at_tow(interval.valid_until, tow_obs))
+                {
+                    continue;
+                }
+            bool covered = false;
+            if (active(interval))
+                {
+                    for (size_t j = 0; j < intervals.size() && !covered; j++)
+                        {
+                            if (j == i || !active(intervals[j]))
+                                {
+                                    continue;
+                                }
+                            const uint32_t own = remaining_s(interval);
+                            const uint32_t other = remaining_s(intervals[j]);
+                            covered = (own < other) || (own == other && j < i);
+                        }
+                }
+            if (!covered)
+                {
+                    kept.push_back(interval);
+                }
+        }
+    intervals = std::move(kept);
 }
 
 
@@ -1262,9 +1348,10 @@ void Rtklib_Solver::check_has_orbit_clock_validity(const std::map<int, Gnss_Sync
                     auto dnu_it = dnu_sys_it->second.find(prn);
                     if (dnu_it != dnu_sys_it->second.end())
                         {
-                            if (Galileo_HAS_data::has_validity_interval_expired_at_tow(dnu_it->second.valid_until, obs_tow))
+                            prune_has_do_not_use_intervals(dnu_it->second, obs_tow);
+                            if (dnu_it->second.empty())
                                 {
-                                    dnu_sys_it->second.erase(prn);
+                                    dnu_sys_it->second.erase(dnu_it);
                                 }
                         }
                 }
@@ -1391,6 +1478,16 @@ void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
             d_has_orbit_corrections_applied_map[system][prn] = d_has_orbit_corrections_store_map[system][prn];
             d_has_clock_corrections_applied_map[system][prn] = d_has_clock_corrections_store_map[system][prn];
         }
+}
+
+
+bool Rtklib_Solver::uses_precise_orbits_and_clocks(bool precise_products_loaded,
+    unsigned int satellites_used,
+    unsigned int has_corrected_satellites_used)
+{
+    // A satellite on broadcast orbit and clock degrades the whole solution
+    return precise_products_loaded ||
+           (satellites_used > 0 && has_corrected_satellites_used >= satellites_used);
 }
 
 
@@ -2384,6 +2481,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     d_fixed_base_age_s = 0.0;
     d_fixed_base_common_satellites = 0;
     d_solution_attempted = false;
+    d_has_corrected_satellite.fill(false);
+    d_has_corrected_satellites_used = 0;
 
     // Before merging, a multi-band satellite contributes several channel
     // records and ephemerides. MAXOBS limits satellites, not input channels.
@@ -3222,6 +3321,37 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
                         }
 
+                    // Satellites whose orbit and clock carry HAS corrections. RTKLIB
+                    // picks one of the satellite's broadcast records, so all of them
+                    // must have the corrections
+                    std::array<bool, MAXSAT> without_has_corrections{};
+                    for (int i = 0; i < d_nav_data.n; i++)
+                        {
+                            const int sat = d_nav_data.eph[i].sat;
+                            if (sat < 1 || sat > MAXSAT)
+                                {
+                                    continue;
+                                }
+                            if (d_nav_data.eph[i].apply_has_corrections)
+                                {
+                                    d_has_corrected_satellite[sat - 1] = true;
+                                }
+                            else
+                                {
+                                    without_has_corrections[sat - 1] = true;
+                                }
+                        }
+                    unsigned int has_corrected_sats = 0;
+                    for (unsigned int i = 0; i < MAXSAT; i++)
+                        {
+                            d_has_corrected_satellite[i] = d_has_corrected_satellite[i] && !without_has_corrections[i];
+                            if (d_has_corrected_satellite[i] && d_rtk.ssat[i].vs == 1)
+                                {
+                                    has_corrected_sats++;
+                                }
+                        }
+                    d_has_corrected_satellites_used = static_cast<uint8_t>(std::min(has_corrected_sats, 255U));
+
                     std::vector<double> azel(used_sats * 2);
                     int index_aux = 0;
                     for (auto &i : d_rtk.ssat)
@@ -3295,12 +3425,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     this->set_rx_pos({rx_position_and_time[0], rx_position_and_time[1], rx_position_and_time[2]});  // save ECEF position for the next iteration
 
                     /* RTKLIB stamps SOLQ_PPP whenever the PPP filter runs, even on
-                       broadcast orbits and clocks; only claim PPP when precise
-                       products are loaded. Demoting here - after the PPP dtr-unit
-                       handling above, which must follow the filter's internal
-                       state - keeps the console, Monitor, dump and NMEA outputs
-                       consistent with each other */
-                    if (pvt_sol.stat == SOLQ_PPP && !has_precise_ephemeris())
+                       broadcast orbits and clocks; only claim PPP on precise orbits
+                       and clocks: loaded products, or HAS corrections for every
+                       satellite in the solution. Demoting here - after the PPP
+                       dtr-unit handling above, which must follow the filter's
+                       internal state - keeps the console, Monitor, dump and NMEA
+                       outputs consistent with each other */
+                    if (pvt_sol.stat == SOLQ_PPP &&
+                        !uses_precise_orbits_and_clocks(has_precise_ephemeris(), used_sats, d_has_corrected_satellites_used))
                         {
                             pvt_sol.stat = SOLQ_SINGLE;
                         }
@@ -3560,6 +3692,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         {
                                             info.healthy = healthy;
                                         }
+                                    // HAS orbit and clock corrections for the satellite, and
+                                    // the HAS code bias for this signal
+                                    info.has_corrected = in_record && d_has_corrected_satellite[sat_idx];
                                     d_monitor_pvt.tracked_satellites.push_back(std::move(info));
                                 }
                         }
@@ -3574,15 +3709,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // Course Over Ground (cog) [deg]
                     d_monitor_pvt.cog = new_cog;
 
-                    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not available
-                    if (d_has_obs_corr_map.empty())
-                        {
-                            d_monitor_pvt.galhas_status = 0;
-                        }
-                    else
-                        {
-                            d_monitor_pvt.galhas_status = 1;
-                        }
+                    // Galileo HAS status: 1 - HAS corrections applied to at least one
+                    // satellite of the solution, 0 - not applied
+                    d_monitor_pvt.galhas_status = d_has_corrected_satellites_used > 0 ? 1 : 0;
 
                     const double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
 
@@ -3676,6 +3805,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[1]), sizeof(double));
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[2]), sizeof(double));
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[3]), sizeof(double));
+                                    // NUMBER OF SATELLITES WITH HAS ORBIT AND CLOCK CORRECTIONS
+                                    d_dump_file.write(reinterpret_cast<char *>(&d_has_corrected_satellites_used), sizeof(uint8_t));
                                 }
                             catch (const std::ofstream::failure &e)
                                 {

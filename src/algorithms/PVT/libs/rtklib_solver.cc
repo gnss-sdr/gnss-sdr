@@ -1084,7 +1084,10 @@ void Rtklib_Solver::update_has_do_not_use(const Galileo_HAS_data &new_has_data, 
                         }
                     else
                         {
-                            intervals.push_back({tmt, valid_until});
+                            Has_Do_Not_Use_Interval new_interval;
+                            new_interval.valid_from = tmt;
+                            new_interval.valid_until = valid_until;
+                            intervals.push_back(new_interval);
                         }
                 }
             else if (!Galileo_HAS_data::is_clock_unavailable(clock_correction_mult_m))

@@ -323,6 +323,7 @@ private:
     std::string d_local_time_str;
 
     std::vector<bool> d_channel_initialized;
+    std::vector<bool> d_unknown_component_reported;
     std::vector<double> d_initial_carrier_phase_offset_estimation_rads;
 
     std::map<int, Gnss_Synchro> d_gnss_observables_map;
@@ -376,6 +377,7 @@ private:
 
     const int32_t d_rinexobs_rate_ms;
     int32_t d_rtcm_MT1045_rate_ms;  // Galileo Broadcast Ephemeris
+    int32_t d_rtcm_MT1046_rate_ms;  // Galileo I/NAV Broadcast Ephemeris
     int32_t d_rtcm_MT1019_rate_ms;  // GPS Broadcast Ephemeris (orbits)
     int32_t d_rtcm_MT1020_rate_ms;  // GLONASS Broadcast Ephemeris (orbits)
     int32_t d_rtcm_MT1077_rate_ms;  // The type 7 Multiple Signal Message format for the USA’s GPS system, popular

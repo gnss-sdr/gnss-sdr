@@ -1741,7 +1741,7 @@ int decode_type1045(rtcm_t *rtcm)
 }
 
 
-/* decode type 1046: galileo satellite ephemerides (extension for IGS MGEX) --*/
+/* decode type 1046: galileo I/NAV satellite ephemerides ---------------------*/
 int decode_type1046(rtcm_t *rtcm)
 {
     eph_t eph = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
@@ -1754,11 +1754,13 @@ int decode_type1046(rtcm_t *rtcm)
     int prn;
     int sat;
     int week;
-    int e5a_hs;
-    int e5a_dvs;
+    int e5b_hs;
+    int e5b_dvs;
+    int e1_hs;
+    int e1_dvs;
     int sys = SYS_GAL;
 
-    if (i + 484 <= rtcm->len * 8)
+    if (i + 492 <= rtcm->len * 8)
         {
             prn = getbitu(rtcm->buff, i, 6);
             i += 6;
@@ -1810,11 +1812,17 @@ int decode_type1046(rtcm_t *rtcm)
             i += 24;
             eph.tgd[0] = getbits(rtcm->buff, i, 10) * TWO_N32;
             i += 10; /* E5a/E1 */
-            e5a_hs = getbitu(rtcm->buff, i, 2);
-            i += 2; /* OSHS */
-            e5a_dvs = getbitu(rtcm->buff, i, 1);
-            i += 1; /* OSDVS */
-            // rsv        = getbitu(rtcm->buff, i, 7);
+            eph.tgd[1] = getbits(rtcm->buff, i, 10) * TWO_N32;
+            i += 10; /* E5b/E1 */
+            e5b_hs = getbitu(rtcm->buff, i, 2);
+            i += 2; /* E5b OSHS */
+            e5b_dvs = getbitu(rtcm->buff, i, 1);
+            i += 1; /* E5b OSDVS */
+            e1_hs = getbitu(rtcm->buff, i, 2);
+            i += 2; /* E1-B OSHS */
+            e1_dvs = getbitu(rtcm->buff, i, 1);
+            i += 1; /* E1-B OSDVS */
+            // rsv        = getbitu(rtcm->buff, i, 2);
         }
     else
         {
@@ -1826,8 +1834,8 @@ int decode_type1046(rtcm_t *rtcm)
     if (rtcm->outtype)
         {
             msg = rtcm->msgtype + strlen(rtcm->msgtype);
-            std::snprintf(msg, sizeof(rtcm->msgtype), " prn=%2d iode=%3d week=%d toe=%6.0f toc=%6.0f hs=%d dvs=%d",
-                prn, eph.iode, week, eph.toes, toc, e5a_hs, e5a_dvs);
+            std::snprintf(msg, sizeof(rtcm->msgtype), " prn=%2d iode=%3d week=%d toe=%6.0f toc=%6.0f hs=%d %d dvs=%d %d",
+                prn, eph.iode, week, eph.toes, toc, e5b_hs, e1_hs, e5b_dvs, e1_dvs);
         }
     if (!(sat = satno(sys, prn)))
         {
@@ -1840,8 +1848,8 @@ int decode_type1046(rtcm_t *rtcm)
     eph.toc = gpst2time(eph.week, toc);
     eph.ttr = rtcm->time;
     eph.A = sqrtA * sqrtA;
-    eph.svh = (e5a_hs << 4) + (e5a_dvs << 3);
-    eph.code = 2; /* data source = f/nav e5a */
+    eph.svh = (e5b_hs << 7) + (e5b_dvs << 6) + (e1_hs << 1) + (e1_dvs << 0);
+    eph.code = 1; /* data source = i/nav, as set by eph_to_rtklib() */
     if (!strstr(rtcm->opt, "-EPHALL"))
         {
             if (eph.iode == rtcm->nav.eph[sat - 1].iode)

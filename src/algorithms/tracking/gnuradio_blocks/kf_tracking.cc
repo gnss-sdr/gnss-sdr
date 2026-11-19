@@ -22,13 +22,13 @@
 #include "Beidou_B1I.h"
 #include "Beidou_B2a.h"
 #include "Beidou_B3I.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
-#include "MATH_CONSTANTS.h"
 #include "beidou_b1i_signal_replica.h"
 #include "beidou_b2a_signal_replica.h"
 #include "beidou_b3i_signal_replica.h"
@@ -2104,6 +2104,7 @@ int kf_tracking::process_input(int noutput_items __attribute__((unused)), gr_vec
             current_synchro_data.Flag_carrier_phase_continuous = !d_carrier_phase_discontinuity;
             d_carrier_phase_discontinuity = false;
             d_det.record_output(this->nitems_written(0), current_synchro_data.Tracking_sample_counter);
+            current_synchro_data.tracking_component = d_trk_parameters.track_pilot ? Gnss_Synchro::TrackingComponent::Pilot : Gnss_Synchro::TrackingComponent::Data;
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

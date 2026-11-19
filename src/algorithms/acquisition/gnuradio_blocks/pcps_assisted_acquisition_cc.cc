@@ -17,7 +17,7 @@
  */
 
 #include "pcps_assisted_acquisition_cc.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "concurrent_map.h"
 #include "gps_acq_assist.h"
 #include <gnuradio/io_signature.h>

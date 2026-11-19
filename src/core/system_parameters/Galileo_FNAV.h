@@ -18,7 +18,7 @@
 #ifndef GNSS_SDR_GALILEO_FNAV_H
 #define GNSS_SDR_GALILEO_FNAV_H
 
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include <cstdint>
 #include <utility>
 #include <vector>

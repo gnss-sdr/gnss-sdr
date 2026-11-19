@@ -159,6 +159,39 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
                     PRN_set = available_gps_prn;
                 }
 
+            // RINEX observation codes (band and attribute) that can hold the
+            // requested signal, in order of preference. GNSS-SDR reports a
+            // signal with data and pilot components under the code of the
+            // component it tracked, so both are accepted.
+            std::vector<std::string> obs_codes;
+            if (signal == "1C")
+                {
+                    obs_codes = {"1C"};
+                }
+            else if (signal == "1B")
+                {
+                    obs_codes = {"1B", "1C"};
+                }
+            else if (signal == "2S")  // L2M
+                {
+                    obs_codes = {"2S"};
+                }
+            else if (signal == "L5")
+                {
+                    obs_codes = {"5I", "5Q"};
+                }
+            else if (signal == "5X")  // Simulator gives RINEX with E5a+E5b. Doppler and accumulated Carrier phase WILL differ
+                {
+                    obs_codes = {"8I", "5I", "5Q"};
+                }
+            else
+                {
+                    std::cout << "ReadRinexObs unknown signal requested: " << signal << '\n';
+                    return obs_map;
+                }
+            std::vector<std::string> available_codes;
+            bool header_checked = false;
+
             std::cout << "Reading RINEX OBS file " << rinex_file << " ...\n";
             while (r_base >> r_base_data)
                 {
@@ -178,6 +211,29 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
 
                             if (pointer != r_base_data.obs.end())
                                 {
+                                    if (!header_checked)
+                                        {
+                                            // keep the codes that the file declares for this system
+                                            for (const auto& code : obs_codes)
+                                                {
+                                                    try
+                                                        {
+                                                            r_base_data.getObs(prn, "C" + code, r_base_header);
+                                                            available_codes.push_back(code);
+                                                        }
+                                                    catch (const gnsstk::Exception&)
+                                                        {
+                                                            // not declared in this file
+                                                        }
+                                                }
+                                            header_checked = true;
+                                            if (available_codes.empty())
+                                                {
+                                                    std::cout << "ReadRinexObs: " << rinex_file << " does not declare observations for signal " << signal << '\n';
+                                                    return obs_map;
+                                                }
+                                        }
+
                                     // insert next column
                                     try
                                         {
@@ -190,61 +246,22 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
 
                                     arma::mat& obs_mat = obs_map[prn.id];
                                     obs_mat.insert_rows(obs_mat.n_rows, arma::zeros<arma::mat>(1, 4));
+                                    obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
 
-                                    if (strcmp("1C\0", signal.c_str()) == 0)
+                                    // take the first code with a measurement for this satellite
+                                    for (const auto& code : available_codes)
                                         {
-                                            obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_base_data.getObs(prn, "C1C", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;  // C1C P1 (psudorange L1)
-                                            dataobj = r_base_data.getObs(prn, "D1C", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;  // D1C Carrier Doppler
-                                            dataobj = r_base_data.getObs(prn, "L1C", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;  // L1C Carrier Phase
-                                        }
-                                    else if (strcmp("1B\0", signal.c_str()) == 0)
-                                        {
-                                            obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_base_data.getObs(prn, "C1B", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;
-                                            dataobj = r_base_data.getObs(prn, "D1B", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;
-                                            dataobj = r_base_data.getObs(prn, "L1B", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
-                                        }
-                                    else if (strcmp("2S\0", signal.c_str()) == 0)  // L2M
-                                        {
-                                            obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_base_data.getObs(prn, "C2S", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;
-                                            dataobj = r_base_data.getObs(prn, "D2S", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;
-                                            dataobj = r_base_data.getObs(prn, "L2S", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
-                                        }
-                                    else if (strcmp("L5\0", signal.c_str()) == 0)
-                                        {
-                                            obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_base_data.getObs(prn, "C5I", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;
-                                            dataobj = r_base_data.getObs(prn, "D5I", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;
-                                            dataobj = r_base_data.getObs(prn, "L5I", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
-                                        }
-                                    else if (strcmp("5X\0", signal.c_str()) == 0)  // Simulator gives RINEX with E5a+E5b. Doppler and accumulated Carrier phase WILL differ
-                                        {
-                                            obs_mat.at(obs_mat.n_rows - 1, 0) = sow;
-                                            dataobj = r_base_data.getObs(prn, "C8I", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;
-                                            dataobj = r_base_data.getObs(prn, "D8I", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;
-                                            dataobj = r_base_data.getObs(prn, "L8I", r_base_header);
-                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;
-                                        }
-                                    else
-                                        {
-                                            std::cout << "ReadRinexObs unknown signal requested: " << signal << '\n';
-                                            return obs_map;
+                                            dataobj = r_base_data.getObs(prn, "C" + code, r_base_header);
+                                            if (dataobj.data == 0.0)
+                                                {
+                                                    continue;
+                                                }
+                                            obs_mat.at(obs_mat.n_rows - 1, 1) = dataobj.data;  // Pseudorange
+                                            dataobj = r_base_data.getObs(prn, "D" + code, r_base_header);
+                                            obs_mat.at(obs_mat.n_rows - 1, 2) = dataobj.data;  // Carrier Doppler
+                                            dataobj = r_base_data.getObs(prn, "L" + code, r_base_header);
+                                            obs_mat.at(obs_mat.n_rows - 1, 3) = dataobj.data;  // Carrier Phase
+                                            break;
                                         }
                                 }
                         }

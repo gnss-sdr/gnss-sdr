@@ -98,8 +98,9 @@ private:
 
     const char d_band;  // Frequency band the block is configured for ('1' or '2')
 
-    bool d_flag_frame_sync;  // Indicate when a frame sync is achieved
-    bool d_flag_preamble;    // Flag indicating when preamble was found
+    bool d_flag_frame_sync;                // Indicate when a frame sync is achieved
+    bool d_flag_preamble;                  // Flag indicating when preamble was found
+    bool d_flag_PLL_180_deg_phase_locked;  // Preamble of the last decoded frame came inverted
     const bool d_dump;
     const bool d_dump_mat;
     const bool d_remove_dat;

@@ -564,6 +564,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
                     current_synchro_data.correlation_length_ms = 1;
                     current_synchro_data.fs = d_fs_in;
+                    current_synchro_data.tracking_component = Gnss_Synchro::TrackingComponent::Data;
                     *out[0] = std::move(current_synchro_data);
                     d_P_bit_accu = gr_complex(0.0, 0.0);
                     produced = 1;

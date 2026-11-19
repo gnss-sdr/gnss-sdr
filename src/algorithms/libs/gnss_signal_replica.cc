@@ -17,7 +17,7 @@
  */
 
 #include "gnss_signal_replica.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include <gnuradio/fxpt_nco.h>
 #include <cmath>
 #include <cstddef>  // for size_t

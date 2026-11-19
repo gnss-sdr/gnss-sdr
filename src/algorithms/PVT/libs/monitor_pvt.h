@@ -19,6 +19,7 @@
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/version.hpp>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -48,6 +49,7 @@ public:
         uint32_t prn{};
         char system{};  // 'G' GPS, 'E' Galileo, 'R' GLONASS, 'C' BeiDou, 'S' SBAS, 'J' QZSS
         std::string signal;
+        std::string observation_code;
         double azimuth_deg{};
         double elevation_deg{};
         bool combined{};
@@ -61,9 +63,6 @@ public:
         template <class Archive>
         void serialize(Archive& ar, const unsigned int version)
         {
-            if (version)
-                {
-                };
             ar& BOOST_SERIALIZATION_NVP(prn);
             ar& BOOST_SERIALIZATION_NVP(system);
             ar& BOOST_SERIALIZATION_NVP(signal);
@@ -72,6 +71,14 @@ public:
             ar& BOOST_SERIALIZATION_NVP(combined);
             ar& BOOST_SERIALIZATION_NVP(used);
             ar& BOOST_SERIALIZATION_NVP(healthy);
+            if (version > 0)
+                {
+                    ar& BOOST_SERIALIZATION_NVP(observation_code);
+                }
+            else if (Archive::is_loading::value)
+                {
+                    observation_code.clear();
+                }
         }
     };
 
@@ -203,6 +210,8 @@ public:
     }
 };
 
+
+BOOST_CLASS_VERSION(Monitor_Pvt::TrackedSatelliteInfo, 1)
 
 /** \} */
 /** \} */

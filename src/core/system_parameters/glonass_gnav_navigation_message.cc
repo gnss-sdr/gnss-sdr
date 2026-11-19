@@ -17,7 +17,7 @@
  */
 
 #include "glonass_gnav_navigation_message.h"
-#include "MATH_CONSTANTS.h"  // for TWO_N20, TWO_N30, TWO_N14, TWO_N15, TWO_N18
+#include "GNSS_MATH_CONSTANTS.h"  // for TWO_N20, TWO_N30, TWO_N14, TWO_N15, TWO_N18
 #include "display.h"
 #include "gnss_satellite.h"
 #include <boost/date_time/gregorian/gregorian.hpp>

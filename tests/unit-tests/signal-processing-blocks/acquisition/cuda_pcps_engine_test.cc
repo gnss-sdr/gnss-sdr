@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "GNSS_MATH_CONSTANTS.h"
 #include "GPS_L1_CA.h"
-#include "MATH_CONSTANTS.h"
 #include "cuda_pcps_engine.h"
 #include "gnss_sdr_fft.h"
 #include "gps_sdr_signal_replica.h"
@@ -255,12 +255,14 @@ void run_parity_case(const PcpsScenario& sc, uint32_t dwells)
     const GridPeak pc = find_peak(cpu.magnitude(), bins, E);
     const GridPeak pg = find_peak(gpu_grid, bins, E);
     EXPECT_EQ(pc.bin, pg.bin) << "Doppler bin of the peak differs";
-    EXPECT_EQ(pc.index, pg.index) << "Code phase of the peak differs";
+    // The local code is tiled sampled_ms times, so the grid repeats every code
+    // period and the peak is a sampled_ms-way tie that only rounding breaks.
+    const uint32_t samples_per_code = static_cast<uint32_t>(sc.fs_in / 1000);
+    EXPECT_EQ(pc.index % samples_per_code, pg.index % samples_per_code) << "Code phase of the peak differs";
 
     // And the peak must sit where the synthetic signal was put
     const int32_t expected_bin = (sc.doppler_max + static_cast<int32_t>(std::lround(sc.doppler_hz))) / sc.doppler_step;
     EXPECT_NEAR(static_cast<double>(pg.bin), static_cast<double>(expected_bin), 1.0);
-    const uint32_t samples_per_code = static_cast<uint32_t>(sc.fs_in / 1000);
     EXPECT_EQ(pg.index % samples_per_code, sc.delay_samples % samples_per_code);
 
     std::cout << "  fft_size=" << N << " bins=" << bins << " dwells=" << dwells

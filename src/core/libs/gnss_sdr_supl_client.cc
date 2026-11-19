@@ -18,8 +18,8 @@
  */
 
 #include "gnss_sdr_supl_client.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "GPS_L1_CA.h"
-#include "MATH_CONSTANTS.h"
 #include "gnss_satellite.h"
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>

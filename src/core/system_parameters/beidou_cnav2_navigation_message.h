@@ -36,6 +36,7 @@ public:
     void clear_flags() { d_flag_new_eph = false; }
     void reset();
     bool last_crc_ok() const { return d_last_crc_ok; }
+    bool last_frame_inverted() const { return d_last_frame_inverted; }  //!< Symbol polarity of the last frame that passed its CRC
     int32_t last_mes_type() const { return d_last_mes_type; }
     int32_t last_sow() const { return d_last_sow; }
     uint32_t last_frame_prn() const { return d_last_frame_prn; }
@@ -76,6 +77,7 @@ private:
     bool d_have_published{false};
     bool d_flag_new_eph{false};
     bool d_last_crc_ok{false};
+    bool d_last_frame_inverted{false};
 };
 
 /** \} */

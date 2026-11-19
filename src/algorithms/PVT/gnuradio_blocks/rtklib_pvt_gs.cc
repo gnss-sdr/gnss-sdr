@@ -16,8 +16,8 @@
 
 #include "rtklib_pvt_gs.h"
 #include "Beidou_CNAV2.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "Galileo_CNAV.h"
-#include "MATH_CONSTANTS.h"
 #include "an_packet_printer.h"
 #include "beidou_cnav1_ephemeris.h"
 #include "beidou_cnav1_iono.h"
@@ -362,6 +362,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     d_initial_carrier_phase_offset_estimation_rads = std::vector<double>(nchannels, 0.0);
     d_channel_initialized = std::vector<bool>(nchannels, false);
+    d_unknown_component_reported = std::vector<bool>(nchannels, false);
 
     std::string dump_ls_pvt_filename = conf_.dump_filename;
 
@@ -491,6 +492,14 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 {
                     d_rtcm_MT1045_rate_ms = bc::lcm(5000, d_output_rate_ms);  // default value if not set
                 }
+            if (rtcm_msg_rate_ms.find(1046) != rtcm_msg_rate_ms.end())
+                {
+                    d_rtcm_MT1046_rate_ms = rtcm_msg_rate_ms[1046];
+                }
+            else
+                {
+                    d_rtcm_MT1046_rate_ms = d_rtcm_MT1045_rate_ms;  // default value if not set
+                }
             if (rtcm_msg_rate_ms.find(1077) != rtcm_msg_rate_ms.end())  // whatever between 1071 and 1077
                 {
                     d_rtcm_MT1077_rate_ms = rtcm_msg_rate_ms[1077];
@@ -523,6 +532,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         {
             d_rtcm_MT1019_rate_ms = 0;
             d_rtcm_MT1045_rate_ms = 0;
+            d_rtcm_MT1046_rate_ms = 0;
             d_rtcm_MT1020_rate_ms = 0;
             d_rtcm_MT1077_rate_ms = 0;
             d_rtcm_MT1087_rate_ms = 0;
@@ -536,6 +546,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     if (d_rinex_output_enabled)
         {
             d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.ref_gps_week);
+            d_rp->set_tracked_components(conf_.data_component_signals, conf_.pilot_component_signals);
         }
     else
         {
@@ -3068,6 +3079,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             bool flag_write_RTCM_1019_output = false;
             bool flag_write_RTCM_1020_output = false;
             bool flag_write_RTCM_1045_output = false;
+            bool flag_write_RTCM_1046_output = false;
             bool flag_write_RTCM_MSM_output = false;
             bool flag_write_RINEX_obs_output = false;
             d_local_counter_ms += static_cast<uint64_t>(d_observable_interval_ms);
@@ -3091,8 +3103,11 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         {
                             // QZSS L1 C/B is broadcast with a dedicated PRN (203-206), but the
                             // transmitting satellite is identified by the PRN of its nominal PNT
-                            // signals (RINEX 4.00, Table 6: QZSS PRN to RINEX Satellite Identifier)
-                            gnss_synchro.PRN = qzss_l1cb_prn_to_nominal_prn(gnss_synchro.PRN);
+                            // signals (RINEX 4.00, Table 6: QZSS PRN to RINEX Satellite Identifier).
+                            // The flag keeps the measurement apart from L1 C/A (RINEX code 1E)
+                            const uint32_t nominal_prn = qzss_l1cb_prn_to_nominal_prn(gnss_synchro.PRN);
+                            gnss_synchro.Flag_qzss_l1cb = nominal_prn != gnss_synchro.PRN;
+                            gnss_synchro.PRN = nominal_prn;
                         }
                     if (gnss_synchro.Flag_valid_pseudorange)
                         {
@@ -3254,6 +3269,15 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             if (store_valid_observable)
                                 {
+                                    if (gnss_synchro.observation_code()[0] == '\0' && !d_unknown_component_reported[i])
+                                        {
+                                            // RINEX and RTCM cannot label this measurement, and RTKLIB gets CODE_NONE
+                                            d_unknown_component_reported[i] = true;
+                                            LOG(WARNING) << "Channel " << i << ": the tracking block does not report whether the "
+                                                         << gnss_synchro.System << " " << std::string(gnss_synchro.Signal, 2)
+                                                         << " measurements come from the data or the pilot component. "
+                                                         << "They are left out of the PVT solution and of the RINEX and RTCM outputs.";
+                                        }
                                     // store valid observables in a map.
                                     d_gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(i, gnss_synchro));
                                 }
@@ -3566,6 +3590,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     const bool rtcm_MT1019_enabled = d_rtcm_MT1019_rate_ms != 0;
                                     const bool rtcm_MT1020_enabled = d_rtcm_MT1020_rate_ms != 0;
                                     const bool rtcm_MT1045_enabled = d_rtcm_MT1045_rate_ms != 0;
+                                    const bool rtcm_MT1046_enabled = d_rtcm_MT1046_rate_ms != 0;
                                     const bool rtcm_MT1077_enabled = d_rtcm_MT1077_rate_ms != 0;
                                     const bool rtcm_MT1087_enabled = d_rtcm_MT1087_rate_ms != 0;
                                     const bool rtcm_MT1097_enabled = d_rtcm_MT1097_rate_ms != 0;
@@ -3597,6 +3622,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             if (current_RX_time_ms % d_rtcm_MT1045_rate_ms == 0)
                                                 {
                                                     flag_write_RTCM_1045_output = true;
+                                                }
+                                        }
+                                    if (rtcm_MT1046_enabled)
+                                        {
+                                            if (current_RX_time_ms % d_rtcm_MT1046_rate_ms == 0)
+                                                {
+                                                    flag_write_RTCM_1046_output = true;
                                                 }
                                         }
 
@@ -3714,6 +3746,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 rtcm_MT1019_enabled,
                                                 rtcm_MT1020_enabled,
                                                 rtcm_MT1045_enabled,
+                                                rtcm_MT1046_enabled,
                                                 rtcm_MT1077_enabled,
                                                 rtcm_MT1087_enabled,
                                                 rtcm_MT1097_enabled,
@@ -3721,6 +3754,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 flag_write_RTCM_1019_output,
                                                 flag_write_RTCM_1020_output,
                                                 flag_write_RTCM_1045_output,
+                                                flag_write_RTCM_1046_output,
                                                 d_enable_rx_clock_correction);
                                         }
                                 }

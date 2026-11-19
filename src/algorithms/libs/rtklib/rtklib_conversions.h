@@ -207,7 +207,8 @@ bool glonass_gnav_is_healthy(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, boo
 geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& gnav_clock_model, bool glonass_strict_health = true);
 
 /*!
- * \brief RTKLIB observation code that insert_obs_to_rtklib() stores for a signal
+ * \brief RTKLIB data-component code used for configured-frequency preflight.
+ * Runtime observations use Gnss_Synchro::observation_code().
  * \param system GNSS-SDR system identifier ('G', 'E', 'R', 'C', 'J', 'S')
  * \param signal GNSS-SDR two-character signal identifier (e.g. "1C", "5X", "B3")
  * \param band RTKLIB band slot the signal is stored in
@@ -217,12 +218,14 @@ unsigned char rtklib_obs_code(char system, const std::string& signal, int band);
 
 /*!
  * \brief HAS signals (HAS SIS ICD 1.0 Table 20) whose biases can correct an
- * observation, in order of preference
+ * observation, in order of preference: the tracked component of the signal,
+ * the other component, and their combination
  * \param system GNSS-SDR system identifier ('G' or 'E')
  * \param signal GNSS-SDR two-character signal identifier (e.g. "1C", "E6")
+ * \param tracking_pilot true if the pilot component is tracked
  * \return HAS signal names, empty if HAS does not correct the signal
  */
-std::vector<std::string> has_signal_candidates(char system, const std::string& signal);
+std::vector<std::string> has_signal_candidates(char system, const std::string& signal, bool tracking_pilot = false);
 
 /*!
  * \brief HAS correction that insert_obs_to_rtklib() applies to an observation
@@ -230,12 +233,14 @@ std::vector<std::string> has_signal_candidates(char system, const std::string& s
  * \param system GNSS-SDR system identifier ('G' or 'E')
  * \param signal GNSS-SDR two-character signal identifier
  * \param prn satellite PRN
+ * \param tracking_pilot true if the pilot component is tracked
  * \return correction of the first candidate with an available code bias for the PRN, nullptr if none
  */
 const HAS_obs_corrections* find_has_obs_correction(const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
     char system,
     const std::string& signal,
-    int prn);
+    int prn,
+    bool tracking_pilot = false);
 
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     const Gnss_Synchro& gnss_synchro,

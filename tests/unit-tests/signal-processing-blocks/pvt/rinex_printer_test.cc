@@ -19,6 +19,7 @@
 #include "gnss_sdr_filesystem.h"
 #include "pvt_conf.h"
 #include "rinex_printer.h"
+#include "rtklib_conversions.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solver.h"
@@ -459,6 +460,7 @@ TEST_F(RinexPrinterTest, GpsUtcHeaderExpandsEightBitWeekFields)
     pvt_solution->gps_utc_model.valid = true;
 
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.System = 'G';
     gs.PRN = 1;
     std::memcpy(static_cast<void*>(gs.Signal), "1C", 3);
@@ -520,6 +522,7 @@ TEST_F(RinexPrinterTest, Rinex4GpsNavAndObs)
     pvt_solution->gps_utc_model.valid = true;
 
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.System = 'G';
     gs.PRN = 1;
     std::memcpy(static_cast<void*>(gs.Signal), "1C", 3);
@@ -581,6 +584,7 @@ TEST_F(RinexPrinterTest, ObservationRecordsReportLossOfLockIndicatorBits)
     pvt_solution->gps_ephemeris_map[1] = eph;
 
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.System = 'G';
     std::memcpy(static_cast<void*>(gs.Signal), "1C", 3);
     gs.Pseudorange_m = 22000000.0;
@@ -662,6 +666,7 @@ TEST_F(RinexPrinterTest, Rinex4GalileoNav)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.PRN = 11;
     gnss_observables_map[11] = std::move(gs);
 
@@ -699,6 +704,7 @@ TEST_F(RinexPrinterTest, Rinex4GlonassNav)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.PRN = 1;
     gnss_observables_map[1] = std::move(gs);
 
@@ -756,6 +762,7 @@ TEST_F(RinexPrinterTest, Rinex4GpsCnavNav)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.System = 'G';
     gs.PRN = 1;
     std::memcpy(static_cast<void*>(gs.Signal), "2S", 3);
@@ -854,6 +861,7 @@ TEST_F(RinexPrinterTest, Rinex4QzssNav)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.System = 'J';
     gs.PRN = 193;
     std::memcpy(static_cast<void*>(gs.Signal), "J1", 3);
@@ -911,6 +919,7 @@ TEST_F(RinexPrinterTest, Rinex4QzssCnavNav)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.System = 'J';
     gs.PRN = 193;
     std::memcpy(static_cast<void*>(gs.Signal), "J5", 3);
@@ -1238,13 +1247,13 @@ TEST_F(RinexPrinterTest, GalileoObsHeaderUsesContinuationLines)
                 }
         }
 
-    ASSERT_EQ(2U, observation_type_lines.size());
+    ASSERT_EQ(3U, observation_type_lines.size());
     EXPECT_EQ(80U, observation_type_lines[0].size());
     EXPECT_EQ(80U, observation_type_lines[1].size());
-    EXPECT_EQ("E   16", observation_type_lines[0].substr(0, 6));
-    EXPECT_NE(std::string::npos, observation_type_lines[0].find(" C6B"));
+    EXPECT_EQ("E   32", observation_type_lines[0].substr(0, 6));
+    EXPECT_NE(std::string::npos, observation_type_lines[2].find(" C6C"));
     EXPECT_EQ("      ", observation_type_lines[1].substr(0, 6));
-    EXPECT_NE(std::string::npos, observation_type_lines[1].find(" L6B D6B S6B"));
+    EXPECT_NE(std::string::npos, observation_type_lines[2].find(" D6B S6B"));
 }
 
 
@@ -1292,6 +1301,7 @@ TEST_F(RinexPrinterTest, Rinex4BeidouDnavAndObs)
     utc_model.DN = 6;
 
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.System = 'C';
     gs.PRN = 6;
     std::memcpy(static_cast<void*>(gs.Signal), "B1", 3);
@@ -1362,6 +1372,7 @@ TEST_F(RinexPrinterTest, Rinex3BeidouModelsAreInsertedWhenValid)
     pvt_solution->beidou_dnav_ephemeris_map[6] = eph;
 
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.System = 'C';
     gs.PRN = 6;
     std::memcpy(static_cast<void*>(gs.Signal), "B1", 3);
@@ -1426,6 +1437,7 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.PRN = 1;
     gnss_observables_map[1] = std::move(gs);
 
@@ -1457,7 +1469,7 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
                         }
                 }
         }
-    std::string expected_str("E    4 C1B L1B D1B S1B                                      SYS / # / OBS TYPES ");
+    std::string expected_str("E    8 C1B L1B D1B S1B C1C L1C D1C S1C                      SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
     fstr.close();
 
@@ -1485,7 +1497,7 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
                         }
                 }
         }
-    std::string expected_str2("E    8 C1B L1B D1B S1B C7X L7X D7X S7X                      SYS / # / OBS TYPES ");
+    std::string expected_str2("E   16 C1B L1B D1B S1B C1C L1C D1C S1C C7I L7I D7I S7I C7Q  SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str2.compare(line_aux));
     fstr2.close();
 }
@@ -1503,6 +1515,7 @@ TEST_F(RinexPrinterTest, GlonassObsHeader)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.PRN = 1;
     gnss_observables_map[1] = std::move(gs);
 
@@ -1562,6 +1575,7 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.PRN = 1;
     gnss_observables_map[1] = gs;
     gnss_observables_map[2] = std::move(gs);
@@ -1602,7 +1616,7 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
         }
 
     std::string expected_str("G    4 C1C L1C D1C S1C                                      SYS / # / OBS TYPES ");
-    std::string expected_str2("E    8 C1B L1B D1B S1B C5X L5X D5X S5X                      SYS / # / OBS TYPES ");
+    std::string expected_str2("E   16 C1B L1B D1B S1B C1C L1C D1C S1C C5I L5I D5I S5I C5Q  SYS / # / OBS TYPES ");
     EXPECT_EQ(0, expected_str.compare(line_aux));
     EXPECT_EQ(0, expected_str2.compare(line_aux2));
     fstr.close();
@@ -1629,6 +1643,7 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
+    gs.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gs.PRN = 1;
     gnss_observables_map[1] = gs;
     gnss_observables_map[2] = std::move(gs);
@@ -1688,9 +1703,13 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
+    gs1.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs2 = Gnss_Synchro();
+    gs2.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs3 = Gnss_Synchro();
+    gs3.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs4 = Gnss_Synchro();
+    gs4.tracking_component = Gnss_Synchro::TrackingComponent::Data;
 
     std::string sys = "E";
     gs1.System = *sys.c_str();
@@ -1737,7 +1756,7 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
     find_obs_record_lines(obsfile, "E22", line_epoch, line_sat);
 
     std::string expected_epoch = "> 1999 08 22 00 00 00.0000000  0  4                                             ";
-    std::string expected_sat("E22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
+    std::string expected_sat("E22  22000000.000 7         3.724 7      1534.000 7        42.000                                                                  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
 }
@@ -1755,9 +1774,13 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
+    gs1.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs2 = Gnss_Synchro();
+    gs2.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs3 = Gnss_Synchro();
+    gs3.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs4 = Gnss_Synchro();
+    gs4.tracking_component = Gnss_Synchro::TrackingComponent::Data;
 
     std::string sys = "R";
     gs1.System = *sys.c_str();
@@ -1825,9 +1848,13 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
+    gs1.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs2 = Gnss_Synchro();
+    gs2.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs3 = Gnss_Synchro();
+    gs3.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs4 = Gnss_Synchro();
+    gs4.tracking_component = Gnss_Synchro::TrackingComponent::Data;
 
     std::string sys = "G";
     gs1.System = *sys.c_str();
@@ -1904,9 +1931,13 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs1 = Gnss_Synchro();
+    gs1.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs2 = Gnss_Synchro();
+    gs2.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs3 = Gnss_Synchro();
+    gs3.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs4 = Gnss_Synchro();
+    gs4.tracking_component = Gnss_Synchro::TrackingComponent::Data;
 
     std::string sys = "E";
     gs1.System = *sys.c_str();
@@ -1966,7 +1997,7 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
     find_obs_record_lines(obsfile, "E08", line_epoch, line_sat);
 
     std::string expected_epoch = "> 1999 08 22 00 00 00.0000000  0  2                                             ";
-    std::string expected_sat("E08  22000002.100 6         7.226 6       321.000 6        39.000    22000000.000 7         3.724 7      1534.000 7        42.000  ");
+    std::string expected_sat("E08  22000002.100 6         7.226 6       321.000 6        39.000                                                                    22000000.000 7         3.724 7      1534.000 7        42.000                                                                  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
 }
@@ -1987,13 +2018,21 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
+    gs1.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs2 = Gnss_Synchro();
+    gs2.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs3 = Gnss_Synchro();
+    gs3.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs4 = Gnss_Synchro();
+    gs4.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs5 = Gnss_Synchro();
+    gs5.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs6 = Gnss_Synchro();
+    gs6.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs7 = Gnss_Synchro();
+    gs7.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs8 = Gnss_Synchro();
+    gs8.tracking_component = Gnss_Synchro::TrackingComponent::Data;
 
     std::string sys = "G";
     gs1.System = *sys.c_str();
@@ -2082,7 +2121,7 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     find_obs_record_lines(obsfile, "E16", line_epoch, line_sat);
 
     std::string expected_epoch = "> 2019 04 14 00 00 00.0000000  0  7                                             ";
-    std::string expected_sat("E16  22000000.000 7         0.127 7       -20.000 7        42.000    22000000.000 6         8.292 6      1534.000 6        41.000  ");
+    std::string expected_sat("E16  22000000.000 7         0.127 7       -20.000 7        42.000                                                                    22000000.000 6         8.292 6      1534.000 6        41.000                                                                  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
 }
@@ -2103,13 +2142,21 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
+    gs1.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs2 = Gnss_Synchro();
+    gs2.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs3 = Gnss_Synchro();
+    gs3.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs4 = Gnss_Synchro();
+    gs4.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs5 = Gnss_Synchro();
+    gs5.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs6 = Gnss_Synchro();
+    gs6.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs7 = Gnss_Synchro();
+    gs7.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gs8 = Gnss_Synchro();
+    gs8.tracking_component = Gnss_Synchro::TrackingComponent::Data;
 
     std::string sys = "G";
     gs1.System = *sys.c_str();
@@ -2201,4 +2248,201 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     std::string expected_sat("R16  22000000.000 6         8.292 6      1534.000 6        41.000    22000000.000 7         0.127 7       -20.000 7        42.000  ");
     EXPECT_EQ(0, expected_epoch.compare(line_epoch));
     EXPECT_EQ(0, expected_sat.compare(line_sat));
+}
+
+
+TEST_F(RinexPrinterTest, TrackingComponentsHaveDistinctColumnsAcrossSupportedVersions)
+{
+    struct Case
+    {
+        char system;
+        const char* signal;
+        uint32_t flags;
+        const char* data;
+        const char* pilot;
+    };
+    const Case cases[] = {
+        {'G', "L5", GPS_1C | GPS_L5, "5I", "5Q"},
+        {'G', "1S", GPS_1C | GPS_L1C, "1S", "1L"},
+        {'E', "1B", GAL_1B, "1B", "1C"},
+        {'E', "5X", GAL_E5a, "5I", "5Q"},
+        {'E', "7X", GAL_E5b, "7I", "7Q"},
+        {'E', "E6", GAL_E6, "6B", "6C"},
+        {'C', "1D", BDS_B1C, "1D", "1P"},
+        {'C', "5D", BDS_B2A, "5D", "5P"},
+        {'J', "J5", QZS_J1 | QZS_J5, "5I", "5Q"}};
+    for (const auto& test : cases)
+        {
+            for (const int version : {2, 3, 4})
+                {
+                    SCOPED_TRACE(std::string(1, test.system) + test.signal + " version " + std::to_string(version));
+                    Pvt_Conf conf;
+                    auto solver = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", test.flags, false, false);
+                    Gps_Ephemeris gps;
+                    gps.PRN = 1;
+                    gps.WN = 200;
+                    solver->gps_ephemeris_map[1] = gps;
+                    Gps_CNAV_Ephemeris cnav;
+                    cnav.PRN = 1;
+                    cnav.WN = 2200;
+                    solver->gps_cnav_ephemeris_map[1] = cnav;
+                    Gps_CNAV2_Ephemeris cnav2;
+                    cnav2.PRN = 1;
+                    cnav2.WN = 2200;
+                    solver->gps_cnav2_ephemeris_map[1] = cnav2;
+                    Galileo_Ephemeris gal;
+                    gal.PRN = 1;
+                    gal.WN = 1200;
+                    solver->galileo_ephemeris_map[1] = gal;
+                    Beidou_Dnav_Ephemeris bds;
+                    bds.PRN = 1;
+                    bds.WN = 800;
+                    solver->beidou_dnav_ephemeris_map[1] = bds;
+
+                    Gnss_Synchro data;
+                    data.System = test.system;
+                    std::copy_n(test.signal, 3, data.Signal);
+                    data.PRN = test.system == 'J' ? 193 : 1;
+                    data.tracking_component = Gnss_Synchro::TrackingComponent::Data;
+                    data.Flag_valid_pseudorange = true;
+                    data.Pseudorange_m = 22000000.0;
+                    data.Carrier_phase_rads = 100.25 * TWO_PI;
+                    data.Carrier_Doppler_hz = -123.0;
+                    data.CN0_dB_hz = 42.0;
+                    Gnss_Synchro pilot = data;
+                    pilot.tracking_component = Gnss_Synchro::TrackingComponent::Pilot;
+                    pilot.Pseudorange_m += 10.0;
+                    pilot.Carrier_phase_rads += 2.0 * TWO_PI;
+                    for (const auto& measurement : {data, pilot})
+                        {
+                            obsd_t converted{};
+                            insert_obs_to_rtklib(converted, measurement, 2200, 0);
+                            const char* expected_code = measurement.tracking_component == Gnss_Synchro::TrackingComponent::Pilot ? test.pilot : test.data;
+                            EXPECT_STREQ(expected_code, code2obs(converted.code[0], nullptr));
+                            EXPECT_DOUBLE_EQ(measurement.Pseudorange_m, converted.P[0]);
+                            EXPECT_DOUBLE_EQ(measurement.Carrier_phase_rads / TWO_PI, converted.L[0]);
+                        }
+                    Gnss_Synchro unknown = data;
+                    unknown.PRN++;
+                    unknown.tracking_component = Gnss_Synchro::TrackingComponent::Unknown;
+                    auto printer = make_rinex_printer(test.flags, version);
+                    printer->print_rinex_annotation(solver.get(), {{0, data}, {2, unknown}}, 0.0, true);
+                    printer->print_rinex_annotation(solver.get(), {{0, data}, {1, pilot}}, 1.0, true);
+                    const auto filename = printer->get_obsfilename();
+                    printer.reset();
+
+                    std::ifstream input(filename);
+                    std::vector<std::string> types;
+                    std::vector<std::string> records;
+                    std::vector<std::string> phase_codes;
+                    std::vector<std::string> phase_corrections;
+                    std::string line;
+                    ASSERT_TRUE(static_cast<bool>(std::getline(input, line)));
+                    EXPECT_DOUBLE_EQ(version == 4 || test.system == 'C' ? 4.02 : 3.02, std::stod(line.substr(0, 9)));
+                    char header_system = '\0';
+                    bool header = true;
+                    while (std::getline(input, line))
+                        {
+                            if (header && line.find("SYS / # / OBS TYPES", 60) != std::string::npos)
+                                {
+                                    if (line[0] != ' ')
+                                        {
+                                            header_system = line[0];
+                                        }
+                                    if (header_system == test.system)
+                                        {
+                                            for (size_t pos = 7; pos + 3 <= 60; pos += 4)
+                                                {
+                                                    if (line[pos] != ' ')
+                                                        {
+                                                            types.push_back(line.substr(pos, 3));
+                                                        }
+                                                }
+                                        }
+                                }
+                            if (header && line[0] == test.system && line.find("SYS / PHASE SHIFT", 60) != std::string::npos)
+                                {
+                                    EXPECT_EQ(80U, line.size());
+                                    phase_codes.push_back(line.substr(2, 3));
+                                    phase_corrections.push_back(line.substr(6, 8));
+                                }
+                            if (header && line.find("END OF HEADER", 60) != std::string::npos)
+                                {
+                                    header = false;
+                                }
+                            else if (!header && line[0] == test.system)
+                                {
+                                    records.push_back(line);
+                                }
+                        }
+                    ASSERT_EQ(2U, records.size());  // Unknown component was not mislabeled.
+                    if (version == 4 || test.system == 'C')
+                        {
+                            // RINEX 4.02 deprecates the record
+                            EXPECT_TRUE(phase_codes.empty());
+                        }
+                    else
+                        {
+                            // RINEX 3.02: blank for the reference signal of the band, zero for those aligned to it
+                            const auto data_phase = std::find(phase_codes.begin(), phase_codes.end(), std::string("L") + test.data);
+                            const auto pilot_phase = std::find(phase_codes.begin(), phase_codes.end(), std::string("L") + test.pilot);
+                            ASSERT_NE(phase_codes.end(), data_phase);
+                            ASSERT_NE(phase_codes.end(), pilot_phase);
+                            const bool data_is_reference = std::string(test.signal) != "1S";  // the reference of GPS L1C is L1 C/A
+                            EXPECT_EQ(data_is_reference ? std::string(8, ' ') : std::string(" 0.00000"), phase_corrections[std::distance(phase_codes.begin(), data_phase)]);
+                            EXPECT_EQ(std::string(" 0.00000"), phase_corrections[std::distance(phase_codes.begin(), pilot_phase)]);
+                        }
+                    const auto data_type = std::find(types.begin(), types.end(), std::string("C") + test.data);
+                    const auto pilot_type = std::find(types.begin(), types.end(), std::string("C") + test.pilot);
+                    ASSERT_NE(types.end(), data_type);
+                    ASSERT_NE(types.end(), pilot_type);
+                    const size_t data_pos = 3 + 16 * std::distance(types.begin(), data_type);
+                    const size_t pilot_pos = 3 + 16 * std::distance(types.begin(), pilot_type);
+                    EXPECT_DOUBLE_EQ(data.Pseudorange_m, std::stod(records[0].substr(data_pos, 14)));
+                    EXPECT_EQ(std::string(64, ' '), records[0].substr(pilot_pos, 64));
+                    EXPECT_DOUBLE_EQ(data.Pseudorange_m, std::stod(records[1].substr(data_pos, 14)));
+                    EXPECT_DOUBLE_EQ(pilot.Pseudorange_m, std::stod(records[1].substr(pilot_pos, 14)));
+                    EXPECT_DOUBLE_EQ(100.25, std::stod(records[1].substr(data_pos + 16, 14)));
+                    EXPECT_DOUBLE_EQ(102.25, std::stod(records[1].substr(pilot_pos + 16, 14)));
+                }
+        }
+}
+
+
+TEST_F(RinexPrinterTest, Rinex211KeepsFixedComponentObservationTypes)
+{
+    Pvt_Conf conf;
+    auto solver = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", GPS_1C, false, false);
+    Gps_Ephemeris eph;
+    eph.PRN = 1;
+    eph.WN = 200;
+    solver->gps_ephemeris_map[1] = eph;
+    Gnss_Synchro observation;
+    observation.System = 'G';
+    std::memcpy(observation.Signal, "1C", 3);
+    observation.PRN = 1;
+    observation.Flag_valid_pseudorange = true;
+    observation.Pseudorange_m = 22000000.0;
+    auto printer = make_rinex_printer(GPS_1C, 2);
+    printer->print_rinex_annotation(solver.get(), {{0, observation}}, 0.0, true);
+    const auto filename = printer->get_obsfilename();
+    printer.reset();
+    std::ifstream input(filename);
+    std::string line;
+    ASSERT_TRUE(static_cast<bool>(std::getline(input, line)));
+    EXPECT_DOUBLE_EQ(2.11, std::stod(line.substr(0, 9)));
+    bool found_types = false;
+    bool found_measurement = false;
+    while (std::getline(input, line))
+        {
+            if (line.find("# / TYPES OF OBSERV", 60) != std::string::npos)
+                {
+                    found_types = true;
+                    EXPECT_NE(std::string::npos, line.find("C1"));
+                    EXPECT_NE(std::string::npos, line.find("L1"));
+                }
+            found_measurement = found_measurement || line.find("22000000.000") != std::string::npos;
+        }
+    EXPECT_TRUE(found_types);
+    EXPECT_TRUE(found_measurement);
 }

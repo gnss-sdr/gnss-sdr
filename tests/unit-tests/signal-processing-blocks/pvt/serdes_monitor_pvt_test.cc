@@ -66,3 +66,21 @@ TEST(Serdes_Monitor_Pvt_Test, GalileoEphemerisSerdes)
     EXPECT_EQ(Galileo_Nav_Message_Type::FNAV, eph2.nav_message_type);
     EXPECT_EQ(Galileo_Nav_Message_Source::E5a, eph2.nav_message_source);
 }
+
+
+TEST(Serdes_Monitor_Pvt_Test, TrackedObservationCodeSurvivesSerialization)
+{
+    auto monitor = std::make_shared<Monitor_Pvt>();
+    Monitor_Pvt::TrackedSatelliteInfo satellite;
+    satellite.system = 'E';
+    satellite.prn = 1;
+    satellite.signal = "1B";
+    satellite.observation_code = "1C";
+    monitor->tracked_satellites.push_back(satellite);
+    Serdes_Monitor_Pvt serdes;
+    gnss_sdr::MonitorPvt message;
+    ASSERT_TRUE(message.ParseFromString(serdes.createProtobuffer(monitor.get())));
+    ASSERT_EQ(1, message.tracked_satellites_size());
+    EXPECT_EQ("1B", message.tracked_satellites(0).signal());
+    EXPECT_EQ("1C", message.tracked_satellites(0).observation_code());
+}

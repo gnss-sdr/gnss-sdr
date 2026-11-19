@@ -86,6 +86,7 @@ public:
 
                 obs->set_system(sys);
                 obs->set_signal(sig);
+                obs->set_tracking_component(static_cast<gnss_sdr::GnssSynchro::TrackingComponent>(gs.tracking_component));
                 obs->set_prn(gs.PRN);
                 obs->set_channel_id(gs.Channel_ID);
 
@@ -137,6 +138,7 @@ public:
                 gs.Signal[0] = gs_read.signal()[0];
                 gs.Signal[1] = gs_read.signal()[1];
                 gs.Signal[2] = '\0';
+                gs.tracking_component = static_cast<Gnss_Synchro::TrackingComponent>(gs_read.tracking_component());
                 gs.PRN = gs_read.prn();
                 gs.Channel_ID = gs_read.channel_id();
 

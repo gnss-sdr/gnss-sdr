@@ -25,6 +25,14 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed the Galileo E5b BGD scaling and the ionospheric scaling of E5b
   measurements in GPS L5 + Galileo E5b receivers, where the factors were
   referenced to the E5a wavelength held in the first slot instead of to E1.
+- Fixed the half-cycle ambiguity of the carrier phase measurements for BeiDou
+  B1I and B3I and GLONASS L1 and L2 C/A signals, which their telemetry decoders
+  left unresolved.
+- Fixed the half-cycle ambiguity of the carrier phase measurements for the
+  BeiDou B2a signal, which its telemetry decoder left unresolved.
+- Fixed the half-cycle ambiguity of the carrier phase measurements for GPS L2C
+  and for GPS and QZSS L5 tracked on the data component, which the CNAV
+  telemetry decoder resolved wrongly for some satellites.
 
 ### Improvements in Availability:
 
@@ -52,6 +60,16 @@ All notable changes to GNSS-SDR will be documented in this file.
   code with the CL slots zeroed, the same replica that tracking already uses,
   instead of holding each CM chip across the CL slot. The CL half of the signal
   no longer adds noise to the correlation.
+- Fixed the preamble search of the GPS CNAV message decoder used by the GPS L2C
+  and L5 telemetry decoders, which could miss the first message after the start
+  of tracking. Contributed by @BenGant.
+- The GPS CNAV message decoder now follows a half-cycle slip of the carrier
+  tracking loop at the next message. Before, it decoded no more messages, and
+  the GPS L2C or L5 satellite was dropped one minute later.
+- Fixed the tracking of the data component (`track_pilot=false`) of GPS L5,
+  Galileo E5a and E5b, and QZSS L5 signals, which did not remove the secondary
+  code from the symbols delivered to the telemetry decoder. This weakened them,
+  and left the Galileo E5b carrier phase half a cycle off.
 
 ### Improvements in Efficiency:
 
@@ -106,10 +124,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   TMBOC(6,1,4/33) pilot waveform (`Acquisition_1S.tmboc`, `Tracking_1S.tmboc`,
   default `false`). When a satellite is tracked on both L1 C/A and L1C,
   positioning uses L1 C/A. RINEX observation files contain
-  `C1L`/`L1L`/`D1L`/`S1L` observables, and RINEX 4.02 navigation files contain
-  CNV2 records. A sample configuration file is provided at
-  `conf/File_input/GPS/gnss-sdr_GPS_L1C_file.conf`. Based on initial work by
-  @tatjam.
+  `C1S`/`L1S`/`D1S`/`S1S` data or `C1L`/`L1L`/`D1L`/`S1L` pilot observables, and
+  RINEX 4.02 navigation files contain CNV2 records. A sample configuration file
+  is provided at `conf/File_input/GPS/gnss-sdr_GPS_L1C_file.conf`. Based on
+  initial work by @tatjam.
 - Fixed `Labsat_Signal_Source` for LabSat 4 (`.LS4`) recordings whose RF
   channels have different bandwidths (different `BW_DIV` values). Hardened the
   parsing of LabSat 4 (`.LS4`) `.ini` files. The source now exits with a
@@ -141,6 +159,25 @@ All notable changes to GNSS-SDR will be documented in this file.
   Before, the signals of a satellite in the same band group shared one lock time
   (GPS L2C with L5, Galileo E5a with E5b), and lock times never restarted, so
   rovers could not detect cycle slips from them.
+- Carrier phases are now aligned to the reference signal of the RINEX phase
+  alignment: those measured on the pilot component of GPS L5, Galileo E5a and
+  E5b, BeiDou B1C and B2a, and QZSS L5 signals to their data component, GPS L1C
+  to L1 C/A, and GPS L2C to L2 P(Y). They were a quarter of a cycle off.
+- RINEX, RTCM MSM, RTKLIB, and Monitor outputs now identify the effective data
+  or pilot tracking component instead of inferring it from the channel routing
+  label. RINEX declares the data or pilot columns of each signal as configured
+  with `Tracking_XX.track_pilot`, writes the phase-alignment records that
+  version 3.02 requires, and promotes BeiDou B1C/B2a selections to 4.02, where
+  QZSS L1 C/B is reported as `1E`. RTCM cell masks, splitting, and lock
+  histories distinguish both components. GPS L5/L1C and BeiDou B2a inter-signal
+  corrections follow the reported component.
+- Added the RTCM message type 1046 (Galileo I/NAV ephemeris). Receivers tracking
+  only Galileo E1 or E5b sent Galileo observations without their ephemerides.
+  The message rate is set with `PVT.rtcm_MT1046_rate_ms`, which defaults to the
+  value of `PVT.rtcm_MT1045_rate_ms`.
+- Fixed the TCP/IP server of RTCM messages (`PVT.flag_rtcm_server=true`), which
+  since v0.0.19 delivered repeated ephemeris messages and no observation
+  messages to its clients.
 
 ### Improvements in Maintainability:
 
@@ -148,6 +185,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   with the current Khronos OpenCL C++ bindings (`CL/opencl.hpp`, from
   OpenCL-CLHPP v2026.05.29). A system-wide `CL/opencl.hpp` is used if found, and
   the bundled copy otherwise.
+- Added a CI job that builds the CUDA processing blocks and runs their unit
+  tests on a simulated GPU. Contributed by @saqibkh.
+
+### Improvements in Portability:
+
+- Fixed the CUDA build (`-DENABLE_CUDA=ON`) from a source tree stored in a
+  case-insensitive filesystem. The header `MATH_CONSTANTS.h`, which shadowed
+  CUDA's `math_constants.h`, has been renamed to `GNSS_MATH_CONSTANTS.h`.
 
 ### Improvements in Reliability:
 
@@ -180,6 +225,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   `Tracking_XX.max_carrier_lock_fail` was set above 300000 or 200000,
   respectively, so a false lock that the carrier lock test did not drop kept its
   channel until the end of the run.
+- Fixed `TelemetryDecoder_XX.dump_crc_stats=true` in the GPS L2C and L5
+  telemetry decoders, which never counted a failed CRC check.
 
 ### Improvements in Reproducibility:
 
@@ -246,6 +293,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   nothing for `SignalSource.shm_stall_timeout_s` seconds (default 5, 0 waits
   forever) and, with `SignalSource.shm_stop_on_buffer_overflow=true`, when it
   reports a buffer overflow. Linux only. Contributed by @joebre.
+- `EVK1029_Signal_Source` now skips the 16 KiB metadata header that
+  EVK1029_CtrlApp writes at the start of every recording, instead of decoding it
+  as samples. `SignalSource.seconds_to_skip` counts from the end of the header.
 - The accumulated carrier phase is now stored as a `double` in the tracking
   dumps (binary and `.mat`) of all tracking implementations, instead of a
   `float` whose resolution drops to 0.0625 rad at 10^6 rad. Each binary record
@@ -258,6 +308,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   the receiver computed no position and wrote no RINEX files. When only some
   constellations provide a band pair, the log names those whose satellites are
   left out of the solution.
+- Added the option to write the receiver's GNU Radio flow graph to a file in
+  Graphviz DOT format. Set `GNSS-SDR.dump_flowgraph=true` and, optionally,
+  `GNSS-SDR.flowgraph_dump_filename` (default `flowgraph.dot`). Contributed by
+  @edmondj.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

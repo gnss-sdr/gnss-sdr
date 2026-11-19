@@ -16,7 +16,7 @@
  */
 
 #include "gnss_ephemeris.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "gnss_frequencies.h"
 #include <algorithm>
 #include <cmath>

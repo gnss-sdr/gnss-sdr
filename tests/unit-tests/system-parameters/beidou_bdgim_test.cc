@@ -13,7 +13,7 @@
  *
  * -----------------------------------------------------------------------------
  */
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "beidou_bdgim.h"
 #include "gnss_frequencies.h"
 #include <gtest/gtest.h>

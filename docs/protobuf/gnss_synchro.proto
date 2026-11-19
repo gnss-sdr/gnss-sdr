@@ -50,6 +50,15 @@ message GnssSynchro {
   // Half-cycle jump of the carrier phase, caused by a change in the Costas loop
   // phase ambiguity resolved by the Telemetry Decoder
   bool flag_half_cycle_slip = 29;
+
+  // Actual tracking component, independent of the receiver routing label signal.
+  // Missing in older producers: do not infer data or pilot from signal alone.
+  enum TrackingComponent {
+    UNKNOWN = 0;
+    DATA = 1;
+    PILOT = 2;
+  }
+  TrackingComponent tracking_component = 30;
 }
 
 /* Observables represents a collection of GnssSynchro annotations */

@@ -108,7 +108,7 @@ char obscodes[][3] = {
     "2W", "2Y", "2M", "2N", "5I", "5Q", "5X", "7I", "7Q", "7X", /* 20-29 */
     "6A", "6B", "6C", "6X", "6Z", "6S", "6L", "8L", "8Q", "8X", /* 30-39 */
     "2I", "2Q", "6I", "6Q", "3I", "3Q", "3X", "1I", "1Q", "5A", /* 40-49 */
-    "5B", "5C", "9A", "9B", "9C", "9X", "1D", "5D", "", ""      /* 50-59 */
+    "5B", "5C", "9A", "9B", "9C", "9X", "1D", "5D", "5P", ""    /* 50-59 */
 };
 
 
@@ -119,7 +119,7 @@ unsigned char obsfreqs[] = {
     2, 2, 2, 2, 3, 3, 3, 5, 5, 5, /* 20-29 */
     4, 4, 4, 4, 4, 4, 4, 6, 6, 6, /* 30-39 */
     2, 2, 4, 4, 3, 3, 3, 1, 1, 3, /* 40-49 */
-    3, 3, 7, 7, 7, 7, 1, 3, 0, 0  /* 50-59 */
+    3, 3, 7, 7, 7, 7, 1, 3, 3, 0  /* 50-59 */
 };
 
 
@@ -132,7 +132,7 @@ char codepris[7][MAXFREQ][16] = {
     {"CABXZ", "", "IQX", "ABCXZ", "IQX", "IQX", ""},   /* GAL */
     {"CSLXZ", "SLX", "IQX", "SLX", "", "", ""},        /* QZS */
     {"C", "", "IQX", "", "", "", ""},                  /* SBS */
-    {"DPXIQ", "IQX", "IQX", "IQX", "IQX", "", ""},     /* BDS: shared-slot B1C preference is applied by sigindex() */
+    {"DPXIQ", "IQX", "DPXIQ", "IQX", "IQX", "", ""},   /* BDS: shared-slot B1C preference is applied by sigindex() */
     {"", "", "ABCX", "", "", "", "ABCX"}               /* IRN */
 };
 
@@ -666,7 +666,7 @@ bool is_bds_b1c_code(unsigned char code)
 
 bool is_bds_b2a_code(unsigned char code)
 {
-    return code == CODE_L5D;
+    return code == CODE_L5D || code == CODE_L5P;
 }
 
 

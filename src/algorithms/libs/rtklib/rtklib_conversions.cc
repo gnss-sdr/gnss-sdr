@@ -17,7 +17,7 @@
 #include "rtklib_conversions.h"
 #include "Beidou_CNAV2.h"
 #include "Beidou_DNAV.h"             // for BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET
-#include "MATH_CONSTANTS.h"          // for GNSS_PI, TWO_PI
+#include "GNSS_MATH_CONSTANTS.h"     // for GNSS_PI, TWO_PI
 #include "beidou_cnav1_ephemeris.h"  // for Beidou_Cnav1_Ephemeris
 #include "beidou_dnav_almanac.h"     // for Beidou_Dnav_Almanac
 #include "beidou_dnav_ephemeris.h"   // for Beidou_Dnav_Ephemeris
@@ -33,6 +33,7 @@
 #include "gps_cnav_ephemeris.h"      // for Gps_CNAV_Ephemeris
 #include "gps_ephemeris.h"           // for Gps_Ephemeris
 #include "rtklib_rtkcmn.h"
+#include <algorithm>
 #include <cmath>
 #include <utility>
 #include <vector>
@@ -164,8 +165,30 @@ bool HAS_carrier_continuity::changed(int sat, const std::string& signal, bool or
 }
 
 
-std::vector<std::string> has_signal_candidates(char system, const std::string& signal)
+namespace
 {
+// HAS bias names of a signal with data and pilot components: the tracked
+// component first, then the other component of the same signal, then their
+// combination. Galileo HAS only broadcasts the pilot biases (E1-C, E5a-Q,
+// E5b-Q, E6-C), so without the fallback a receiver tracking the data component
+// would get no signal bias at all.
+std::vector<std::string> has_component_candidates(bool tracking_pilot,
+    const std::string& data,
+    const std::string& pilot,
+    const std::string& combined)
+{
+    if (tracking_pilot)
+        {
+            return {pilot, data, combined};
+        }
+    return {data, pilot, combined};
+}
+}  // namespace
+
+
+std::vector<std::string> has_signal_candidates(char system, const std::string& signal, bool tracking_pilot)
+{
+    // The bias of a different signal (e.g. L2 P for L2C) is never used
     switch (system)
         {
         case 'G':
@@ -175,29 +198,30 @@ std::vector<std::string> has_signal_candidates(char system, const std::string& s
                 }
             if (signal == "2S")
                 {
-                    return {"L2 CM", "L2 CL", "L2 CM+CL", "L2 P"};
+                    // L2 CM and L2 CL are time-multiplexed chip by chip into the same L2C code
+                    return {"L2 CM", "L2 CL", "L2 CM+CL"};
                 }
             if (signal == "L5")
                 {
-                    return {"L5 I", "L5 Q", "L5 I + L5 Q"};
+                    return has_component_candidates(tracking_pilot, "L5 I", "L5 Q", "L5 I + L5 Q");
                 }
             break;
         case 'E':
             if (signal == "1B")
                 {
-                    return {"E1-B I/NAV OS", "E1-C", "E1-B + E1-C"};
+                    return has_component_candidates(tracking_pilot, "E1-B I/NAV OS", "E1-C", "E1-B + E1-C");
                 }
             if (signal == "5X")
                 {
-                    return {"E5a-I F/NAV OS", "E5a-Q", "E5a-I+E5a-Q"};
+                    return has_component_candidates(tracking_pilot, "E5a-I F/NAV OS", "E5a-Q", "E5a-I+E5a-Q");
                 }
             if (signal == "7X")
                 {
-                    return {"E5b-I I/NAV OS", "E5b-Q", "E5b-I+E5b-Q"};
+                    return has_component_candidates(tracking_pilot, "E5b-I I/NAV OS", "E5b-Q", "E5b-I+E5b-Q");
                 }
             if (signal == "E6")
                 {
-                    return {"E6-B C/NAV HAS", "E6-C", "E6-B + E6-C"};
+                    return has_component_candidates(tracking_pilot, "E6-B C/NAV HAS", "E6-C", "E6-B + E6-C");
                 }
             break;
         default:
@@ -210,9 +234,10 @@ std::vector<std::string> has_signal_candidates(char system, const std::string& s
 const HAS_obs_corrections* find_has_obs_correction(const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
     char system,
     const std::string& signal,
-    int prn)
+    int prn,
+    bool tracking_pilot)
 {
-    for (const auto& has_signal : has_signal_candidates(system, signal))
+    for (const auto& has_signal : has_signal_candidates(system, signal, tracking_pilot))
         {
             const auto signal_it = has_obs_corr.find(has_signal);
             if (signal_it == has_obs_corr.cend())
@@ -232,68 +257,19 @@ const HAS_obs_corrections* find_has_obs_correction(const std::map<std::string, s
 
 unsigned char rtklib_obs_code(char system, const std::string& signal, int band)
 {
-    auto code = static_cast<unsigned char>(CODE_NONE);
-    switch (band)
+    // Used for the solver's configured-frequency preflight, before tracking.
+    if (band < 0 || band >= NFREQ)
         {
-        case 0:
-            code = static_cast<unsigned char>(CODE_L1C);
-            break;
-        case 1:
-            code = static_cast<unsigned char>(CODE_L2S);
-            break;
-        case 2:
-            code = static_cast<unsigned char>(CODE_L5X);
-            break;
-        default:
-            break;
+            return CODE_NONE;
         }
-    switch (system)
+    Gnss_Synchro synchro;
+    synchro.System = system;
+    if (signal.size() == 2)
         {
-        case 'G':
-            if (signal == "1S")
-                {
-                    // the L1C pilot provides code and carrier measurements
-                    code = static_cast<unsigned char>(CODE_L1L);
-                }
-            break;
-        case 'E':
-            if (signal == "7X")
-                {
-                    code = static_cast<unsigned char>(CODE_L7X);
-                }
-            if (signal == "E6")
-                {
-                    code = static_cast<unsigned char>(CODE_L6B);
-                }
-            break;
-        case 'R':
-            if (signal == "2G")
-                {
-                    code = static_cast<unsigned char>(CODE_L2C);
-                }
-            break;
-        case 'C':
-            if (signal == "B1")
-                {
-                    code = static_cast<unsigned char>(CODE_L2I);
-                }
-            else if (signal == "B3")
-                {
-                    code = static_cast<unsigned char>(CODE_L6I);
-                }
-            else if (signal == "1D")
-                {
-                    code = static_cast<unsigned char>(CODE_L1P);
-                }
-            else if (signal == "5D")
-                {
-                    code = static_cast<unsigned char>(CODE_L5D);
-                }
-            break;
-        default:
-            break;
+            std::copy_n(signal.data(), 2, synchro.Signal);
         }
-    return code;
+    synchro.tracking_component = Gnss_Synchro::TrackingComponent::Data;
+    return obs2code(synchro.observation_code(), nullptr);
 }
 
 
@@ -325,7 +301,7 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
     rtklib_obs.LLI[band] = static_cast<unsigned char>(
         (gnss_synchro.Flag_cycle_slip || gnss_synchro.Flag_half_cycle_slip) ? 1U : 0U);
 
-    rtklib_obs.code[band] = rtklib_obs_code(gnss_synchro.System, sig_, band);
+    rtklib_obs.code[band] = obs2code(gnss_synchro.observation_code(), nullptr);
     double CN0_dB_Hz_est = gnss_synchro.CN0_dB_hz;
     if (CN0_dB_Hz_est > 63.75)
         {
@@ -387,10 +363,11 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
 
     rtklib_obs.rcv = 1;
 
-    if (!has_obs_corr.empty())
+    if (!has_obs_corr.empty() && rtklib_obs.code[band] != CODE_NONE)
         {
             const HAS_obs_corrections* has_correction = find_has_obs_correction(has_obs_corr,
-                gnss_synchro.System, sig_, static_cast<int>(gnss_synchro.PRN));
+                gnss_synchro.System, sig_, static_cast<int>(gnss_synchro.PRN),
+                gnss_synchro.tracking_component == Gnss_Synchro::TrackingComponent::Pilot);
             if (has_correction != nullptr)
                 {
                     rtklib_obs.P[band] += has_correction->code_bias_m;

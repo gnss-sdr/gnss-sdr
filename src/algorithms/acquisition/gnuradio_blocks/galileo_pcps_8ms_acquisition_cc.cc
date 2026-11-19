@@ -16,7 +16,7 @@
  */
 
 #include "galileo_pcps_8ms_acquisition_cc.h"
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>

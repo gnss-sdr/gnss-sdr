@@ -18,7 +18,7 @@
 #ifndef GNSS_SDR_GPS_CNAV_H
 #define GNSS_SDR_GPS_CNAV_H
 
-#include "MATH_CONSTANTS.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include <cstdint>
 #include <utility>  // std::pair
 #include <vector>

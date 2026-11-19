@@ -82,6 +82,7 @@ beidou_dnav_telemetry_decoder_gs::beidou_dnav_telemetry_decoder_gs(const Tlm_Con
       d_flag_SOW_set(false),
       d_flag_frame_sync(false),
       d_flag_preamble(false),
+      d_flag_PLL_180_deg_phase_locked(false),
       d_flag_valid_word(false),
       d_sent_tlm_failed_msg(false),
       d_dump(conf.dump),
@@ -502,6 +503,7 @@ int beidou_dnav_telemetry_decoder_gs::general_work(int noutput_items __attribute
                             if (d_nav.get_flag_CRC_test() == true)
                                 {
                                     d_CRC_error_counter = 0;
+                                    d_flag_PLL_180_deg_phase_locked = corr_value < 0;
                                     d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
                                     d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
                                     if (!d_flag_frame_sync)
@@ -560,6 +562,7 @@ int beidou_dnav_telemetry_decoder_gs::general_work(int noutput_items __attribute
                     if (d_nav.get_flag_CRC_test() == true)
                         {
                             d_CRC_error_counter = 0;
+                            d_flag_PLL_180_deg_phase_locked = corr_value < 0;
                             d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
                             d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
                             if (!d_flag_frame_sync)
@@ -637,6 +640,16 @@ int beidou_dnav_telemetry_decoder_gs::general_work(int noutput_items __attribute
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             current_symbol.Flag_valid_word = d_flag_valid_word;
+            if (d_flag_PLL_180_deg_phase_locked == true)
+                {
+                    // correct the accumulated phase for the Costas loop phase shift, if required
+                    current_symbol.Carrier_phase_rads += GNSS_PI;
+                    current_symbol.Flag_PLL_180_deg_phase_locked = true;
+                }
+            else
+                {
+                    current_symbol.Flag_PLL_180_deg_phase_locked = false;
+                }
 
             if (d_dump == true)
                 {

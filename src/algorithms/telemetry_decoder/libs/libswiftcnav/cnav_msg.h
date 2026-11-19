@@ -55,6 +55,7 @@ typedef struct
     uint8_t msg_id;                                                    /**< Message id. 0..31 */
     uint32_t tow;                                                      /**< GPS ToW in 6-second units. Multiply to 6 to get seconds. */
     bool alert;                                                        /**< CNAV message alert flag */
+    bool inverted;                                                     /**< When true, the symbols of this message were received inverted */
     uint8_t raw_msg[GPS_L2C_V27_DECODE_BITS + GPS_L2C_V27_DELAY_BITS]; /**< RAW MSG for GNSS-SDR */
 } cnav_msg_t;
 
@@ -96,6 +97,8 @@ typedef struct
 {
     cnav_v27_part_t part1; /**< Decoder for odd symbol pairs */
     cnav_v27_part_t part2; /**< Decoder for even symbol pairs */
+    bool crc_failed;       /**< When true, the last symbol completed a message
+                            *   that failed the CRC check under message lock. */
 } cnav_msg_decoder_t;
 
 const v27_poly_t *cnav_msg_decoder_get_poly(void);

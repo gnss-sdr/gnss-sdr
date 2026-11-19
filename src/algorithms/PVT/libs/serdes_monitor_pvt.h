@@ -126,6 +126,7 @@ public:
                 pb_sat->set_prn(sat.prn);
                 pb_sat->set_system(std::string(1, sat.system));
                 pb_sat->set_signal(sat.signal);
+                pb_sat->set_observation_code(sat.observation_code);
                 pb_sat->set_azimuth_deg(sat.azimuth_deg);
                 pb_sat->set_elevation_deg(sat.elevation_deg);
                 pb_sat->set_combined(sat.combined);
@@ -187,6 +188,7 @@ public:
                 sat.prn = pb_sat.prn();
                 sat.system = pb_sat.system().empty() ? '\0' : pb_sat.system()[0];
                 sat.signal = pb_sat.signal();
+                sat.observation_code = pb_sat.observation_code();
                 sat.azimuth_deg = pb_sat.azimuth_deg();
                 sat.elevation_deg = pb_sat.elevation_deg();
                 sat.combined = pb_sat.combined();

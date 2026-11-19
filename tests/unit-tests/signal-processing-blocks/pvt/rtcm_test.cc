@@ -183,6 +183,7 @@ TEST(RtcmTest, MT1001)
     auto rtcm = std::make_shared<Rtcm>();
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
     Gnss_Synchro gnss_synchro;
+    gnss_synchro.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gnss_synchro.PRN = 2;
     std::string sys = "G";
     bool expected_true = true;
@@ -523,11 +524,17 @@ TEST(RtcmTest, MSMCell)
     std::map<int, Gnss_Synchro> pseudoranges;
 
     Gnss_Synchro gnss_synchro;
+    gnss_synchro.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gnss_synchro2;
+    gnss_synchro2.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gnss_synchro3;
+    gnss_synchro3.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gnss_synchro4;
+    gnss_synchro4.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gnss_synchro5;
+    gnss_synchro5.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gnss_synchro6;
+    gnss_synchro6.tracking_component = Gnss_Synchro::TrackingComponent::Data;
 
     gnss_synchro.PRN = 4;
     gnss_synchro2.PRN = 8;
@@ -625,6 +632,7 @@ TEST(RtcmTest, MSMCell)
     EXPECT_EQ(0, MSM1_bin_2.substr(size_header + size_msg_length + 169, Nsat * Nsig).compare("001010101100"));  // check cell mask
 
     Gnss_Synchro gnss_synchro7;
+    gnss_synchro7.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     gnss_synchro7.PRN = 10;
     gnss_synchro7.System = *gal.c_str();
     std::memcpy(reinterpret_cast<void*>(gnss_synchro7.Signal), e5b.c_str(), 3);
@@ -662,9 +670,13 @@ TEST(RtcmTest, MSM1)
     std::map<int, Gnss_Synchro> pseudoranges;
 
     Gnss_Synchro gnss_synchro;
+    gnss_synchro.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gnss_synchro2;
+    gnss_synchro2.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gnss_synchro3;
+    gnss_synchro3.tracking_component = Gnss_Synchro::TrackingComponent::Data;
     Gnss_Synchro gnss_synchro4;
+    gnss_synchro4.tracking_component = Gnss_Synchro::TrackingComponent::Data;
 
     gnss_synchro.PRN = 2;
     gnss_synchro2.PRN = 4;
@@ -785,6 +797,7 @@ TEST(RtcmTest, MSMSizeLimits)
                 for (uint32_t signal_index = 0; signal_index < 3; signal_index++)
                     {
                         Gnss_Synchro gnss_synchro;
+                        gnss_synchro.tracking_component = Gnss_Synchro::TrackingComponent::Data;
                         gnss_synchro.PRN = prn;
                         gnss_synchro.System = 'E';
                         std::memcpy(static_cast<void*>(gnss_synchro.Signal), signals[signal_index].c_str(), 3);
@@ -844,4 +857,133 @@ TEST(RtcmTest, InstantiateServerWithoutClosing)
     std::string test3 = "ff";
     std::string test3_bin = rtcm->hex_to_bin(test3);
     EXPECT_EQ(0, test3_bin.compare("11111111"));
+}
+
+
+TEST(RtcmTest, MsmTrackingComponentsUseStandardSignalIds)
+{
+    struct Case
+    {
+        char system;
+        const char* signal;
+        const char* data;
+        const char* pilot;
+        unsigned int data_id;
+        unsigned int pilot_id;
+    };
+    const Case cases[] = {
+        {'G', "L5", "5I", "5Q", 22, 23},
+        {'E', "1B", "1B", "1C", 4, 2},
+        {'E', "5X", "5I", "5Q", 22, 23},
+        {'E', "7X", "7I", "7Q", 14, 15}};
+    Rtcm encoder(0);
+    const auto printers = {&Rtcm::print_MSM_1, &Rtcm::print_MSM_2, &Rtcm::print_MSM_3,
+        &Rtcm::print_MSM_4, &Rtcm::print_MSM_5, &Rtcm::print_MSM_6, &Rtcm::print_MSM_7};
+    for (const auto& test : cases)
+        {
+            Gps_CNAV_Ephemeris gps;
+            Galileo_Ephemeris gal;
+            if (test.system == 'G')
+                {
+                    gps.PRN = 1;
+                }
+            else
+                {
+                    gal.PRN = 1;
+                }
+            Gnss_Synchro data;
+            data.System = test.system;
+            data.PRN = 1;
+            std::memcpy(data.Signal, test.signal, 3);
+            data.tracking_component = Gnss_Synchro::TrackingComponent::Data;
+            data.Pseudorange_m = 22000000.0;
+            data.Carrier_phase_rads = 100.0 * TWO_PI;
+            data.Carrier_Doppler_hz = -100.0;
+            data.CN0_dB_hz = 45.0;
+            Gnss_Synchro pilot = data;
+            pilot.tracking_component = Gnss_Synchro::TrackingComponent::Pilot;
+            pilot.Pseudorange_m += 1.0;
+            int msm = 0;
+            for (const auto print : printers)
+                {
+                    ++msm;
+                    SCOPED_TRACE(std::string(1, test.system) + test.signal + " MSM" + std::to_string(msm));
+                    const auto both = (encoder.*print)({}, gps, gal, {}, 25.0, {{0, data}, {1, pilot}}, 123, 0, 0, 0, false, false);
+                    ASSERT_FALSE(both.empty());
+                    EXPECT_TRUE(encoder.check_CRC(both));
+                    const auto bits = encoder.binary_data_to_bin(both);
+                    std::string mask(32, '0');
+                    mask[test.data_id - 1] = '1';
+                    mask[test.pilot_id - 1] = '1';
+                    EXPECT_EQ(mask, bits.substr(24 + 137, 32));
+                    EXPECT_EQ("11", bits.substr(24 + 169, 2));
+                    for (const auto& measurement : {data, pilot})
+                        {
+                            if (msm < 4)
+                                {
+                                    continue;  // RTKLIB decodes MSM4..7.
+                                }
+                            const auto packet = (encoder.*print)({}, gps, gal, {}, 25.0, {{0, measurement}}, 123, 0, 0, 0, false, false);
+                            rtcm_t decoder{};
+                            ASSERT_EQ(1, init_rtcm(&decoder));
+                            int status = 0;
+                            for (const unsigned char byte : packet)
+                                {
+                                    status = input_rtcm3(&decoder, byte);
+                                }
+                            EXPECT_EQ(1, status);
+                            EXPECT_EQ(1, decoder.obs.n);
+                            bool found = false;
+                            if (decoder.obs.n == 1)
+                                {
+                                    for (int slot = 0; slot < NFREQ + NEXOBS; ++slot)
+                                        {
+                                            if (decoder.obs.data[0].code[slot] == obs2code(measurement.observation_code(), nullptr))
+                                                {
+                                                    found = true;
+                                                    EXPECT_NEAR(measurement.Pseudorange_m, decoder.obs.data[0].P[slot], 0.02);
+                                                }
+                                        }
+                                }
+                            int frequency = 0;
+                            obs2code(measurement.observation_code(), &frequency);
+                            if (frequency > NFREQ && NEXOBS == 0)
+                                {
+                                    // This build has no storage slot for E5b, but the
+                                    // independent decoder still reports its signal code.
+                                    EXPECT_NE(nullptr, std::strstr(decoder.msmtype[2], measurement.observation_code()));
+                                }
+                            else
+                                {
+                                    EXPECT_TRUE(found);
+                                }
+                            free_rtcm(&decoder);
+                        }
+                    Gnss_Synchro unknown = data;
+                    unknown.tracking_component = Gnss_Synchro::TrackingComponent::Unknown;
+                    EXPECT_TRUE((encoder.*print)({}, gps, gal, {}, 25.0, {{0, unknown}}, 123, 0, 0, 0, false, false).empty());
+                }
+        }
+}
+
+
+TEST(RtcmTest, DataAndPilotHaveIndependentLockHistories)
+{
+    Rtcm encoder(0);
+    Galileo_Ephemeris eph;
+    eph.WN = 1200;
+    Gnss_Synchro data;
+    data.System = 'E';
+    data.PRN = 1;
+    std::memcpy(data.Signal, "1B", 3);
+    data.tracking_component = Gnss_Synchro::TrackingComponent::Data;
+    Gnss_Synchro pilot = data;
+    pilot.tracking_component = Gnss_Synchro::TrackingComponent::Pilot;
+    EXPECT_EQ(0U, encoder.lock_time(eph, 10.0, data));
+    EXPECT_EQ(0U, encoder.lock_time(eph, 20.0, pilot));
+    EXPECT_EQ(20U, encoder.lock_time(eph, 30.0, data));
+    EXPECT_EQ(10U, encoder.lock_time(eph, 30.0, pilot));
+    encoder.reset_lock_time(pilot);
+    EXPECT_EQ(30U, encoder.lock_time(eph, 40.0, data));
+    EXPECT_EQ(0U, encoder.lock_time(eph, 40.0, pilot));
 }

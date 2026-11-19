@@ -80,6 +80,7 @@ message MonitorPvt {
     bool combined = 6;
     bool used = 7;
     bool healthy = 8;
+    string observation_code = 9;  // RINEX 4 code (e.g. 1B/1C), empty if unknown.
   }
   repeated TrackedSatellite tracked_satellites = 37;
 }

@@ -28,6 +28,7 @@
 #include "Beidou_B2a.h"
 #include "Beidou_B3I.h"
 #include "GLONASS_L1_L2_CA.h"
+#include "GNSS_MATH_CONSTANTS.h"
 #include "GPS_L1C.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
@@ -36,7 +37,6 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
-#include "MATH_CONSTANTS.h"
 #include "SBAS_L1.h"
 #include "beidou_b1c_signal_replica.h"
 #include "beidou_b1i_signal_replica.h"
@@ -118,6 +118,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_cfo_phase_step_rad(0.0),
       d_carrier_doppler_hz(0.0),
       d_acc_carrier_phase_rad(0.0),
+      d_ref_carrier_phase_offset_rad(0.0),
       d_rem_code_phase_chips(0.0),
       d_T_chip_seconds(0.0),
       d_T_prn_seconds(0.0),
@@ -280,6 +281,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                             // remove Neuman-Hofman Code (see IS-GPS-705D)
                             d_secondary_code_length = static_cast<uint32_t>(GPS_L5I_NH_CODE_LENGTH);
                             d_secondary_code_string = GPS_L5I_NH_CODE_STR;
+                            d_data_secondary_code_length = static_cast<uint32_t>(GPS_L5I_NH_CODE_LENGTH);
+                            d_data_secondary_code_string = GPS_L5I_NH_CODE_STR;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                             d_interchange_iq = true;
                         }
@@ -385,6 +388,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                             // synchronize and remove data secondary code
                             d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
                             d_secondary_code_string = GALILEO_E5A_I_SECONDARY_CODE;
+                            d_data_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
+                            d_data_secondary_code_string = GALILEO_E5A_I_SECONDARY_CODE;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                         }
                 }
@@ -416,6 +421,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                             // synchronize and remove data secondary code
                             d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5B_I_SECONDARY_CODE_LENGTH);
                             d_secondary_code_string = GALILEO_E5B_I_SECONDARY_CODE;
+                            d_data_secondary_code_length = static_cast<uint32_t>(GALILEO_E5B_I_SECONDARY_CODE_LENGTH);
+                            d_data_secondary_code_string = GALILEO_E5B_I_SECONDARY_CODE;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                         }
                 }
@@ -673,6 +680,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                             // remove Neuman-Hofman Code
                             d_secondary_code_length = static_cast<uint32_t>(QZSS_L5I_NH_CODE_LENGTH);
                             d_secondary_code_string = QZSS_L5I_NH_CODE_STR;
+                            d_data_secondary_code_length = static_cast<uint32_t>(QZSS_L5I_NH_CODE_LENGTH);
+                            d_data_secondary_code_string = QZSS_L5I_NH_CODE_STR;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                             d_interchange_iq = true;
                         }
@@ -740,6 +749,38 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
             d_code_length_chips = 0;
             d_code_samples_per_chip = 0U;
             d_symbols_per_bit = 0;
+        }
+
+    // The carrier phase is reported for the reference signal of the RINEX phase
+    // alignment, which is the data component of the signals with a pilot. When
+    // the pilot is tracked and the telemetry symbols are read from the
+    // quadrature output of the data correlator, the data carrier is in
+    // quadrature with the NCO: a quarter of a cycle is added here, and the
+    // telemetry decoder resolves the remaining half cycle from the polarity of
+    // the data symbols, as it does when the data component is tracked. Pilots
+    // in phase or in antiphase with the data component (Galileo E1 and E6, GPS
+    // L1C) only need the decoder's half cycle.
+    if (d_trk_parameters.track_pilot &&
+        (d_signal_type == "L5" || d_signal_type == "J5" || d_signal_type == "5X" || d_signal_type == "7X" || d_signal_type == "5D" ||
+            (d_signal_type == "1D" && d_trk_parameters.b1c_prompt_use_data_q)))
+        {
+            d_ref_carrier_phase_offset_rad = HALF_PI;
+        }
+    else if (d_signal_type == "1S")
+        {
+            // The reference signal of GPS L1C is L1 C/A, whose carrier is a
+            // quarter of a cycle behind the L1CD and L1CP ones (+1/4 cycle for
+            // L1S, L1L and L1X in RINEX 3.05, Table A23)
+            d_ref_carrier_phase_offset_rad = -HALF_PI;
+        }
+    else if (d_signal_type == "2S")
+        {
+            // The reference signal of GPS L2 is L2 P(Y), whose carrier is a
+            // quarter of a cycle ahead of the L2C one (-1/4 cycle for L2S, L2L
+            // and L2X in RINEX 3.05, Table A23). The shift is kept whatever the
+            // L2C phasing flag of the CNAV message says (RINEX 4.02, Table A45,
+            // note 1)
+            d_ref_carrier_phase_offset_rad = HALF_PI;
         }
 
     // Initial code frequency basis of NCO
@@ -1645,7 +1686,7 @@ void dll_pll_veml_tracking::check_carrier_phase_coherent_initialization()
 {
     if (d_acc_carrier_phase_initialized == false)
         {
-            d_acc_carrier_phase_rad = -d_rem_carr_phase_rad;
+            d_acc_carrier_phase_rad = -(d_rem_carr_phase_rad + d_ref_carrier_phase_offset_rad);
             d_acc_carrier_phase_initialized = true;
             d_carrier_phase_discontinuity = true;  // the carrier phase ambiguity starts again
         }
@@ -2985,6 +3026,7 @@ int dll_pll_veml_tracking::process_input(int noutput_items __attribute__((unused
                 }
 
             d_det.record_output(this->nitems_written(0), current_synchro_data.Tracking_sample_counter);
+            current_synchro_data.tracking_component = d_trk_parameters.track_pilot ? Gnss_Synchro::TrackingComponent::Pilot : Gnss_Synchro::TrackingComponent::Data;
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

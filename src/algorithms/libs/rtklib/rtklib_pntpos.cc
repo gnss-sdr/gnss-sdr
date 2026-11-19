@@ -340,7 +340,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     double ISCl1 = 0.0;
     double ISCl2 = 0.0;
     double ISCl5i = 0.0;
-    // double ISCl5q = 0.0;
+    double ISCl5q = 0.0;
     double gamma_ = 0.0;
     int i = 0;
     int j = 1;
@@ -444,7 +444,7 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
             ISCl1 = getiscl1(obs->sat, nav);
             ISCl2 = getiscl2(obs->sat, nav);
             ISCl5i = getiscl5i(obs->sat, nav);
-            // ISCl5q = getiscl5q(obs->sat, nav);
+            ISCl5q = getiscl5q(obs->sat, nav);
         }
 
     // CHECK IF IT IS STILL NEEDED
@@ -483,11 +483,11 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                        combining, then remove the common TGD correction. */
                     PC = (P2 + ISCl2 - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
                 }
-            else if ((sys == SYS_GPS || sys == SYS_QZS) && obs->code[j] == CODE_L5X)
+            else if ((sys == SYS_GPS || sys == SYS_QZS) && (obs->code[j] == CODE_L5I || obs->code[j] == CODE_L5Q || obs->code[j] == CODE_L5X))
                 {
                     /* L1 C/A + L5 dual-frequency correction, IS-GPS-705 20.3.3.3.1.2.2:
                        the gamma-weighted L1 term carries ISC_L1CA, not ISC_L5I5 */
-                    PC = (P2 + ISCl5i - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
+                    PC = (P2 + (obs->code[j] == CODE_L5Q ? ISCl5q : ISCl5i) - gamma_ * (P1 + ISCl1)) / (1.0 - gamma_) - P1_P2;
                 }
             else
                 {
@@ -547,9 +547,9 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
                                 {
                                     PC = P2 - P1_P2 + ISCl2;
                                 }
-                            else if (obs->code[j] == CODE_L5X)  // L5 single freq.
+                            else if ((obs->code[j] == CODE_L5I || obs->code[j] == CODE_L5Q || obs->code[j] == CODE_L5X))  // L5 single freq.
                                 {
-                                    PC = P2 - P1_P2 + ISCl5i;
+                                    PC = P2 - P1_P2 + (obs->code[j] == CODE_L5Q ? ISCl5q : ISCl5i);
                                 }
                         }
                     if (sys == SYS_BDS)

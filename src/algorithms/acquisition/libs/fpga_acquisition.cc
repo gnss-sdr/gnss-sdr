@@ -20,12 +20,12 @@
  */
 
 #include "fpga_acquisition.h"
-#include "MATH_CONSTANTS.h"  // for TWO_PI
-#include <cmath>             // for log2
-#include <fcntl.h>           // libraries used by the GIPO
-#include <iostream>          // for operator<<
-#include <sys/mman.h>        // libraries used by the GIPO
-#include <unistd.h>          // for write, close, read, ssize_t
+#include "GNSS_MATH_CONSTANTS.h"  // for TWO_PI
+#include <cmath>                  // for log2
+#include <fcntl.h>                // libraries used by the GIPO
+#include <iostream>               // for operator<<
+#include <sys/mman.h>             // libraries used by the GIPO
+#include <unistd.h>               // for write, close, read, ssize_t
 #include <utility>
 
 #if USE_GLOG_AND_GFLAGS

@@ -16,7 +16,7 @@
 
 
 #include "rtklib_pvt.h"
-#include "MATH_CONSTANTS.h"            // for D2R
+#include "GNSS_MATH_CONSTANTS.h"       // for D2R
 #include "SBAS_L1.h"                   // for SBAS PRN limits
 #include "configuration_interface.h"   // for ConfigurationInterface
 #include "galileo_almanac.h"           // for Galileo_Almanac
@@ -38,6 +38,9 @@
 #include <cstdlib>                     // for getenv
 #include <iostream>                    // for std::cout
 #include <stdexcept>                   // for invalid_argument
+#include <string>                      // for std::string, std::to_string
+#include <utility>                     // for std::pair
+#include <vector>                      // for std::vector
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
@@ -57,6 +60,69 @@ namespace bc = boost::integer;
 #endif
 
 using namespace std::string_literals;
+
+namespace
+{
+// Finds the tracking component (data or pilot) that the channels of each signal
+// with both are set to measure, so that the RINEX header only declares the
+// observation types that the receiver can produce. It follows the role
+// resolution of GNSSBlockFactory (Tracking_<signal><channel> when that role
+// has an implementation, Tracking_<signal> otherwise) and the track_pilot
+// default of the tracking adapters. Rinex_Printer covers a mismatch by adding
+// the components it finds in the measurements when it writes the header.
+void get_tracked_components(const ConfigurationInterface* configuration, uint32_t& data_signals, uint32_t& pilot_signals)
+{
+    const std::vector<std::pair<uint32_t, std::string>> signals_with_pilot = {
+        {GPS_L5, "L5"},
+        {GPS_L1C, "1S"},
+        {GAL_1B, "1B"},
+        {GAL_E5a, "5X"},
+        {GAL_E5b, "7X"},
+        {GAL_E6, "E6"},
+        {BDS_B1C, "1D"},
+        {BDS_B2A, "5D"},
+        {QZS_J5, "J5"}};
+
+    int32_t total_channels = 0;
+    for (const std::string signal : {"1C", "1S", "2S", "L5", "1B", "5X", "7X", "E6", "1G", "2G", "B1", "B3", "1D", "5D", "J1", "J5", "S1"})
+        {
+            total_channels += std::max(configuration->property("Channels_" + signal + ".count", 0), 0);
+        }
+
+    data_signals = 0U;
+    pilot_signals = 0U;
+    const auto add_role = [&](const std::string& role, uint32_t flag) {
+        const std::string implementation = configuration->property(role + ".implementation", std::string(""));
+        // the TCP connector tracking only tracks E1B
+        const bool track_pilot = implementation != "Galileo_E1_TCP_CONNECTOR_Tracking" && configuration->property(role + ".track_pilot", true);
+        (track_pilot ? pilot_signals : data_signals) |= flag;
+    };
+
+    for (const auto& signal : signals_with_pilot)
+        {
+            const int32_t signal_channels = configuration->property("Channels_" + signal.second + ".count", 0);
+            if (signal_channels <= 0)
+                {
+                    continue;
+                }
+            int32_t channels_with_own_role = 0;
+            for (int32_t channel = 0; channel < total_channels; channel++)
+                {
+                    const std::string role = "Tracking_" + signal.second + std::to_string(channel);
+                    if (configuration->is_present(role + ".implementation"))
+                        {
+                            add_role(role, signal.first);
+                            channels_with_own_role++;
+                        }
+                }
+            if (channels_with_own_role < signal_channels)
+                {
+                    add_role("Tracking_" + signal.second, signal.first);
+                }
+        }
+}
+}  // namespace
+
 
 Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const std::string& role,
@@ -162,6 +228,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const int rtcm_MT1019_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1019_rate_ms", 5000), pvt_output_parameters.output_rate_ms);
     const int rtcm_MT1020_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1020_rate_ms", 5000), pvt_output_parameters.output_rate_ms);
     const int rtcm_MT1045_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1045_rate_ms", 5000), pvt_output_parameters.output_rate_ms);
+    const int rtcm_MT1046_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1046_rate_ms", rtcm_MT1045_rate_ms), pvt_output_parameters.output_rate_ms);
     const int rtcm_MSM_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MSM_rate_ms", 1000), pvt_output_parameters.output_rate_ms);
     const int rtcm_MT1077_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1077_rate_ms", rtcm_MSM_rate_ms), pvt_output_parameters.output_rate_ms);
     const int rtcm_MT1087_rate_ms = bc::lcm(configuration->property(role + ".rtcm_MT1087_rate_ms", rtcm_MSM_rate_ms), pvt_output_parameters.output_rate_ms);
@@ -170,6 +237,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.rtcm_msg_rate_ms[1019] = rtcm_MT1019_rate_ms;
     pvt_output_parameters.rtcm_msg_rate_ms[1020] = rtcm_MT1020_rate_ms;
     pvt_output_parameters.rtcm_msg_rate_ms[1045] = rtcm_MT1045_rate_ms;
+    pvt_output_parameters.rtcm_msg_rate_ms[1046] = rtcm_MT1046_rate_ms;
     for (int k = 1071; k < 1078; k++)  // All GPS MSM
         {
             pvt_output_parameters.rtcm_msg_rate_ms[k] = rtcm_MT1077_rate_ms;
@@ -275,6 +343,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     const Signal_Enabled_Flags signal_enabled_flags(configuration);
     pvt_output_parameters.signal_enabled_flags = signal_enabled_flags.flags;
+    get_tracked_components(configuration, pvt_output_parameters.data_component_signals, pvt_output_parameters.pilot_component_signals);
 
     // RTKLIB PVT solver options
     // Settings 1

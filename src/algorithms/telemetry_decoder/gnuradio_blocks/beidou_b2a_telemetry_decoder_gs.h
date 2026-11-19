@@ -66,6 +66,7 @@ private:
     uint32_t d_TOW_at_current_symbol_ms{};
     bool d_flag_frame_sync{false};
     bool d_flag_valid_word{false};
+    bool d_flag_PLL_180_deg_phase_locked{false};  // Preamble of the last decoded frame came inverted
     bool d_dump{false};
     bool d_dump_mat{false};
     bool d_remove_dat{false};

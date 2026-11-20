@@ -3349,13 +3349,24 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     without_has_corrections[sat - 1] = true;
                                 }
                         }
+                    // Satellites of the reported solution, the ones that pvt_sol.ns
+                    // counts. pntpos() flags them in vs. The PPP and relative
+                    // filters that follow it, in vsat[0]: they may leave out
+                    // satellites of that pre-solution, or take others in.
+                    const bool filter_solution = pvt_sol.stat != SOLQ_SINGLE && pvt_sol.stat != SOLQ_SBAS;
+                    unsigned int solution_sats = 0;
                     unsigned int has_corrected_sats = 0;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
                             d_has_corrected_satellite[i] = d_has_corrected_satellite[i] && !without_has_corrections[i];
-                            if (d_has_corrected_satellite[i] && d_rtk.ssat[i].vs == 1)
+                            const bool in_solution = filter_solution ? d_rtk.ssat[i].vsat[0] != 0 : d_rtk.ssat[i].vs == 1;
+                            if (in_solution)
                                 {
-                                    has_corrected_sats++;
+                                    solution_sats++;
+                                    if (d_has_corrected_satellite[i])
+                                        {
+                                            has_corrected_sats++;
+                                        }
                                 }
                         }
                     d_has_corrected_satellites_used = static_cast<uint8_t>(std::min(has_corrected_sats, 255U));
@@ -3440,7 +3451,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                        internal state - keeps the console, Monitor, dump and NMEA
                        outputs consistent with each other */
                     if (pvt_sol.stat == SOLQ_PPP &&
-                        !uses_precise_orbits_and_clocks(has_precise_ephemeris(), used_sats, d_has_corrected_satellites_used))
+                        !uses_precise_orbits_and_clocks(has_precise_ephemeris(), solution_sats, d_has_corrected_satellites_used))
                         {
                             pvt_sol.stat = SOLQ_SINGLE;
                         }

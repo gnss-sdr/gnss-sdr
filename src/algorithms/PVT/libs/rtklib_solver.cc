@@ -113,6 +113,37 @@ const std::array<Rtklib_Pvt_System, 5> RTKLIB_PVT_SYSTEMS{{
     {'C', SYS_BDS, MINPRNBDS, "BeiDou"},
     {'J', SYS_QZS, MINPRNQZS, "QZSS"},
 }};
+
+// Keeps the stored HAS correction of a satellite when the one about to replace
+// it belongs to another Mask ID or IOD Set ID
+template <typename T>
+void keep_superseded_has_set(const std::map<int, T> &store, std::map<int, T> &previous_store, int prn, uint8_t mask_id, uint8_t iod_set_id)
+{
+    const auto it = store.find(prn);
+    if (it != store.cend() && (it->second.mask_id != mask_id || it->second.iod_set_id != iod_set_id))
+        {
+            previous_store[prn] = it->second;
+        }
+}
+
+
+// HAS correction of a satellite for a Mask ID and IOD Set ID, or nullptr. The
+// first key of the store is the system or the signal, the second is the PRN
+template <typename T>
+const T *find_has_set(const std::map<std::string, std::map<int, T>> &store, const std::string &key, int prn, uint8_t mask_id, uint8_t iod_set_id)
+{
+    const auto key_it = store.find(key);
+    if (key_it == store.cend())
+        {
+            return nullptr;
+        }
+    const auto prn_it = key_it->second.find(prn);
+    if (prn_it == key_it->second.cend() || prn_it->second.mask_id != mask_id || prn_it->second.iod_set_id != iod_set_id)
+        {
+            return nullptr;
+        }
+    return &prn_it->second;
+}
 }  // namespace
 
 
@@ -650,9 +681,12 @@ void Rtklib_Solver::clear_has_corrections()
 {
     d_has_orbit_corrections_store_map.clear();
     d_has_clock_corrections_store_map.clear();
+    d_has_orbit_corrections_previous_store_map.clear();
     d_has_satellite_do_not_use_intervals.clear();
     d_has_code_bias_store_map.clear();
     d_has_phase_bias_store_map.clear();
+    d_has_code_bias_previous_store_map.clear();
+    d_has_phase_bias_previous_store_map.clear();
     d_has_phase_discontinuity_indicator_store_map.clear();
     d_has_phase_bias_discontinuity_map.clear();
     d_has_obs_corr_map.clear();
@@ -693,9 +727,12 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                 Galileo_HAS_data::is_orbit_along_cross_unavailable(cross_track_m))
                                 {
                                     d_has_orbit_corrections_store_map[gps_str].erase(prn);
+                                    d_has_orbit_corrections_previous_store_map[gps_str].erase(prn);
                                     d_has_clock_corrections_store_map[gps_str].erase(prn);
                                     continue;
                                 }
+                            keep_superseded_has_set(d_has_orbit_corrections_store_map[gps_str], d_has_orbit_corrections_previous_store_map[gps_str],
+                                prn, new_has_data.header.mask_id, new_has_data.header.iod_set_id);
                             auto &orbit_correction = d_has_orbit_corrections_store_map[gps_str][prn];
                             orbit_correction.radial_m = radial_m;
                             orbit_correction.in_track_m = in_track_m;
@@ -726,9 +763,12 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                                 Galileo_HAS_data::is_orbit_along_cross_unavailable(cross_track_m))
                                 {
                                     d_has_orbit_corrections_store_map[gal_str].erase(prn);
+                                    d_has_orbit_corrections_previous_store_map[gal_str].erase(prn);
                                     d_has_clock_corrections_store_map[gal_str].erase(prn);
                                     continue;
                                 }
+                            keep_superseded_has_set(d_has_orbit_corrections_store_map[gal_str], d_has_orbit_corrections_previous_store_map[gal_str],
+                                prn, new_has_data.header.mask_id, new_has_data.header.iod_set_id);
                             auto &orbit_correction = d_has_orbit_corrections_store_map[gal_str][prn];
                             orbit_correction.radial_m = radial_m;
                             orbit_correction.in_track_m = in_track_m;
@@ -935,8 +975,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                             if (Galileo_HAS_data::is_code_bias_unavailable(code_bias_m))
                                 {
                                     d_has_code_bias_store_map[it].erase(prn);
+                                    d_has_code_bias_previous_store_map[it].erase(prn);
                                     continue;
                                 }
+                            keep_superseded_has_set(d_has_code_bias_store_map[it], d_has_code_bias_previous_store_map[it],
+                                prn, new_has_data.header.mask_id, new_has_data.header.iod_set_id);
                             auto &code_bias_correction = d_has_code_bias_store_map[it][prn];
                             code_bias_correction.bias = code_bias_m;
                             code_bias_correction.valid_from = tmt;
@@ -955,8 +998,11 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                             if (Galileo_HAS_data::is_code_bias_unavailable(code_bias_m))
                                 {
                                     d_has_code_bias_store_map[it].erase(prn);
+                                    d_has_code_bias_previous_store_map[it].erase(prn);
                                     continue;
                                 }
+                            keep_superseded_has_set(d_has_code_bias_store_map[it], d_has_code_bias_previous_store_map[it],
+                                prn, new_has_data.header.mask_id, new_has_data.header.iod_set_id);
                             auto &code_bias_correction = d_has_code_bias_store_map[it][prn];
                             code_bias_correction.bias = code_bias_m;
                             code_bias_correction.valid_from = tmt;
@@ -982,10 +1028,13 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                             if (Galileo_HAS_data::is_phase_bias_unavailable(phase_bias_correction_cycles))
                                 {
                                     d_has_phase_bias_store_map[it].erase(prn);
+                                    d_has_phase_bias_previous_store_map[it].erase(prn);
                                     d_has_phase_discontinuity_indicator_store_map[it].erase(prn);
                                     d_has_phase_bias_discontinuity_map[it].erase(prn);
                                     continue;
                                 }
+                            keep_superseded_has_set(d_has_phase_bias_store_map[it], d_has_phase_bias_previous_store_map[it],
+                                prn, new_has_data.header.mask_id, new_has_data.header.iod_set_id);
                             auto &phase_bias_correction = d_has_phase_bias_store_map[it][prn];
                             phase_bias_correction.bias = phase_bias_correction_cycles;
                             phase_bias_correction.valid_from = tmt;
@@ -1016,10 +1065,13 @@ void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
                             if (Galileo_HAS_data::is_phase_bias_unavailable(phase_bias_correction_cycles))
                                 {
                                     d_has_phase_bias_store_map[it].erase(prn);
+                                    d_has_phase_bias_previous_store_map[it].erase(prn);
                                     d_has_phase_discontinuity_indicator_store_map[it].erase(prn);
                                     d_has_phase_bias_discontinuity_map[it].erase(prn);
                                     continue;
                                 }
+                            keep_superseded_has_set(d_has_phase_bias_store_map[it], d_has_phase_bias_previous_store_map[it],
+                                prn, new_has_data.header.mask_id, new_has_data.header.iod_set_id);
                             auto &phase_bias_correction = d_has_phase_bias_store_map[it][prn];
                             phase_bias_correction.bias = phase_bias_correction_cycles;
                             phase_bias_correction.valid_from = tmt;
@@ -1196,25 +1248,6 @@ void Rtklib_Solver::prune_has_do_not_use_intervals(std::vector<Has_Do_Not_Use_In
 
 bool Rtklib_Solver::get_active_has_context(const std::string &system, int prn, uint16_t sis_iod, uint32_t tow_obs, uint8_t &mask_id, uint8_t &iod_set_id) const
 {
-    const auto orbit_sys_it = d_has_orbit_corrections_store_map.find(system);
-    if (orbit_sys_it == d_has_orbit_corrections_store_map.cend())
-        {
-            return false;
-        }
-    const auto orbit_prn_it = orbit_sys_it->second.find(prn);
-    if (orbit_prn_it == orbit_sys_it->second.cend())
-        {
-            return false;
-        }
-    if (!Galileo_HAS_data::has_validity_interval_at_tow(orbit_prn_it->second.valid_from, orbit_prn_it->second.valid_until, tow_obs))
-        {
-            return false;
-        }
-    if (orbit_prn_it->second.iod != sis_iod)
-        {
-            return false;
-        }
-
     const auto clock_sys_it = d_has_clock_corrections_store_map.find(system);
     if (clock_sys_it == d_has_clock_corrections_store_map.cend())
         {
@@ -1225,23 +1258,47 @@ bool Rtklib_Solver::get_active_has_context(const std::string &system, int prn, u
         {
             return false;
         }
-    if (!Galileo_HAS_data::has_validity_interval_at_tow(clock_prn_it->second.valid_from, clock_prn_it->second.valid_until, tow_obs))
+    const HAS_clock_corrections &clock_correction = clock_prn_it->second;
+    if (!Galileo_HAS_data::has_validity_interval_at_tow(clock_correction.valid_from, clock_correction.valid_until, tow_obs))
         {
             return false;
         }
-    if (clock_prn_it->second.iod != sis_iod)
-        {
-            return false;
-        }
-    if ((orbit_prn_it->second.mask_id != clock_prn_it->second.mask_id) ||
-        (orbit_prn_it->second.iod_set_id != clock_prn_it->second.iod_set_id))
+    if (clock_correction.iod != sis_iod)
         {
             return false;
         }
 
-    mask_id = orbit_prn_it->second.mask_id;
-    iod_set_id = orbit_prn_it->second.iod_set_id;
+    // The orbit correction of the same Mask ID and IOD Set ID (HAS SIS ICD 1.0
+    // Section 7.6.1). After a change of set it is the superseded one, until
+    // the clock corrections of the new set arrive.
+    const HAS_orbit_corrections *orbit_correction = find_has_orbit_correction(system, prn, clock_correction.mask_id, clock_correction.iod_set_id);
+    if (orbit_correction == nullptr)
+        {
+            return false;
+        }
+    if (!Galileo_HAS_data::has_validity_interval_at_tow(orbit_correction->valid_from, orbit_correction->valid_until, tow_obs))
+        {
+            return false;
+        }
+    if (orbit_correction->iod != sis_iod)
+        {
+            return false;
+        }
+
+    mask_id = clock_correction.mask_id;
+    iod_set_id = clock_correction.iod_set_id;
     return true;
+}
+
+
+const HAS_orbit_corrections *Rtklib_Solver::find_has_orbit_correction(const std::string &system, int prn, uint8_t mask_id, uint8_t iod_set_id) const
+{
+    const HAS_orbit_corrections *orbit_correction = find_has_set(d_has_orbit_corrections_store_map, system, prn, mask_id, iod_set_id);
+    if (orbit_correction == nullptr)
+        {
+            orbit_correction = find_has_set(d_has_orbit_corrections_previous_store_map, system, prn, mask_id, iod_set_id);
+        }
+    return orbit_correction;
 }
 
 
@@ -1320,6 +1377,21 @@ void Rtklib_Solver::check_has_orbit_clock_validity(const std::map<int, Gnss_Sync
                         }
                 }
 
+            // The orbit correction superseded by one of another set goes with
+            // the latest one, and when it expires
+            auto previous_orbit_sys_it = d_has_orbit_corrections_previous_store_map.find(system);
+            if (previous_orbit_sys_it != d_has_orbit_corrections_previous_store_map.end())
+                {
+                    auto previous_orbit_it = previous_orbit_sys_it->second.find(prn);
+                    if (previous_orbit_it != previous_orbit_sys_it->second.end() &&
+                        (erase_orbit ||
+                            Galileo_HAS_data::has_validity_interval_expired_at_tow(previous_orbit_it->second.valid_until, obs_tow) ||
+                            (have_sis_iod && previous_orbit_it->second.iod != sis_iod)))
+                        {
+                            previous_orbit_sys_it->second.erase(previous_orbit_it);
+                        }
+                }
+
             if (have_sis_iod && !erase_orbit && !erase_clock &&
                 orbit_sys_it != d_has_orbit_corrections_store_map.end() &&
                 clock_sys_it != d_has_clock_corrections_store_map.end())
@@ -1327,11 +1399,23 @@ void Rtklib_Solver::check_has_orbit_clock_validity(const std::map<int, Gnss_Sync
                     auto orbit_it = orbit_sys_it->second.find(prn);
                     auto clock_it = clock_sys_it->second.find(prn);
                     if (orbit_it != orbit_sys_it->second.end() &&
-                        clock_it != clock_sys_it->second.end() &&
-                        ((orbit_it->second.mask_id != clock_it->second.mask_id) ||
-                            (orbit_it->second.iod_set_id != clock_it->second.iod_set_id)))
+                        clock_it != clock_sys_it->second.end())
                         {
-                            erase_clock = true;
+                            if ((orbit_it->second.mask_id == clock_it->second.mask_id) &&
+                                (orbit_it->second.iod_set_id == clock_it->second.iod_set_id))
+                                {
+                                    // The clock corrections of the latest set arrived: the
+                                    // superseded orbit correction is no longer needed
+                                    if (previous_orbit_sys_it != d_has_orbit_corrections_previous_store_map.end())
+                                        {
+                                            previous_orbit_sys_it->second.erase(prn);
+                                        }
+                                }
+                            else if (find_has_orbit_correction(system, prn, clock_it->second.mask_id, clock_it->second.iod_set_id) == nullptr)
+                                {
+                                    // No orbit correction left for the set of the clock correction
+                                    erase_clock = true;
+                                }
                         }
                 }
 
@@ -1478,8 +1562,13 @@ void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
                     continue;
                 }
 
-            d_has_orbit_corrections_applied_map[system][prn] = d_has_orbit_corrections_store_map[system][prn];
-            d_has_clock_corrections_applied_map[system][prn] = d_has_clock_corrections_store_map[system][prn];
+            // The orbit correction of the set selected by get_active_has_context()
+            const HAS_orbit_corrections *orbit_correction = find_has_orbit_correction(system, prn, mask_id, iod_set_id);
+            if (orbit_correction != nullptr)
+                {
+                    d_has_orbit_corrections_applied_map[system][prn] = *orbit_correction;
+                    d_has_clock_corrections_applied_map[system][prn] = d_has_clock_corrections_store_map[system][prn];
+                }
         }
 }
 
@@ -1528,58 +1617,57 @@ bool Rtklib_Solver::select_galileo_has_ephemeris(uint32_t prn, uint32_t observat
 
 void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, uint32_t tow_obs, int prn, uint8_t mask_id, uint8_t iod_set_id)
 {
-    auto code_bias_signal_it = this->d_has_code_bias_store_map.find(signal);
-    if (code_bias_signal_it != this->d_has_code_bias_store_map.end())
+    // Biases of the requested Mask ID and IOD Set ID: the latest received or,
+    // until the clock corrections of a new set arrive, the ones they superseded
+    const HAS_bias_corrections *code_bias_correction = find_has_set(d_has_code_bias_store_map, signal, prn, mask_id, iod_set_id);
+    if (code_bias_correction == nullptr)
         {
-            auto code_bias_pair_it = code_bias_signal_it->second.find(prn);
-            if (code_bias_pair_it != code_bias_signal_it->second.end())
-                {
-                    const auto &code_bias_correction = code_bias_pair_it->second;
-                    if (Galileo_HAS_data::has_validity_interval_at_tow(code_bias_correction.valid_from, code_bias_correction.valid_until, tow_obs) &&
-                        (code_bias_correction.mask_id == mask_id) &&
-                        (code_bias_correction.iod_set_id == iod_set_id))
-                        {
-                            auto &has_obs_correction = this->d_has_obs_corr_map[signal][prn];
-                            has_obs_correction.signal = signal;
-                            has_obs_correction.code_bias_m = code_bias_correction.bias;
-                            has_obs_correction.code_bias_available = true;
-                        }
-                }
+            code_bias_correction = find_has_set(d_has_code_bias_previous_store_map, signal, prn, mask_id, iod_set_id);
         }
-    auto phase_bias_signal_it = this->d_has_phase_bias_store_map.find(signal);
-    if (phase_bias_signal_it != this->d_has_phase_bias_store_map.end())
+    if (code_bias_correction != nullptr &&
+        Galileo_HAS_data::has_validity_interval_at_tow(code_bias_correction->valid_from, code_bias_correction->valid_until, tow_obs))
         {
-            auto phase_bias_pair_it = phase_bias_signal_it->second.find(prn);
-            if (phase_bias_pair_it != phase_bias_signal_it->second.end())
+            auto &has_obs_correction = this->d_has_obs_corr_map[signal][prn];
+            has_obs_correction.signal = signal;
+            has_obs_correction.code_bias_m = code_bias_correction->bias;
+            has_obs_correction.code_bias_available = true;
+        }
+
+    const HAS_bias_corrections *phase_bias_correction = find_has_set(d_has_phase_bias_store_map, signal, prn, mask_id, iod_set_id);
+    const bool latest_phase_bias = phase_bias_correction != nullptr;
+    if (!latest_phase_bias)
+        {
+            phase_bias_correction = find_has_set(d_has_phase_bias_previous_store_map, signal, prn, mask_id, iod_set_id);
+        }
+    if (phase_bias_correction != nullptr &&
+        Galileo_HAS_data::has_validity_interval_at_tow(phase_bias_correction->valid_from, phase_bias_correction->valid_until, tow_obs))
+        {
+            auto &has_obs_correction = this->d_has_obs_corr_map[signal][prn];
+            has_obs_correction.signal = signal;
+            has_obs_correction.phase_bias_cycle = phase_bias_correction->bias;
+            has_obs_correction.phase_bias_available = true;
+
+            // The stored Phase Discontinuity Indicator and its change belong to
+            // the latest phase bias: a change is reported when that bias is applied
+            if (latest_phase_bias)
                 {
-                    const auto &phase_bias_correction = phase_bias_pair_it->second;
-                    if (Galileo_HAS_data::has_validity_interval_at_tow(phase_bias_correction.valid_from, phase_bias_correction.valid_until, tow_obs) &&
-                        (phase_bias_correction.mask_id == mask_id) &&
-                        (phase_bias_correction.iod_set_id == iod_set_id))
+                    const auto pdi_signal_it = this->d_has_phase_discontinuity_indicator_store_map.find(signal);
+                    if (pdi_signal_it != this->d_has_phase_discontinuity_indicator_store_map.end())
                         {
-                            auto &has_obs_correction = this->d_has_obs_corr_map[signal][prn];
-                            has_obs_correction.signal = signal;
-                            has_obs_correction.phase_bias_cycle = phase_bias_correction.bias;
-                            has_obs_correction.phase_bias_available = true;
-
-                            const auto pdi_signal_it = this->d_has_phase_discontinuity_indicator_store_map.find(signal);
-                            if (pdi_signal_it != this->d_has_phase_discontinuity_indicator_store_map.end())
+                            const auto pdi_it = pdi_signal_it->second.find(prn);
+                            if (pdi_it != pdi_signal_it->second.end())
                                 {
-                                    const auto pdi_it = pdi_signal_it->second.find(prn);
-                                    if (pdi_it != pdi_signal_it->second.end())
-                                        {
-                                            has_obs_correction.phase_discontinuity_indicator = pdi_it->second;
-                                        }
+                                    has_obs_correction.phase_discontinuity_indicator = pdi_it->second;
                                 }
+                        }
 
-                            auto discontinuity_signal_it = this->d_has_phase_bias_discontinuity_map.find(signal);
-                            if (discontinuity_signal_it != this->d_has_phase_bias_discontinuity_map.end())
+                    auto discontinuity_signal_it = this->d_has_phase_bias_discontinuity_map.find(signal);
+                    if (discontinuity_signal_it != this->d_has_phase_bias_discontinuity_map.end())
+                        {
+                            auto discontinuity_it = discontinuity_signal_it->second.find(prn);
+                            if (discontinuity_it != discontinuity_signal_it->second.end())
                                 {
-                                    auto discontinuity_it = discontinuity_signal_it->second.find(prn);
-                                    if (discontinuity_it != discontinuity_signal_it->second.end())
-                                        {
-                                            has_obs_correction.phase_bias_discontinuity = discontinuity_it->second;
-                                        }
+                                    has_obs_correction.phase_bias_discontinuity = discontinuity_it->second;
                                 }
                         }
                 }

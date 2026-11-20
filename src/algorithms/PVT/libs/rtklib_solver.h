@@ -358,7 +358,21 @@ private:
         int& valid_obs,
         int glo_valid_obs);
     bool has_active_has_orbit_clock(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs) const;
+
+    /*!
+     * Gets the Mask ID and IOD Set ID of the HAS corrections to apply to a
+     * satellite: those of its stored clock correction, if the orbit correction
+     * of the same set is stored and both are valid for the observation time
+     * and the issue of data of the broadcast ephemeris.
+     */
     bool get_active_has_context(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs, uint8_t& mask_id, uint8_t& iod_set_id) const;
+
+    /*!
+     * Stored orbit correction of a satellite for a Mask ID and IOD Set ID,
+     * either the latest received or the one it superseded. Returns nullptr
+     * if there is none.
+     */
+    const HAS_orbit_corrections* find_has_orbit_correction(const std::string& system, int prn, uint8_t mask_id, uint8_t iod_set_id) const;
 
     void reset_relative_filter();
 
@@ -379,6 +393,14 @@ private:
 
     std::map<std::string, std::map<int, HAS_orbit_corrections>> d_has_orbit_corrections_store_map;  // first key is system, second key is PRN
     std::map<std::string, std::map<int, HAS_clock_corrections>> d_has_clock_corrections_store_map;  // first key is system, second key is PRN
+    // Orbit corrections and biases superseded by those of another Mask ID or
+    // IOD Set ID. The clock corrections of a new set come in a later message
+    // than its orbit corrections and biases, and corrections can be related
+    // only within the same set (HAS SIS ICD 1.0 Section 7.6.1), so the
+    // superseded set stays in use, within its validity intervals, until then.
+    std::map<std::string, std::map<int, HAS_orbit_corrections>> d_has_orbit_corrections_previous_store_map;  // first key is system, second key is PRN
+    std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_code_bias_previous_store_map;           // first key is signal, second key is PRN
+    std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_phase_bias_previous_store_map;          // first key is signal, second key is PRN
     struct Has_Do_Not_Use_Interval
     {
         uint32_t valid_from{};

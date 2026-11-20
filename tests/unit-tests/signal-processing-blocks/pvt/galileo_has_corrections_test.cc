@@ -277,10 +277,7 @@ TEST_F(GalileoHasCorrectionsTest, NotAppliedWhenTheCodeBiasesBelongToAnotherIodS
     // corrections still belong to the previous one (HAS SIS ICD 1.0
     // Section 7.6.1): they cannot be combined
     auto solver = make_solver();
-    solver->store_has_data(make_message(true, e1_e6_biases()));
-    solver->update_has_corrections(make_observations(true, true));
-    ASSERT_TRUE(solver->has_corrections_applied("Galileo", PRN));
-
+    solver->store_has_data(make_message(true, {}));
     solver->store_has_data(make_message(false, e1_e6_biases(), IOD_SET_ID + 1U));
     solver->update_has_corrections(make_observations(true, true));
     EXPECT_FALSE(solver->has_corrections_applied("Galileo", PRN));

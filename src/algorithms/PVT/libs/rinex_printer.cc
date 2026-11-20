@@ -127,6 +127,14 @@ std::string signal_flag_to_string(signal_flag flag)
 }
 
 
+// Galileo E6 carries no ephemeris: a receiver with no other Galileo signal
+// never gets one
+bool galileo_ephemeris_expected(const Signal_Enabled_Flags& flags)
+{
+    return flags.check_any_enabled(GAL_1B, GAL_E5a, GAL_E5b);
+}
+
+
 std::map<std::string, signal_flag> string_to_signal_flag_map()
 {
     std::map<std::string, signal_flag> convertion_map;
@@ -2819,7 +2827,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         {
             return;
         }
-    if (d_flags.has_galileo && !has_galileo_eph)
+    if (galileo_ephemeris_expected(d_flags) && !has_galileo_eph)
         {
             return;
         }
@@ -2856,8 +2864,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             seconds = fmod(rx_time, 60);
             system_time_str = "GPS";
         }
-    else if (d_flags.has_galileo)
+    else if (has_galileo_eph && (galileo_ephemeris_expected(d_flags) || d_flags.only_galileo))
         {
+            // With E6 as the only Galileo signal, Galileo time is used only if
+            // no other constellation can give the time
             system_time = Rinex_Printer::compute_Galileo_time(galileo_ephemeris_iter->second, rx_time);
             seconds = fmod(rx_time, 60);
             system_time_str = "GAL";

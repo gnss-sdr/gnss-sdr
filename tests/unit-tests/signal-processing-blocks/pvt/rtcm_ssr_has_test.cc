@@ -38,17 +38,18 @@ protected:
     // Used by value only: C++11 would need out-of-class definitions to bind
     // them to references
     static constexpr int GPS_WEEK = 2400;
-    static constexpr uint32_t TOW = 345600U;
+    static constexpr uint32_t TOW = 345600U;           // HAS message reference time, and SSR epoch time
+    static constexpr uint32_t RECEPTION_DELAY_S = 5U;  // the HAS message is fully received later
     static constexpr uint8_t IOD_SET_ID = 3U;
 
     static Galileo_HAS_data make_message()
     {
         Galileo_HAS_data has_data;
         has_data.week = GPS_WEEK;
-        has_data.tow = TOW;
+        has_data.tow = TOW + RECEPTION_DELAY_S;
         has_data.has_status = 1;
         has_data.header = mt1_header{};
-        has_data.header.toh = 0;
+        has_data.header.toh = static_cast<uint16_t>(TOW % 3600U);
         has_data.header.mask_id = 1;
         has_data.header.iod_set_id = IOD_SET_ID;
         has_data.header.mask_flag = true;
@@ -224,7 +225,7 @@ TEST_F(RtcmSsrHasTest, Mt1057InvertsOrbitSignAndSkipsUnavailableOrbits)
     EXPECT_EQ(10, decoder.input(message));
 
     const ssr_t& g03 = decoder.gps(3);
-    EXPECT_NE(0, g03.t0[0].time);
+    EXPECT_EQ(gpst2time(GPS_WEEK, TOW).time, g03.t0[0].time);  // reference time, not reception time
     EXPECT_EQ(45, g03.iode);
     EXPECT_EQ(static_cast<int>(IOD_SET_ID), g03.iod[0]);
     EXPECT_NEAR(-0.25, g03.deph[0], 1e-9);  // HAS: +0.25 m
@@ -253,7 +254,7 @@ TEST_F(RtcmSsrHasTest, Mt1058AppliesClockMultiplierAndSkipsUnusableClocks)
 
     EXPECT_NEAR(-10.24, decoder.gps(3).dclk[0], 1e-9);  // -5.12 m x 2
     EXPECT_NEAR(2.0, decoder.gps(7).dclk[0], 1e-9);     // 1.0 m x 2
-    EXPECT_NE(0, decoder.gps(3).t0[1].time);
+    EXPECT_EQ(gpst2time(GPS_WEEK, TOW).time, decoder.gps(3).t0[1].time);
     EXPECT_NE(0, decoder.gps(7).t0[1].time);
     EXPECT_EQ(0, decoder.gps(12).t0[1].time);  // do not use
 }
@@ -386,6 +387,30 @@ TEST_F(RtcmSsrHasTest, SystemsWithoutValidCorrectionsAreOmitted)
     EXPECT_EQ(0U, header.multiple_message);  // last message of the sequence
     EXPECT_EQ(2U, rtcm->print_IGM01(has_data).size());
     EXPECT_EQ(1U, rtcm->print_IGM02(has_data).size());
+}
+
+
+TEST_F(RtcmSsrHasTest, EpochTimeIsTheReferenceTimeOfTheCorrections)
+{
+    // Received one second into an hour, with a TOH in the previous hour
+    // (HAS SIS ICD 1.0 Section 7.7)
+    Galileo_HAS_data has_data = make_message();
+    has_data.tow = TOW + 1U;
+    has_data.header.toh = 3598;
+    const uint32_t reference_tow = TOW - 2U;
+
+    const std::vector<std::string> messages = rtcm->print_IGM01(has_data);
+    ASSERT_FALSE(messages.empty());
+    Bit_Reader reader(*rtcm, messages[0]);
+    reader.skip(12 + 3 + 8);                    // DF002, IDF001, IDF002
+    EXPECT_EQ(reference_tow, reader.uint(20));  // IDF003
+
+    const std::string message = rtcm->print_MT1057(has_data);
+    ASSERT_FALSE(message.empty());
+    Rtklib_Decoder decoder;
+    ASSERT_TRUE(decoder.initialized);
+    EXPECT_EQ(10, decoder.input(message));
+    EXPECT_EQ(gpst2time(GPS_WEEK, reference_tow).time, decoder.gps(3).t0[0].time);
 }
 
 

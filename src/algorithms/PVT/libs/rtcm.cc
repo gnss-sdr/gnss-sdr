@@ -3695,7 +3695,8 @@ std::string Rtcm::get_MT1057_header(const Galileo_HAS_data& has_data, uint8_t ns
 {
     std::string header;
 
-    const uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    const uint32_t tow = has_data.get_time_of_message_s();
     const uint16_t ssr_provider_id = 0;
     const uint8_t ssr_solution_id = 0;
     const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
@@ -3751,7 +3752,8 @@ std::string Rtcm::get_MT1058_header(const Galileo_HAS_data& has_data, uint8_t ns
 {
     std::string header;
 
-    const uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    const uint32_t tow = has_data.get_time_of_message_s();
     const uint16_t ssr_provider_id = 0;
     const uint8_t ssr_solution_id = 0;
     const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
@@ -3800,7 +3802,8 @@ std::string Rtcm::get_MT1059_header(const Galileo_HAS_data& has_data, uint8_t ns
 {
     std::string header;
 
-    const uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    const uint32_t tow = has_data.get_time_of_message_s();
     const uint16_t ssr_provider_id = 0;
     const uint8_t ssr_solution_id = 0;
     const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
@@ -3900,7 +3903,8 @@ std::string Rtcm::get_MT1060_header(const Galileo_HAS_data& has_data, uint8_t ns
 {
     std::string header;
 
-    const uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    const uint32_t tow = has_data.get_time_of_message_s();
     const uint16_t ssr_provider_id = 0;
     const uint8_t ssr_solution_id = 0;
     const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
@@ -4088,7 +4092,8 @@ std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    uint32_t tow = has_data.get_time_of_message_s();
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
@@ -4162,7 +4167,8 @@ std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    uint32_t tow = has_data.get_time_of_message_s();
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
@@ -4225,7 +4231,8 @@ std::string Rtcm::get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    uint32_t tow = has_data.get_time_of_message_s();
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
@@ -4299,7 +4306,8 @@ std::string Rtcm::get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    uint32_t tow = has_data.get_time_of_message_s();
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?

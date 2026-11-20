@@ -33,6 +33,16 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed the half-cycle ambiguity of the carrier phase measurements for GPS L2C
   and for GPS and QZSS L5 tracked on the data component, which the CNAV
   telemetry decoder resolved wrongly for some satellites.
+- Improved the application of Galileo HAS corrections in the PVT
+  (`PVT.use_has_corrections=true`). A satellite is corrected only with orbit,
+  clock and code bias corrections of the same set and within their validity,
+  from the first position fixes, and without gaps when the corrections or the
+  broadcast ephemeris are updated. A solution is reported as PPP only if all its
+  satellites use precise orbits and clocks, such as HAS corrections, and the PPP
+  modes now also work without GPS satellites. The corrected satellites are
+  reported in the PVT dump (`has_corrected_sats`) and in the PVT monitor
+  (`has_corrected`). Also fixed the RTCM SSR messages generated from HAS, and
+  the RINEX output of receivers with E6 as their only Galileo signal.
 
 ### Improvements in Availability:
 

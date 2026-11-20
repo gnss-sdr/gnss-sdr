@@ -25,6 +25,7 @@
 
 #include "unit-tests/signal-processing-blocks/pvt/bds_tgd_iono_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/galileo_e1_bgd_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/galileo_has_corrections_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/galileo_nav_fallback_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/geohash_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/gps_tgd_isc_test.cc"
@@ -32,6 +33,7 @@
 #include "unit-tests/signal-processing-blocks/pvt/ntrip_rtcm_client_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/rtcm_ssr_has_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtklib_bancroft_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtklib_detslp_dop_test.cc"

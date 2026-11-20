@@ -36,6 +36,33 @@ bool is_near(float value, float sentinel, float tolerance = HAS_DEFAULT_TOLERANC
 }
 
 
+// Values returned by the clock correction getters for the DCC sentinels. They
+// lie outside the range of any valid DCC times DCM (|DCC * DCM| <= 40.95 m),
+// so they cannot be mistaken for a correction whatever the multiplier.
+constexpr float HAS_CLOCK_UNAVAILABLE_M = -1000.0F;
+constexpr float HAS_CLOCK_DO_NOT_USE_M = 1000.0F;
+
+
+// HAS SIS ICD 1.0 Table 31 defines the DCC sentinels on the transmitted value,
+// before the Delta Clock Multiplier (Table 29) is applied. Once multiplied, a
+// valid correction can equal a scaled sentinel (e.g., DCC = -2048 with DCM = 2
+// gives -10.24 m, and DCC = 1365 with DCM = 3 gives 10.2375 m), so check them
+// first. The unmultiplied value is an integer times 0.0025 m, so the default
+// tolerance identifies the sentinels unambiguously.
+float multiply_delta_clock_correction(float delta_clock_correction_m, uint8_t dcm)
+{
+    if (is_near(delta_clock_correction_m, static_cast<float>(HAS_MSG_DELTA_CLOCK_UNAVAILABLE_RAW) * HAS_MSG_DELTA_CLOCK_SCALE_FACTOR))
+        {
+            return HAS_CLOCK_UNAVAILABLE_M;
+        }
+    if (is_near(delta_clock_correction_m, static_cast<float>(HAS_MSG_DELTA_CLOCK_DO_NOT_USE_RAW) * HAS_MSG_DELTA_CLOCK_SCALE_FACTOR))
+        {
+            return HAS_CLOCK_DO_NOT_USE_M;
+        }
+    return delta_clock_correction_m * static_cast<float>(dcm);
+}
+
+
 bool is_gps_has_signal(const std::string& signal)
 {
     return (signal == "L1 C/A") ||
@@ -912,8 +939,7 @@ float Galileo_HAS_data::get_clock_correction_mult_m(const std::string& system, i
 
     auto index = std::distance(prns.begin(), it);
     auto clock_correction_m_v = this->get_delta_clock_correction_m(system_index);
-    auto dcm = static_cast<float>(this->delta_clock_multiplier[system_index]);
-    return clock_correction_m_v[index] * dcm;
+    return multiply_delta_clock_correction(clock_correction_m_v[index], this->delta_clock_multiplier[system_index]);
 }
 
 
@@ -952,10 +978,9 @@ float Galileo_HAS_data::get_clock_subset_correction_mult_m(const std::string& sy
         {
             return 0.0;
         }
-    auto dcm = static_cast<float>(this->delta_clock_multiplier_clock_subset[nsys_sub_index]);
     if (!clock_correction_m_v.empty())
         {
-            return clock_correction_m_v[index_subset] * dcm;
+            return multiply_delta_clock_correction(clock_correction_m_v[index_subset], this->delta_clock_multiplier_clock_subset[nsys_sub_index]);
         }
     else
         {
@@ -1008,18 +1033,27 @@ uint32_t Galileo_HAS_data::get_time_of_message_s() const
 }
 
 
-bool Galileo_HAS_data::has_validity_interval_at_tow(uint32_t valid_until, uint32_t tow)
+bool Galileo_HAS_data::has_validity_interval_at_tow(uint32_t valid_from, uint32_t valid_until, uint32_t tow)
 {
-    if (valid_until > GALILEO_HAS_SECONDS_PER_WEEK)
-        {
-            const uint32_t wrapped_valid_until = valid_until - GALILEO_HAS_SECONDS_PER_WEEK;
-            return (tow < wrapped_valid_until) || (tow > GALILEO_HAS_HALF_WEEK_SECONDS);
-        }
-    if ((valid_until > GALILEO_HAS_HALF_WEEK_SECONDS) && (tow < GALILEO_HAS_HALF_WEEK_SECONDS))
+    // HAS SIS ICD 1.0 Section 5.2.2.1: validity starts at t_MT1 and lasts
+    // the block's own VI, not the maximum VI. Keep the end unwrapped.
+    if (valid_from >= GALILEO_HAS_SECONDS_PER_WEEK || valid_until <= valid_from ||
+        valid_until - valid_from > HAS_MSG_MAX_VALIDITY_INTERVAL_S || tow >= GALILEO_HAS_SECONDS_PER_WEEK)
         {
             return false;
         }
-    return valid_until > tow;
+    const uint32_t elapsed_s = (tow + GALILEO_HAS_SECONDS_PER_WEEK - valid_from) % GALILEO_HAS_SECONDS_PER_WEEK;
+    return elapsed_s < valid_until - valid_from;
+}
+
+
+bool Galileo_HAS_data::has_validity_interval_expired_at_tow(uint32_t valid_until, uint32_t tow)
+{
+    // Distinguish expiry from an observation preceding t_MT1. Removing every
+    // inactive correction would discard a newly received block while buffered
+    // observations still precede its start. Interpret the end in the nearest week.
+    const uint32_t elapsed_s = (tow % GALILEO_HAS_SECONDS_PER_WEEK + GALILEO_HAS_SECONDS_PER_WEEK - valid_until % GALILEO_HAS_SECONDS_PER_WEEK) % GALILEO_HAS_SECONDS_PER_WEEK;
+    return elapsed_s < GALILEO_HAS_SECONDS_PER_WEEK / 2U;
 }
 
 
@@ -1037,29 +1071,13 @@ bool Galileo_HAS_data::is_orbit_along_cross_unavailable(float value)
 
 bool Galileo_HAS_data::is_clock_unavailable(float value)
 {
-    const float unavailable_values[] = {-10.24F, -20.48F, -30.72F, -40.96F};
-    for (const auto unavailable_value : unavailable_values)
-        {
-            if (is_near(value, unavailable_value))
-                {
-                    return true;
-                }
-        }
-    return false;
+    return is_near(value, HAS_CLOCK_UNAVAILABLE_M);
 }
 
 
 bool Galileo_HAS_data::is_clock_do_not_use(float value)
 {
-    const float do_not_use_values[] = {10.2375F, 20.475F, 30.7125F, 40.95F};
-    for (const auto do_not_use_value : do_not_use_values)
-        {
-            if (is_near(value, do_not_use_value))
-                {
-                    return true;
-                }
-        }
-    return false;
+    return is_near(value, HAS_CLOCK_DO_NOT_USE_M);
 }
 
 

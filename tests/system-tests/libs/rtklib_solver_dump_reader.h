@@ -66,6 +66,9 @@ public:
     // GDOP / PDOP / HDOP / VDOP
     double dop[4];
 
+    // NUMBER OF SATELLITES WITH HAS ORBIT AND CLOCK CORRECTIONS
+    uint8_t has_corrected_sats;
+
 private:
     std::string d_dump_filename;
     std::ifstream d_dump_file;

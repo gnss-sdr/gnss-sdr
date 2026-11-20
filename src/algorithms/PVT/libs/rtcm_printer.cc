@@ -619,15 +619,20 @@ void Rtcm_Printer::Print_IGM_Messages(const Galileo_HAS_data& has_data)
             const bool has_clock_fullset_corrections = has_data.header.clock_fullset_flag;
             const bool has_clock_subset_corrections = has_data.header.clock_subset_flag;
 
-            if (has_orbit_corrections && has_clock_fullset_corrections)
+            // As for MT1060, the combined message needs a common update interval;
+            // otherwise, orbit and clock corrections are sent apart
+            bool print_orbit_corrections = has_orbit_corrections;
+            bool print_clock_fullset_corrections = has_clock_fullset_corrections;
+            if (has_orbit_corrections && has_clock_fullset_corrections && Print_IGM03(has_data))
                 {
-                    Print_IGM03(has_data);
+                    print_orbit_corrections = false;
+                    print_clock_fullset_corrections = false;
                 }
-            if (has_orbit_corrections && !has_clock_fullset_corrections)
+            if (print_orbit_corrections)
                 {
                     Print_IGM01(has_data);
                 }
-            if (!has_orbit_corrections && has_clock_fullset_corrections)
+            if (print_clock_fullset_corrections)
                 {
                     Print_IGM02(has_data);
                 }

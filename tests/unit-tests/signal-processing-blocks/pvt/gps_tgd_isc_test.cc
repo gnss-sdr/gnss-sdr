@@ -16,6 +16,7 @@
  */
 
 #include "gnss_synchro.h"
+#include "gps_cnav_ephemeris.h"
 #include "rtklib_conversions.h"
 #include "rtklib_pntpos.h"
 #include "rtklib_rtkcmn.h"
@@ -518,6 +519,79 @@ TEST(SppVarerrTest, SnrWeightingFollowsTheMeasurementSlot)
 }
 
 
+TEST(GpsTgdIscTest, CnavIscsJoinTheRecordOfAnotherNavigationMessage)
+{
+    Gps_CNAV_Ephemeris cnav;
+    cnav.ISCL1 = ISC_L1CA_S;
+    cnav.ISCL2 = ISC_L2C_S;
+    cnav.ISCL5I = ISC_L5I5_S;
+    cnav.ISCL5Q = -5.0e-9;
+
+    eph_t lnav_record{};
+    add_gps_cnav_iscs(lnav_record, cnav, CODE_L1C);
+    EXPECT_DOUBLE_EQ(ISC_L1CA_S, lnav_record.isc[0]);
+    EXPECT_DOUBLE_EQ(ISC_L2C_S, lnav_record.isc[1]);
+    EXPECT_DOUBLE_EQ(ISC_L5I5_S, lnav_record.isc[2]);
+    EXPECT_DOUBLE_EQ(-5.0e-9, lnav_record.isc[3]);
+
+    // an L1C first slot keeps its ISC_L1CP (IS-GPS-800J 3.5.3.9.1)
+    eph_t l1c_record{};
+    l1c_record.isc[0] = 7.0e-9;
+    add_gps_cnav_iscs(l1c_record, cnav, CODE_L1L);
+    EXPECT_DOUBLE_EQ(7.0e-9, l1c_record.isc[0]);
+    EXPECT_DOUBLE_EQ(ISC_L2C_S, l1c_record.isc[1]);
+}
+
+
+TEST(GpsTgdIscTest, HasCorrectedRecordGetsNoCnavIscs)
+{
+    // HAS code biases replace the broadcast group delays (HAS SIS ICD 1.0
+    // Section 7.4): eph_to_rtklib() drops the TGD, and the CNAV ISCs must
+    // not be added either
+    Gps_CNAV_Ephemeris cnav;
+    cnav.ISCL1 = ISC_L1CA_S;
+    cnav.ISCL2 = ISC_L2C_S;
+    cnav.ISCL5I = ISC_L5I5_S;
+    cnav.ISCL5Q = -5.0e-9;
+
+    nav_t nav{};
+    eph_t eph{};
+    const int sat = satno(SYS_GPS, 1);
+    ASSERT_GT(sat, 0);
+    eph.sat = sat;
+    eph.apply_has_corrections = true;
+    eph.tgd[0] = 0.0;
+    add_gps_cnav_iscs(eph, cnav, CODE_L1C);
+    for (const double isc : eph.isc)
+        {
+            EXPECT_DOUBLE_EQ(0.0, isc);
+        }
+    nav.n = 1;
+    nav.eph = &eph;
+
+    // L1 C/A + L5 iono-free combination of the HAS bias-corrected pseudoranges
+    nav.lam[sat - 1][0] = L1_WAVELENGTH_M;
+    nav.lam[sat - 1][2] = L5_WAVELENGTH_M;
+    obsd_t obs{};
+    obs.sat = sat;
+    obs.P[0] = 24000000.0;
+    obs.P[2] = 24000008.0;
+    obs.code[0] = CODE_L1C;
+    obs.code[2] = CODE_L5X;
+    prcopt_t options{};
+    options.ionoopt = IONOOPT_IFLC;
+
+    const double azel[2] = {0.0, 1.0};
+    double variance = 0.0;
+    double iono_scale = -1.0;
+    const double corrected_pseudorange = prange(&obs, &nav, azel, 0, &options, &variance, &iono_scale);
+
+    const double gamma15 = std::pow(L5_WAVELENGTH_M / L1_WAVELENGTH_M, 2.0);
+    const double expected = (gamma15 * obs.P[0] - obs.P[2]) / (gamma15 - 1.0);
+    EXPECT_NEAR(expected, corrected_pseudorange, 1.0e-6);
+}
+
+
 TEST(GpsTgdIscTest, L5DataAndPilotUseTheirOwnInterSignalCorrections)
 {
     for (const int system : {SYS_GPS, SYS_QZS})
@@ -583,6 +657,8 @@ TEST(GpsTgdIscTest, HasBiasSelectionPrefersTheTrackedComponent)
             std::map<std::string, std::map<int, HAS_obs_corrections>> corrections;
             corrections[test.data][1].code_bias_m = 1.0F;
             corrections[test.pilot][1].code_bias_m = 2.0F;
+            corrections[test.data][1].code_bias_available = true;
+            corrections[test.pilot][1].code_bias_available = true;
             corrections[test.data][1].phase_bias_cycle = 0.25F;
             corrections[test.pilot][1].phase_bias_cycle = 0.5F;
             obsd_t obs{};

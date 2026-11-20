@@ -65,6 +65,7 @@ def gps_l1_ca_read_pvt_dump(filename):
     PDOP = []
     HDOP = []
     VDOP = []
+    num_has_sats = []
 
     f = open(filename, 'rb')
     if f is None:
@@ -200,6 +201,11 @@ def gps_l1_ca_read_pvt_dump(filename):
                                       f.read(double_size_bytes))[0])
             bytes_shift += double_size_bytes
             f.seek(bytes_shift, 0)
+            # NUMBER OF SATELLITES WITH HAS ORBIT AND CLOCK CORRECTIONS -> uint8
+            num_has_sats.append(struct.unpack('B',
+                                              f.read(uint8_size_bytes))[0])
+            bytes_shift += uint8_size_bytes
+            f.seek(bytes_shift, 0)
 
             # Check file
             linea = f.readline()
@@ -243,7 +249,8 @@ def gps_l1_ca_read_pvt_dump(filename):
         'GDOP': np.array(GDOP),
         'PDOP': np.array(PDOP),
         'HDOP': np.array(HDOP),
-        'VDOP': np.array(VDOP)
+        'VDOP': np.array(VDOP),
+        'HAS_SATS': num_has_sats
     }
 
     return navSolutions

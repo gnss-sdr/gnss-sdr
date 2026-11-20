@@ -51,6 +51,7 @@ bool Rtklib_Solver_Dump_Reader::read_binary_obs()
             d_dump_file.read(reinterpret_cast<char *>(&dop[1]), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&dop[2]), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&dop[3]), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&has_corrected_sats), sizeof(uint8_t));
         }
     catch (const std::ifstream::failure &e)
         {
@@ -75,7 +76,7 @@ bool Rtklib_Solver_Dump_Reader::restart()
 int64_t Rtklib_Solver_Dump_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
-    int epoch_size_bytes = 2 * sizeof(uint32_t) + 21 * sizeof(double) + 3 * sizeof(uint8_t) + 2 * sizeof(float);
+    int epoch_size_bytes = 2 * sizeof(uint32_t) + 21 * sizeof(double) + 4 * sizeof(uint8_t) + 2 * sizeof(float);
     std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {

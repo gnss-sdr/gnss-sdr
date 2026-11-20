@@ -1588,6 +1588,37 @@ double prectrop(gtime_t time, const double *pos, const double *azel,
 }
 
 
+/* receiver clock state of a system -------------------------------------------
+ * Each system has the receiver clock state that udclk_ppp() initializes from
+ * the single point solution, where the receiver clock of a system other than
+ * GPS is the GPS one plus the offset of the system (see rescode()). Without
+ * GPS satellites, the whole receiver clock offset is in that term.
+ *-----------------------------------------------------------------------------*/
+int ppp_clock_index(int sys, const prcopt_t *opt)
+{
+    int index = 0;
+    switch (sys)
+        {
+        case SYS_GLO:
+            index = 1;
+            break;
+        case SYS_GAL:
+            index = 2;
+            break;
+        case SYS_BDS:
+            index = 3;
+            break;
+        case SYS_QZS:
+            /* QZS shares the GPS clock unless its offset is estimated */
+            index = opt->estqzsisb ? 4 : 0;
+            break;
+        default:
+            break;
+        }
+    return index < NSYS ? index : 0;
+}
+
+
 /* phase and code residuals --------------------------------------------------*/
 int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
@@ -1705,6 +1736,9 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
             /* satellite clock and tropospheric delay */
             r += -SPEED_OF_LIGHT_M_S * dts[i * 2] + dtrp;
 
+            /* receiver clock of the system */
+            const int clock_state = IC_PPP(ppp_clock_index(sys, opt), opt);
+
             trace(5, "sat=%2d azel=%6.1f %5.1f dtrp=%.3f dantr=%6.3f %6.3f dants=%6.3f %6.3f phw=%6.3f\n",
                 sat, azel[i * 2] * R2D, azel[1 + i * 2] * R2D, dtrp, dantr[0], dantr[1], dants[0],
                 dants[1], rtk->ssat[sat - 1].phw);
@@ -1728,16 +1762,8 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                             H[k + nx * nv] = -e[k];
                         }
 
-                    if (sys != SYS_GLO)
-                        {
-                            v[nv] -= x[IC_PPP(0, opt)];
-                            H[IC_PPP(0, opt) + nx * nv] = 1.0;
-                        }
-                    else
-                        {
-                            v[nv] -= x[IC_PPP(1, opt)];
-                            H[IC_PPP(1, opt) + nx * nv] = 1.0;
-                        }
+                    v[nv] -= x[clock_state];
+                    H[clock_state + nx * nv] = 1.0;
                     if (opt->tropopt >= TROPOPT_EST)
                         {
                             for (k = 0; k < (opt->tropopt >= TROPOPT_ESTG ? 3 : 1); k++)

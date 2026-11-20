@@ -117,6 +117,129 @@ const MsmSignalSpec msm_signal_specs[] = {
     {"1G", GLONASS_L1_CA_FREQ_HZ, GLONASS_L1_CA_DFREQ_HZ, 2, 2, 'R'},
     {"2G", GLONASS_L2_CA_FREQ_HZ, GLONASS_L2_CA_DFREQ_HZ, 8, 8, 'R'},
 };
+
+
+// Corrections of one satellite of a HAS MT1, as written to the SSR messages
+struct Ssr_Satellite_Correction
+{
+    int prn{};
+    uint16_t iod{};
+    float radial_m{};
+    float along_track_m{};
+    float cross_track_m{};
+    float clock_c0_m{};
+};
+
+constexpr size_t ssr_max_satellites = 63;  // 6-bit number of satellites (IDF010, DF387)
+
+
+// The SSR messages cover GPS and Galileo, the systems HAS corrects
+std::string ssr_system_name(const Galileo_HAS_data& has_data, uint8_t nsys)
+{
+    const std::vector<std::string> systems = has_data.get_systems_string();
+    if (nsys >= systems.size() || (systems[nsys] != "GPS" && systems[nsys] != "Galileo"))
+        {
+            return {};
+        }
+    return systems[nsys];
+}
+
+
+// Orbit corrections of the satellites of a system, without those flagged as
+// not available. HAS SIS ICD 1.0 Eq. 22 adds them to the broadcast position,
+// while the RTCM and IGS SSR formats subtract them (X_orbit = X_broadcast - dX),
+// so their sign is inverted.
+std::vector<Ssr_Satellite_Correction> ssr_orbit_corrections(const Galileo_HAS_data& has_data, uint8_t nsys)
+{
+    std::vector<Ssr_Satellite_Correction> corrections;
+    if (!has_data.header.orbit_correction_flag || ssr_system_name(has_data, nsys).empty())
+        {
+            return corrections;
+        }
+    const std::vector<int> prns = has_data.get_PRNs_in_mask(nsys);
+    const std::vector<uint16_t> iods = has_data.get_gnss_iod(nsys);
+    const std::vector<float> radial_m = has_data.get_delta_radial_m(nsys);
+    const std::vector<float> in_track_m = has_data.get_delta_in_track_m(nsys);
+    const std::vector<float> cross_track_m = has_data.get_delta_cross_track_m(nsys);
+    for (size_t i = 0; i < prns.size() && i < iods.size() && i < radial_m.size() && i < in_track_m.size() && i < cross_track_m.size(); i++)
+        {
+            if (Galileo_HAS_data::is_orbit_radial_unavailable(radial_m[i]) ||
+                Galileo_HAS_data::is_orbit_along_cross_unavailable(in_track_m[i]) ||
+                Galileo_HAS_data::is_orbit_along_cross_unavailable(cross_track_m[i]))
+                {
+                    continue;
+                }
+            if (corrections.size() == ssr_max_satellites)
+                {
+                    break;
+                }
+            Ssr_Satellite_Correction correction;
+            correction.prn = prns[i];
+            correction.iod = iods[i];
+            correction.radial_m = -radial_m[i];
+            correction.along_track_m = -in_track_m[i];
+            correction.cross_track_m = -cross_track_m[i];
+            corrections.push_back(correction);
+        }
+    return corrections;
+}
+
+
+// Clock corrections (full set or subset) of the satellites of a system,
+// multiplied by their Delta Clock Multiplier, without those flagged as not
+// available or not to be used: these SSR messages cannot flag a satellite as
+// not to be used, so it is left out. HAS SIS ICD 1.0 Eq. 23 and the SSR
+// formats both add the clock correction to the broadcast clock.
+std::vector<Ssr_Satellite_Correction> ssr_clock_corrections(const Galileo_HAS_data& has_data, uint8_t nsys, bool use_clock_subset)
+{
+    std::vector<Ssr_Satellite_Correction> corrections;
+    const bool has_clock_corrections = use_clock_subset ? has_data.header.clock_subset_flag : has_data.header.clock_fullset_flag;
+    const std::string system = ssr_system_name(has_data, nsys);
+    if (!has_clock_corrections || system.empty())
+        {
+            return corrections;
+        }
+    const std::vector<int> prns = use_clock_subset ? has_data.get_PRNs_in_submask(nsys) : has_data.get_PRNs_in_mask(nsys);
+    const size_t num_values = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys).size() : has_data.get_delta_clock_correction_m(nsys).size();
+    for (size_t i = 0; i < prns.size() && i < num_values; i++)
+        {
+            const float clock_c0_m = use_clock_subset ? has_data.get_clock_subset_correction_mult_m(system, prns[i])
+                                                      : has_data.get_clock_correction_mult_m(system, prns[i]);
+            if (Galileo_HAS_data::is_clock_unavailable(clock_c0_m) || Galileo_HAS_data::is_clock_do_not_use(clock_c0_m))
+                {
+                    continue;
+                }
+            if (corrections.size() == ssr_max_satellites)
+                {
+                    break;
+                }
+            Ssr_Satellite_Correction correction;
+            correction.prn = prns[i];
+            correction.clock_c0_m = clock_c0_m;
+            corrections.push_back(correction);
+        }
+    return corrections;
+}
+
+
+// Satellites of a system with both valid orbit and full-set clock corrections
+std::vector<Ssr_Satellite_Correction> ssr_combined_corrections(const Galileo_HAS_data& has_data, uint8_t nsys)
+{
+    std::vector<Ssr_Satellite_Correction> corrections = ssr_orbit_corrections(has_data, nsys);
+    const std::vector<Ssr_Satellite_Correction> clocks = ssr_clock_corrections(has_data, nsys, false);
+    std::vector<Ssr_Satellite_Correction> combined;
+    for (auto& correction : corrections)
+        {
+            const auto clock_it = std::find_if(clocks.cbegin(), clocks.cend(),
+                [&correction](const Ssr_Satellite_Correction& clock) { return clock.prn == correction.prn; });
+            if (clock_it != clocks.cend())
+                {
+                    correction.clock_c0_m = clock_it->clock_c0_m;
+                    combined.push_back(correction);
+                }
+        }
+    return combined;
+}
 }  // namespace
 
 
@@ -3572,7 +3695,8 @@ std::string Rtcm::get_MT1057_header(const Galileo_HAS_data& has_data, uint8_t ns
 {
     std::string header;
 
-    const uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    const uint32_t tow = has_data.get_time_of_message_s();
     const uint16_t ssr_provider_id = 0;
     const uint8_t ssr_solution_id = 0;
     const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
@@ -3604,20 +3728,13 @@ std::string Rtcm::get_MT1057_content_sat(const Galileo_HAS_data& has_data, uint8
 {
     std::string content;
 
-    const std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
-    const std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys_index);
-    const std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
-    const std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys_index);
-    const std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
-
-    const uint8_t num_sats_in_this_system = Rtcm::get_MT1057_satellite_count(has_data, nsys_index);
-    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+    for (const auto& correction : ssr_orbit_corrections(has_data, nsys_index))
         {
-            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(gnss_iod[sat]));
-            Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
-            Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
-            Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
+            Rtcm::set_IDF011(static_cast<uint8_t>(correction.prn));
+            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(correction.iod));
+            Rtcm::set_IDF013(correction.radial_m);
+            Rtcm::set_IDF014(correction.along_track_m);
+            Rtcm::set_IDF015(correction.cross_track_m);
             Rtcm::set_IDF016(0.0);  // dot_orbit_delta_radial_m_s
             Rtcm::set_IDF017(0.0);  // dot_orbit_delta_in_track_m_s
             Rtcm::set_IDF018(0.0);  // dot_orbit_delta_cross_track_m_s
@@ -3635,7 +3752,8 @@ std::string Rtcm::get_MT1058_header(const Galileo_HAS_data& has_data, uint8_t ns
 {
     std::string header;
 
-    const uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    const uint32_t tow = has_data.get_time_of_message_s();
     const uint16_t ssr_provider_id = 0;
     const uint8_t ssr_solution_id = 0;
     const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
@@ -3665,18 +3783,12 @@ std::string Rtcm::get_MT1058_content_sat(const Galileo_HAS_data& has_data, uint8
 {
     std::string content;
 
-    const std::vector<int> prn = use_clock_subset ? has_data.get_PRNs_in_submask(nsys_index) : has_data.get_PRNs_in_mask(nsys_index);
-    const std::vector<float> delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys_index) : has_data.get_delta_clock_correction_m(nsys_index);
-    const uint8_t num_sats_in_this_system = Rtcm::get_IGM02_satellite_count(has_data, nsys_index, use_clock_subset);
-    const std::vector<float> delta_clock_c1(num_sats_in_this_system);
-    const std::vector<float> delta_clock_c2(num_sats_in_this_system);
-
-    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+    for (const auto& correction : ssr_clock_corrections(has_data, nsys_index, use_clock_subset))
         {
-            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF019(delta_clock_c0[sat]);
-            Rtcm::set_IDF020(delta_clock_c1[sat]);
-            Rtcm::set_IDF021(delta_clock_c2[sat]);
+            Rtcm::set_IDF011(static_cast<uint8_t>(correction.prn));
+            Rtcm::set_IDF019(correction.clock_c0_m);
+            Rtcm::set_IDF020(0.0);  // delta_clock_c1
+            Rtcm::set_IDF021(0.0);  // delta_clock_c2
 
             content += IDF011.to_string() + IDF019.to_string() + IDF020.to_string() +
                        IDF021.to_string();
@@ -3690,7 +3802,8 @@ std::string Rtcm::get_MT1059_header(const Galileo_HAS_data& has_data, uint8_t ns
 {
     std::string header;
 
-    const uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    const uint32_t tow = has_data.get_time_of_message_s();
     const uint16_t ssr_provider_id = 0;
     const uint8_t ssr_solution_id = 0;
     const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
@@ -3790,7 +3903,8 @@ std::string Rtcm::get_MT1060_header(const Galileo_HAS_data& has_data, uint8_t ns
 {
     std::string header;
 
-    const uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    const uint32_t tow = has_data.get_time_of_message_s();
     const uint16_t ssr_provider_id = 0;
     const uint8_t ssr_solution_id = 0;
     const uint8_t iod_ssr = Rtcm::get_iod_ssr(has_data.header.iod_set_id);
@@ -3822,30 +3936,19 @@ std::string Rtcm::get_MT1060_content_sat(const Galileo_HAS_data& has_data, uint8
 {
     std::string content;
 
-    const std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
-    const std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys_index);
-    const std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
-    const std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys_index);
-    const std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
-    const std::vector<float> delta_clock_c0 = has_data.get_delta_clock_correction_m(nsys_index);
-
-    const uint8_t num_sats_in_this_system = Rtcm::get_MT1060_satellite_count(has_data, nsys_index);
-    const std::vector<float> delta_clock_c1(num_sats_in_this_system);
-    const std::vector<float> delta_clock_c2(num_sats_in_this_system);
-
-    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+    for (const auto& correction : ssr_combined_corrections(has_data, nsys_index))
         {
-            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(gnss_iod[sat]));
-            Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
-            Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
-            Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
+            Rtcm::set_IDF011(static_cast<uint8_t>(correction.prn));
+            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(correction.iod));
+            Rtcm::set_IDF013(correction.radial_m);
+            Rtcm::set_IDF014(correction.along_track_m);
+            Rtcm::set_IDF015(correction.cross_track_m);
             Rtcm::set_IDF016(0.0);  // dot_orbit_delta_radial_m_s
             Rtcm::set_IDF017(0.0);  // dot_orbit_delta_in_track_m_s
             Rtcm::set_IDF018(0.0);  // dot_orbit_delta_cross_track_m_s
-            Rtcm::set_IDF019(delta_clock_c0[sat]);
-            Rtcm::set_IDF020(delta_clock_c1[sat]);
-            Rtcm::set_IDF021(delta_clock_c2[sat]);
+            Rtcm::set_IDF019(correction.clock_c0_m);
+            Rtcm::set_IDF020(0.0);  // delta_clock_c1
+            Rtcm::set_IDF021(0.0);  // delta_clock_c2
 
             content += IDF011.to_string() + IDF012.to_string() + IDF013.to_string() +
                        IDF014.to_string() + IDF015.to_string() + IDF016.to_string() +
@@ -3860,14 +3963,19 @@ std::string Rtcm::get_MT1060_content_sat(const Galileo_HAS_data& has_data, uint8
 std::vector<std::string> Rtcm::print_IGM01(const Galileo_HAS_data& has_data)
 {
     std::vector<std::string> msgs;
-    const uint8_t nsys = has_data.Nsys;
-    bool ssr_multiple_msg_indicator = true;
-    for (uint8_t sys = 0; sys < nsys; sys++)
+    std::vector<uint8_t> systems_to_print;
+    for (uint8_t sys = 0; sys < has_data.Nsys; sys++)
         {
-            if (sys == nsys - 1)
+            if (!ssr_orbit_corrections(has_data, sys).empty())
                 {
-                    ssr_multiple_msg_indicator = false;  // last message of a sequence
+                    systems_to_print.push_back(sys);
                 }
+        }
+
+    for (size_t i = 0; i < systems_to_print.size(); i++)
+        {
+            const uint8_t sys = systems_to_print[i];
+            const bool ssr_multiple_msg_indicator = (i + 1 != systems_to_print.size());
             const std::string header = Rtcm::get_IGM01_header(has_data, sys, ssr_multiple_msg_indicator);
             const std::string sat_data = Rtcm::get_IGM01_content_sat(has_data, sys);
             std::string message = build_message(header + sat_data);
@@ -3914,14 +4022,26 @@ std::vector<std::string> Rtcm::print_IGM02(const Galileo_HAS_data& has_data, boo
 std::vector<std::string> Rtcm::print_IGM03(const Galileo_HAS_data& has_data)
 {
     std::vector<std::string> msgs;
-    const uint8_t nsys = has_data.Nsys;
-    bool ssr_multiple_msg_indicator = true;
-    for (uint8_t sys = 0; sys < nsys; sys++)
+    // A single SSR Update Interval describes both corrections (see print_MT1060())
+    const uint16_t orbit_validity_seconds = has_data.get_validity_interval_s(has_data.validity_interval_index_orbit_corrections);
+    const uint16_t clock_validity_seconds = has_data.get_validity_interval_s(has_data.validity_interval_index_clock_fullset_corrections);
+    if (ssr_update_interval(orbit_validity_seconds) != ssr_update_interval(clock_validity_seconds))
         {
-            if (sys == nsys - 1)
+            return msgs;
+        }
+    std::vector<uint8_t> systems_to_print;
+    for (uint8_t sys = 0; sys < has_data.Nsys; sys++)
+        {
+            if (!ssr_combined_corrections(has_data, sys).empty())
                 {
-                    ssr_multiple_msg_indicator = false;  // last message of a sequence
+                    systems_to_print.push_back(sys);
                 }
+        }
+
+    for (size_t i = 0; i < systems_to_print.size(); i++)
+        {
+            const uint8_t sys = systems_to_print[i];
+            const bool ssr_multiple_msg_indicator = (i + 1 != systems_to_print.size());
             const std::string header = Rtcm::get_IGM03_header(has_data, sys, ssr_multiple_msg_indicator);
             const std::string sat_data = Rtcm::get_IGM03_content_sat(has_data, sys);
             std::string message = build_message(header + sat_data);
@@ -3972,7 +4092,8 @@ std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    uint32_t tow = has_data.get_time_of_message_s();
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
@@ -3992,7 +4113,7 @@ std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsy
     uint8_t validity_index = has_data.validity_interval_index_orbit_corrections;
     uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
     uint8_t ssr_update_interval_ = ssr_update_interval(validity_seconds);
-    uint8_t Nsat = has_data.get_num_satellites()[nsys];
+    const auto Nsat = static_cast<uint8_t>(ssr_orbit_corrections(has_data, nsys).size());
 
     Rtcm::set_DF002(4076);  // Always “4076” for IGS Proprietary Messages
     Rtcm::set_IDF001(igm_version);
@@ -4018,26 +4139,23 @@ std::string Rtcm::get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_
 {
     std::string content;
 
-    std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
-    std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys_index);
-    std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
-    std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys_index);
-    std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
-
-    const uint8_t num_sats_in_this_system = has_data.get_num_satellites()[nsys_index];
-    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+    // IGS SSR v1.00 Table 9 swaps the labels of the cross-track and dot-radial
+    // fields, but its field names and bit lengths follow Table 7 and Table 13:
+    // Delta Orbit Cross-Track (IDF015, 20 bits) comes before Dot Orbit Delta
+    // Radial (IDF016, 21 bits)
+    for (const auto& correction : ssr_orbit_corrections(has_data, nsys_index))
         {
-            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(gnss_iod[sat]));
-            Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
-            Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
-            Rtcm::set_IDF016(0.0);  //  dot_orbit_delta_track_m_s
-            Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
+            Rtcm::set_IDF011(static_cast<uint8_t>(correction.prn));
+            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(correction.iod));
+            Rtcm::set_IDF013(correction.radial_m);
+            Rtcm::set_IDF014(correction.along_track_m);
+            Rtcm::set_IDF015(correction.cross_track_m);
+            Rtcm::set_IDF016(0.0);  // dot_orbit_delta_radial_m_s
             Rtcm::set_IDF017(0.0);  // dot_orbit_delta_in_track_m_s
             Rtcm::set_IDF018(0.0);  // dot_orbit_delta_cross_track_m_s
 
             content += IDF011.to_string() + IDF012.to_string() + IDF013.to_string() +
-                       IDF014.to_string() + IDF016.to_string() + IDF015.to_string() +
+                       IDF014.to_string() + IDF015.to_string() + IDF016.to_string() +
                        IDF017.to_string() + IDF018.to_string();
         }
 
@@ -4049,7 +4167,8 @@ std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    uint32_t tow = has_data.get_time_of_message_s();
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
@@ -4093,18 +4212,12 @@ std::string Rtcm::get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_
 {
     std::string content;
 
-    std::vector<int> prn = use_clock_subset ? has_data.get_PRNs_in_submask(nsys_index) : has_data.get_PRNs_in_mask(nsys_index);
-    std::vector<float> delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys_index) : has_data.get_delta_clock_correction_m(nsys_index);
-    const uint8_t num_sats_in_this_system = get_IGM02_satellite_count(has_data, nsys_index, use_clock_subset);
-    std::vector<float> delta_clock_c1(num_sats_in_this_system);
-    std::vector<float> delta_clock_c2(num_sats_in_this_system);
-
-    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+    for (const auto& correction : ssr_clock_corrections(has_data, nsys_index, use_clock_subset))
         {
-            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF019(delta_clock_c0[sat]);
-            Rtcm::set_IDF020(delta_clock_c1[sat]);
-            Rtcm::set_IDF021(delta_clock_c2[sat]);
+            Rtcm::set_IDF011(static_cast<uint8_t>(correction.prn));
+            Rtcm::set_IDF019(correction.clock_c0_m);
+            Rtcm::set_IDF020(0.0);  // delta_clock_c1
+            Rtcm::set_IDF021(0.0);  // delta_clock_c2
 
             content += IDF011.to_string() + IDF019.to_string() + IDF020.to_string() +
                        IDF021.to_string();
@@ -4118,7 +4231,8 @@ std::string Rtcm::get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    uint32_t tow = has_data.get_time_of_message_s();
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
@@ -4138,7 +4252,7 @@ std::string Rtcm::get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsy
     uint8_t validity_index = has_data.validity_interval_index_orbit_corrections;
     uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
     uint8_t ssr_update_interval_ = ssr_update_interval(validity_seconds);
-    uint8_t Nsat = has_data.get_num_satellites()[nsys];
+    const auto Nsat = static_cast<uint8_t>(ssr_combined_corrections(has_data, nsys).size());
 
     Rtcm::set_DF002(4076);  // Always “4076” for IGS Proprietary Messages
     Rtcm::set_IDF001(igm_version);
@@ -4164,30 +4278,19 @@ std::string Rtcm::get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_
 {
     std::string content;
 
-    const uint8_t num_sats_in_this_system = has_data.get_num_satellites()[nsys_index];
-
-    std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
-    std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys_index);
-    std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
-    std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys_index);
-    std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
-    std::vector<float> delta_clock_c0 = has_data.get_delta_clock_correction_m(nsys_index);
-    std::vector<float> delta_clock_c1(num_sats_in_this_system);
-    std::vector<float> delta_clock_c2(num_sats_in_this_system);
-
-    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+    for (const auto& correction : ssr_combined_corrections(has_data, nsys_index))
         {
-            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
-            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(gnss_iod[sat]));
-            Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
-            Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
-            Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
-            Rtcm::set_IDF016(0.0);  // dot_orbit_delta_track_m_s
+            Rtcm::set_IDF011(static_cast<uint8_t>(correction.prn));
+            Rtcm::set_IDF012(Rtcm::get_gnss_iod_lsb(correction.iod));
+            Rtcm::set_IDF013(correction.radial_m);
+            Rtcm::set_IDF014(correction.along_track_m);
+            Rtcm::set_IDF015(correction.cross_track_m);
+            Rtcm::set_IDF016(0.0);  // dot_orbit_delta_radial_m_s
             Rtcm::set_IDF017(0.0);  // dot_orbit_delta_in_track_m_s
             Rtcm::set_IDF018(0.0);  // dot_orbit_delta_cross_track_m_s
-            Rtcm::set_IDF019(delta_clock_c0[sat]);
-            Rtcm::set_IDF020(delta_clock_c1[sat]);
-            Rtcm::set_IDF021(delta_clock_c2[sat]);
+            Rtcm::set_IDF019(correction.clock_c0_m);
+            Rtcm::set_IDF020(0.0);  // delta_clock_c1
+            Rtcm::set_IDF021(0.0);  // delta_clock_c2
 
             content += IDF011.to_string() + IDF012.to_string() + IDF013.to_string() +
                        IDF014.to_string() + IDF015.to_string() + IDF016.to_string() +
@@ -4203,7 +4306,8 @@ std::string Rtcm::get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = has_data.tow;
+    // SSR Epoch Time: reference time of the corrections, HAS SIS ICD 1.0 Section 7.7
+    uint32_t tow = has_data.get_time_of_message_s();
     uint16_t ssr_provider_id = 0;  // ?
     uint8_t igm_version = 0;       // ?
     uint8_t ssr_solution_id = 0;   // ?
@@ -4327,19 +4431,7 @@ bool Rtcm::get_has_data_gps_index(const Galileo_HAS_data& has_data, uint8_t& nsy
 
 uint8_t Rtcm::get_MT1057_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys)
 {
-    const std::vector<int> prns = has_data.get_PRNs_in_mask(nsys);
-    const std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys);
-    const std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys);
-    const std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys);
-    const std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys);
-
-    size_t count = prns.size();
-    count = std::min(count, gnss_iod.size());
-    count = std::min(count, delta_orbit_radial_m.size());
-    count = std::min(count, delta_orbit_in_track_m.size());
-    count = std::min(count, delta_orbit_cross_track_m.size());
-    count = std::min(count, static_cast<size_t>(63));
-    return static_cast<uint8_t>(count);
+    return static_cast<uint8_t>(ssr_orbit_corrections(has_data, nsys).size());
 }
 
 
@@ -4434,10 +4526,7 @@ bool Rtcm::get_MT1059_tracking_mode_id(const std::string& signal, uint8_t& track
 
 uint8_t Rtcm::get_MT1060_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys)
 {
-    const std::vector<float> delta_clock_c0 = has_data.get_delta_clock_correction_m(nsys);
-    size_t count = Rtcm::get_MT1057_satellite_count(has_data, nsys);
-    count = std::min(count, delta_clock_c0.size());
-    return static_cast<uint8_t>(count);
+    return static_cast<uint8_t>(ssr_combined_corrections(has_data, nsys).size());
 }
 
 
@@ -4530,9 +4619,7 @@ bool Rtcm::get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal
 
 uint8_t Rtcm::get_IGM02_satellite_count(const Galileo_HAS_data& has_data, uint8_t nsys, bool use_clock_subset)
 {
-    const auto& prns = use_clock_subset ? has_data.get_PRNs_in_submask(nsys) : has_data.get_PRNs_in_mask(nsys);
-    const auto& delta_clock_c0 = use_clock_subset ? has_data.get_delta_clock_subset_correction_m(nsys) : has_data.get_delta_clock_correction_m(nsys);
-    return static_cast<uint8_t>(std::min(prns.size(), delta_clock_c0.size()));
+    return static_cast<uint8_t>(ssr_clock_corrections(has_data, nsys, use_clock_subset).size());
 }
 
 
@@ -7213,7 +7300,7 @@ void Rtcm::set_IDF013(float delta_orbit_radial_m)
 {
     const float scale = 1.0e4;
     const int32_t max_value = 2097151;
-    auto delta_orbit_radial = static_cast<int32_t>((delta_orbit_radial_m * scale));
+    auto delta_orbit_radial = static_cast<int32_t>(std::lround(delta_orbit_radial_m * scale));
     if (delta_orbit_radial > max_value)
         {
             delta_orbit_radial = max_value;
@@ -7230,7 +7317,7 @@ void Rtcm::set_IDF014(float delta_orbit_in_track_m)
 {
     const float scale = 2500.0;
     const int32_t max_value = 524287;
-    auto delta_orbit_in_track = static_cast<int32_t>((delta_orbit_in_track_m * scale));
+    auto delta_orbit_in_track = static_cast<int32_t>(std::lround(delta_orbit_in_track_m * scale));
     if (delta_orbit_in_track > max_value)
         {
             delta_orbit_in_track = max_value;
@@ -7247,7 +7334,7 @@ void Rtcm::set_IDF015(float delta_orbit_cross_track_m)
 {
     const float scale = 2500.0;
     const int32_t max_value = 524287;
-    auto delta_orbit_cross_track = static_cast<int32_t>((delta_orbit_cross_track_m * scale));
+    auto delta_orbit_cross_track = static_cast<int32_t>(std::lround(delta_orbit_cross_track_m * scale));
     if (delta_orbit_cross_track > max_value)
         {
             delta_orbit_cross_track = max_value;
@@ -7264,7 +7351,7 @@ void Rtcm::set_IDF016(float dot_orbit_delta_track_m_s)
 {
     const float scale = 1.0e6;
     const int32_t max_value = 1048575;
-    auto dot_orbit_delta_track = static_cast<int32_t>((dot_orbit_delta_track_m_s * scale));
+    auto dot_orbit_delta_track = static_cast<int32_t>(std::lround(dot_orbit_delta_track_m_s * scale));
     if (dot_orbit_delta_track > max_value)
         {
             dot_orbit_delta_track = max_value;
@@ -7281,7 +7368,7 @@ void Rtcm::set_IDF017(float dot_orbit_delta_in_track_m_s)
 {
     const float scale = 250000.0;
     const int32_t max_value = 262143;
-    auto dot_orbit_delta_in_track = static_cast<int32_t>((dot_orbit_delta_in_track_m_s * scale));
+    auto dot_orbit_delta_in_track = static_cast<int32_t>(std::lround(dot_orbit_delta_in_track_m_s * scale));
     if (dot_orbit_delta_in_track > max_value)
         {
             dot_orbit_delta_in_track = max_value;
@@ -7298,7 +7385,7 @@ void Rtcm::set_IDF018(float dot_orbit_delta_cross_track_m_s)
 {
     const float scale = 250000.0;
     const int32_t max_value = 262143;
-    auto dot_orbit_delta_cross_track = static_cast<int32_t>((dot_orbit_delta_cross_track_m_s * scale));
+    auto dot_orbit_delta_cross_track = static_cast<int32_t>(std::lround(dot_orbit_delta_cross_track_m_s * scale));
     if (dot_orbit_delta_cross_track > max_value)
         {
             dot_orbit_delta_cross_track = max_value;
@@ -7315,7 +7402,7 @@ void Rtcm::set_IDF019(float delta_clock_c0_m)
 {
     const float scale = 1.0e4;
     const int32_t max_value = 2097151;
-    auto delta_clock_c0 = static_cast<int32_t>((delta_clock_c0_m * scale));
+    auto delta_clock_c0 = static_cast<int32_t>(std::lround(delta_clock_c0_m * scale));
     if (delta_clock_c0 > max_value)
         {
             delta_clock_c0 = max_value;
@@ -7332,7 +7419,7 @@ void Rtcm::set_IDF020(float delta_clock_c1_m_s)
 {
     const float scale = 1.0e6;
     const int32_t max_value = 1048575;
-    auto delta_clock_c1 = static_cast<int32_t>((delta_clock_c1_m_s * scale));
+    auto delta_clock_c1 = static_cast<int32_t>(std::lround(delta_clock_c1_m_s * scale));
     if (delta_clock_c1 > max_value)
         {
             delta_clock_c1 = max_value;
@@ -7349,7 +7436,7 @@ void Rtcm::set_IDF021(float delta_clock_c2_m_s2)
 {
     const float scale = 5.0e8;
     const int32_t max_value = 67108863;
-    auto delta_clock_c2 = static_cast<int32_t>((delta_clock_c2_m_s2 * scale));
+    auto delta_clock_c2 = static_cast<int32_t>(std::lround(delta_clock_c2_m_s2 * scale));
     if (delta_clock_c2 > max_value)
         {
             delta_clock_c2 = max_value;
@@ -7391,8 +7478,8 @@ void Rtcm::set_IDF024(uint8_t gnss_signal_tracking_mode_id)
 void Rtcm::set_IDF025(float code_bias_m)
 {
     const float scale = 100.0;
-    const int16_t max_value = 8191;
-    auto code_bias = static_cast<int16_t>((code_bias_m * scale));
+    const int32_t max_value = 8191;
+    auto code_bias = static_cast<int32_t>(std::lround(code_bias_m * scale));
     if (code_bias > max_value)
         {
             code_bias = max_value;

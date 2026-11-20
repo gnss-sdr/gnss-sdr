@@ -50,7 +50,7 @@ message MonitorPvt {
 
   double cog = 34;  // Course Over Ground, in deg
 
-  uint32 galhas_status = 35;  // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not available
+  uint32 galhas_status = 35;  // Galileo HAS status: 1 - HAS corrections applied to at least one satellite of the solution, 0 - not applied
   string geohash = 36;        // Encoded geographic location. See https://en.wikipedia.org/wiki/Geohash
 
   // One tracked satellite/signal with its azimuth/elevation, whether it was
@@ -81,6 +81,7 @@ message MonitorPvt {
     bool used = 7;
     bool healthy = 8;
     string observation_code = 9;  // RINEX 4 code (e.g. 1B/1C), empty if unknown.
+    bool has_corrected = 10;      // Galileo HAS orbit and clock corrections for the satellite, and HAS code bias for this signal
   }
   repeated TrackedSatellite tracked_satellites = 37;
 }

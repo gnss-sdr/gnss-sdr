@@ -35,50 +35,11 @@
 #include "rtklib_rtkcmn.h"
 #include <algorithm>
 #include <cmath>
+#include <utility>
 #include <vector>
 
 namespace
 {
-const HAS_obs_corrections* find_has_obs_correction(const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
-    const std::vector<std::string>& signal_candidates,
-    int prn)
-{
-    for (const auto& signal : signal_candidates)
-        {
-            const auto signal_it = has_obs_corr.find(signal);
-            if (signal_it == has_obs_corr.cend())
-                {
-                    continue;
-                }
-
-            const auto prn_it = signal_it->second.find(prn);
-            if (prn_it != signal_it->second.cend())
-                {
-                    return &prn_it->second;
-                }
-        }
-    return nullptr;
-}
-
-
-// HAS bias names to try for a signal with data and pilot components: the
-// tracked component first, then the other component of the same signal, then
-// their combination. Galileo HAS only broadcasts the pilot biases (E1-C, E5a-Q,
-// E5b-Q, E6-C), so without the fallback a receiver tracking the data component
-// would apply the orbit and clock corrections with no signal bias at all. The
-// bias of a different signal (e.g. L2 P for L2C) is never used.
-std::vector<std::string> has_component_candidates(const Gnss_Synchro& gnss_synchro,
-    const std::string& data,
-    const std::string& pilot,
-    const std::string& combined)
-{
-    if (gnss_synchro.tracking_component == Gnss_Synchro::TrackingComponent::Pilot)
-        {
-            return {pilot, data, combined};
-        }
-    return {data, pilot, combined};
-}
-
 // Resolves a week number known only mod `cycle` (256 for the 8-bit GPS
 // almanac WNa, 4 for the 2-bit Galileo WNa) to the full week closest to
 // ref_week; generalizes adjgpsweek(). ref_week <= 0 (no reference) returns
@@ -184,6 +145,113 @@ static int32_t gps_cnav_ura_to_rtklib_sva(int32_t uraed, int32_t uraned0)
         }
 
     return 15;
+}
+
+
+bool HAS_carrier_continuity::changed(int sat, const std::string& signal, bool orbit_clock_applied, const std::string& phase_bias_signal)
+{
+    const auto state = std::make_pair(orbit_clock_applied, phase_bias_signal);
+    const auto key = std::make_pair(sat, signal);
+    const auto it = d_states.find(key);
+    if (it == d_states.end())
+        {
+            // first observation of the signal: its ambiguity starts here
+            d_states.insert(std::make_pair(key, state));
+            return false;
+        }
+    const bool state_changed = it->second != state;
+    it->second = state;
+    return state_changed;
+}
+
+
+namespace
+{
+// HAS bias names of a signal with data and pilot components: the tracked
+// component first, then the other component of the same signal, then their
+// combination. Galileo HAS only broadcasts the pilot biases (E1-C, E5a-Q,
+// E5b-Q, E6-C), so without the fallback a receiver tracking the data component
+// would get no signal bias at all.
+std::vector<std::string> has_component_candidates(bool tracking_pilot,
+    const std::string& data,
+    const std::string& pilot,
+    const std::string& combined)
+{
+    if (tracking_pilot)
+        {
+            return {pilot, data, combined};
+        }
+    return {data, pilot, combined};
+}
+}  // namespace
+
+
+std::vector<std::string> has_signal_candidates(char system, const std::string& signal, bool tracking_pilot)
+{
+    // The bias of a different signal (e.g. L2 P for L2C) is never used
+    switch (system)
+        {
+        case 'G':
+            if (signal == "1C")
+                {
+                    return {"L1 C/A"};
+                }
+            if (signal == "2S")
+                {
+                    // L2 CM and L2 CL are time-multiplexed chip by chip into the same L2C code
+                    return {"L2 CM", "L2 CL", "L2 CM+CL"};
+                }
+            if (signal == "L5")
+                {
+                    return has_component_candidates(tracking_pilot, "L5 I", "L5 Q", "L5 I + L5 Q");
+                }
+            break;
+        case 'E':
+            if (signal == "1B")
+                {
+                    return has_component_candidates(tracking_pilot, "E1-B I/NAV OS", "E1-C", "E1-B + E1-C");
+                }
+            if (signal == "5X")
+                {
+                    return has_component_candidates(tracking_pilot, "E5a-I F/NAV OS", "E5a-Q", "E5a-I+E5a-Q");
+                }
+            if (signal == "7X")
+                {
+                    return has_component_candidates(tracking_pilot, "E5b-I I/NAV OS", "E5b-Q", "E5b-I+E5b-Q");
+                }
+            if (signal == "E6")
+                {
+                    return has_component_candidates(tracking_pilot, "E6-B C/NAV HAS", "E6-C", "E6-B + E6-C");
+                }
+            break;
+        default:
+            break;
+        }
+    return {};
+}
+
+
+const HAS_obs_corrections* find_has_obs_correction(const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
+    char system,
+    const std::string& signal,
+    int prn,
+    bool tracking_pilot)
+{
+    for (const auto& has_signal : has_signal_candidates(system, signal, tracking_pilot))
+        {
+            const auto signal_it = has_obs_corr.find(has_signal);
+            if (signal_it == has_obs_corr.cend())
+                {
+                    continue;
+                }
+
+            const auto prn_it = signal_it->second.find(prn);
+            if (prn_it != signal_it->second.cend() && prn_it->second.code_bias_available)
+                {
+                    return &prn_it->second;
+                }
+        }
+    return nullptr;
 }
 
 
@@ -297,59 +365,9 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs,
 
     if (!has_obs_corr.empty() && rtklib_obs.code[band] != CODE_NONE)
         {
-            const HAS_obs_corrections* has_correction = nullptr;
-            const int prn = static_cast<int>(gnss_synchro.PRN);
-            switch (gnss_synchro.System)
-                {
-                case 'G':
-                    {
-                        if (sig_ == "1C")
-                            {
-                                const std::vector<std::string> signal_candidates = {"L1 C/A"};
-                                has_correction = find_has_obs_correction(has_obs_corr, signal_candidates, prn);
-                            }
-                        else if (sig_ == "2S")
-                            {
-                                // L2 CM and L2 CL are time-multiplexed chip by chip into the same L2C code
-                                const std::vector<std::string> signal_candidates = {"L2 CM", "L2 CL", "L2 CM+CL"};
-                                has_correction = find_has_obs_correction(has_obs_corr, signal_candidates, prn);
-                            }
-                        else if (sig_ == "L5")
-                            {
-                                const std::vector<std::string> signal_candidates = has_component_candidates(gnss_synchro, "L5 I", "L5 Q", "L5 I + L5 Q");
-                                has_correction = find_has_obs_correction(has_obs_corr, signal_candidates, prn);
-                            }
-                    }
-                    break;
-                case 'E':
-                    {
-                        if (sig_ == "1B")
-                            {
-                                const std::vector<std::string> signal_candidates = has_component_candidates(gnss_synchro, "E1-B I/NAV OS", "E1-C", "E1-B + E1-C");
-                                has_correction = find_has_obs_correction(has_obs_corr, signal_candidates, prn);
-                            }
-                        else if (sig_ == "5X")
-                            {
-                                const std::vector<std::string> signal_candidates = has_component_candidates(gnss_synchro, "E5a-I F/NAV OS", "E5a-Q", "E5a-I+E5a-Q");
-                                has_correction = find_has_obs_correction(has_obs_corr, signal_candidates, prn);
-                            }
-
-                        else if (sig_ == "7X")
-                            {
-                                const std::vector<std::string> signal_candidates = has_component_candidates(gnss_synchro, "E5b-I I/NAV OS", "E5b-Q", "E5b-I+E5b-Q");
-                                has_correction = find_has_obs_correction(has_obs_corr, signal_candidates, prn);
-                            }
-                        else if (sig_ == "E6")
-                            {
-                                const std::vector<std::string> signal_candidates = has_component_candidates(gnss_synchro, "E6-B C/NAV HAS", "E6-C", "E6-B + E6-C");
-                                has_correction = find_has_obs_correction(has_obs_corr, signal_candidates, prn);
-                            }
-                    }
-                    break;
-                default:
-                    break;
-                }
-
+            const HAS_obs_corrections* has_correction = find_has_obs_correction(has_obs_corr,
+                gnss_synchro.System, sig_, static_cast<int>(gnss_synchro.PRN),
+                gnss_synchro.tracking_component == Gnss_Synchro::TrackingComponent::Pilot);
             if (has_correction != nullptr)
                 {
                     rtklib_obs.P[band] += has_correction->code_bias_m;
@@ -519,7 +537,10 @@ eph_t eph_to_rtklib(const Galileo_Ephemeris& gal_eph,
     rtklib_sat.toc = gpst2time(rtklib_sat.week, toc);
     rtklib_sat.ttr = gpst2time(rtklib_sat.week, tow);
 
-    if (!orbit_correction_map.empty() && !clock_correction_map.empty())
+    // HAS corrects only the Galileo I/NAV orbit and clock (HAS SIS ICD 1.0
+    // Table 21): the F/NAV clock refers to another ionosphere-free pair
+    if (gal_eph.nav_message_type == Galileo_Nav_Message_Type::INAV &&
+        !orbit_correction_map.empty() && !clock_correction_map.empty())
         {
             int count_has_corrections = 0;
             const auto it_orbit = orbit_correction_map.find(static_cast<int>(gal_eph.PRN));
@@ -891,6 +912,26 @@ eph_t eph_to_rtklib(const Gps_CNAV_Ephemeris& gps_cnav_eph)
     rtklib_sat.apply_has_corrections = false;
 
     return rtklib_sat;
+}
+
+
+void add_gps_cnav_iscs(eph_t& eph, const Gps_CNAV_Ephemeris& gps_cnav_eph, unsigned char first_slot_code)
+{
+    if (eph.apply_has_corrections)
+        {
+            for (auto& isc : eph.isc)
+                {
+                    isc = 0.0;
+                }
+            return;
+        }
+    if (first_slot_code != CODE_L1L && first_slot_code != CODE_L1S && first_slot_code != CODE_L1X)
+        {
+            eph.isc[0] = gps_cnav_eph.ISCL1;
+        }
+    eph.isc[1] = gps_cnav_eph.ISCL2;
+    eph.isc[2] = gps_cnav_eph.ISCL5I;
+    eph.isc[3] = gps_cnav_eph.ISCL5Q;
 }
 
 

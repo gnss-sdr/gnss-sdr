@@ -59,7 +59,6 @@ constexpr uint64_t MAX_SECONDS_REMEMBERING_MID = 150;        // HAS SIS ICD 1.0 
 constexpr uint64_t MAX_SECONDS_REMEMBERING_MASK_IOD = 1800;  // HAS SIS ICD 1.0 Section 7.6.1
 constexpr uint32_t GALILEO_HAS_SECONDS_PER_HOUR = 3600U;
 constexpr uint32_t GALILEO_HAS_SECONDS_PER_WEEK = 604800U;
-constexpr uint32_t GALILEO_HAS_HALF_WEEK_SECONDS = GALILEO_HAS_SECONDS_PER_WEEK / 2U;
 constexpr uint32_t GALILEO_HAS_INVALID_WEEK = std::numeric_limits<uint32_t>::max();
 constexpr uint32_t GALILEO_HAS_INVALID_TOW = std::numeric_limits<uint32_t>::max();
 
@@ -96,6 +95,11 @@ constexpr float HAS_MSG_DELTA_CROSS_TRACK_SCALE_FACTOR = 0.008;  // HAS SIS ICD 
 constexpr float HAS_MSG_DELTA_CLOCK_SCALE_FACTOR = 0.0025;       // HAS SIS ICD 1.0 Table 31
 constexpr float HAS_MSG_CODE_BIAS_SCALE_FACTOR = 0.02;           // HAS SIS ICD 1.0 Table 37
 constexpr float HAS_MSG_PHASE_BIAS_SCALE_FACTOR = 0.01;          // HAS SIS ICD 1.0 Table 40
+
+constexpr int16_t HAS_MSG_DELTA_CLOCK_UNAVAILABLE_RAW = -4096;  // HAS SIS ICD 1.0 Table 31, "1000000000000"
+constexpr int16_t HAS_MSG_DELTA_CLOCK_DO_NOT_USE_RAW = 4095;    // HAS SIS ICD 1.0 Table 31, "0111111111111"
+
+constexpr uint32_t HAS_MSG_MAX_VALIDITY_INTERVAL_S = 3600;  // HAS SIS ICD 1.0 Table 23
 
 constexpr uint16_t HAS_MSG_NUMBER_MAX_TOH = 3599;  // HAS SIS ICD 1.0 Table 13
 

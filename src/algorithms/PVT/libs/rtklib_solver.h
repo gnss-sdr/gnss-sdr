@@ -84,6 +84,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 /** \addtogroup PVT
  * \{ */
@@ -153,6 +154,25 @@ public:
         return d_nav_data.ne > 0 && d_nav_data.nc > 0;
     }
 
+    //! Number of satellites in the last solution whose orbit and clock carry
+    //! Galileo HAS corrections (0 if the last call to get_PVT() gave no solution)
+    inline uint8_t get_num_has_corrected_satellites() const
+    {
+        return d_has_corrected_satellites_used;
+    }
+
+    /*!
+     * \brief true if a solution rests on precise orbits and clocks: precise
+     * products are loaded, or every satellite in the solution carries Galileo
+     * HAS orbit and clock corrections
+     * \param precise_products_loaded precise ephemeris and clock products are loaded
+     * \param satellites_used number of satellites in the solution
+     * \param has_corrected_satellites_used number of those whose orbit and clock carry HAS corrections
+     */
+    static bool uses_precise_orbits_and_clocks(bool precise_products_loaded,
+        unsigned int satellites_used,
+        unsigned int has_corrected_satellites_used);
+
     //! true if the last call to get_PVT() had what it takes to compute a
     //! solution, whether it succeeded or not; false if it returned without
     //! trying (fewer than four satellites with ephemeris, or no fixed-base data
@@ -173,6 +193,17 @@ public:
     void store_has_data(const Galileo_HAS_data& new_has_data);
     void clear_has_corrections();
     void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);
+
+    //! true if the last call to update_has_corrections() selected the HAS
+    //! orbit, clock and code bias corrections for the satellite ("GPS" or
+    //! "Galileo"): they are all valid in the same Mask ID and IOD Set ID, and
+    //! every signal of the satellite used in the PVT solution has a code bias
+    bool has_corrections_applied(const std::string& system, int prn) const;
+
+    //! true if a HAS clock correction block flagged the satellite ("GPS" or
+    //! "Galileo") as not to be used (HAS SIS ICD 1.0 Table 31), and the
+    //! validity interval of the flag includes tow_obs
+    bool has_active_has_do_not_use(const std::string& system, int prn, uint32_t tow_obs) const;
     void store_sbas_message(const Sbas_Raw_Message& message);
     void store_gps_ephemeris(const Gps_Ephemeris& ephemeris);
     void clear_gps_ephemerides();
@@ -209,6 +240,18 @@ public:
     bool select_galileo_ephemeris(uint32_t prn, const std::string& signal, uint32_t observation_tow,
         Galileo_Ephemeris& ephemeris, bool& from_reduced_ced) const;
 
+    /*!
+     * \brief I/NAV ephemeris of a satellite with HAS corrections in the current
+     * epoch (see has_corrections_applied()). HAS only corrects the I/NAV orbit
+     * and clock (HAS SIS ICD 1.0 Table 21), and its code biases make every
+     * signal consistent with the refined clock, so the PVT solution uses this
+     * ephemeris for all the signals of the satellite, whatever the primary
+     * Galileo navigation service.
+     * \return false if the satellite has no HAS corrections, or no usable
+     * I/NAV ephemeris with the issue of data they correct
+     */
+    bool select_galileo_has_ephemeris(uint32_t prn, uint32_t observation_tow, Galileo_Ephemeris& ephemeris) const;
+
     sol_t pvt_sol{};
     std::array<ssat_t, MAXSAT> pvt_ssat{};
 
@@ -216,7 +259,7 @@ public:
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Compatibility PVT view; source-aware storage is authoritative
     std::map<int, Galileo_Reduced_CED> galileo_reduced_ced_map;        //!< Map storing provisional Galileo Reduced CED
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
-    std::map<int, Gps_Ephemeris> gps_previous_ephemeris_map;           //!< Previous GPS/QZSS issue retained for SBAS IODE handover
+    std::map<int, Gps_Ephemeris> gps_previous_ephemeris_map;           //!< Previous GPS/QZSS issue retained for the SBAS and HAS IODE handover
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Gps_CNAV2_Ephemeris> gps_cnav2_ephemeris_map;        //!< Map storing GPS L1C CNAV-2 ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
@@ -266,17 +309,59 @@ private:
     void update_galileo_observation_wavelengths(const obsd_t& observation);
 
     void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);
+
+    /*!
+     * Records the satellites of a system that a HAS clock full-set or subset
+     * block flags as not to be used, until the end of its validity interval,
+     * and lifts the flag of those with a clock correction.
+     */
+    void update_has_do_not_use(const Galileo_HAS_data& new_has_data, const std::string& system, bool clock_subset, uint32_t valid_until);
+
+    /*!
+     * Stores the orbit corrections of a HAS message for the satellites of a
+     * system ("GPS" or "Galileo") in its mask.
+     */
+    void store_has_orbit_corrections(const Galileo_HAS_data& new_has_data, const std::string& system);
+
+    /*!
+     * Stores the clock full-set or subset corrections of a HAS message for
+     * the satellites of a system with orbit corrections of the same Mask ID
+     * and IOD Set ID.
+     */
+    void store_has_clock_corrections(const Galileo_HAS_data& new_has_data, const std::string& system, bool clock_subset, uint32_t valid_until);
+
+    /*!
+     * Selects the satellites that get HAS corrections in this epoch and their
+     * code and phase biases. The broadcast group delays are replaced by the
+     * HAS code biases, and the HAS-refined clock is only consistent with
+     * bias-corrected pseudoranges (HAS SIS ICD 1.0 Sections 7.3 and 7.4), so
+     * a satellite keeps its broadcast orbit, clock and group delays unless
+     * every signal it contributes to the PVT solution has a code bias.
+     */
     void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
     void get_current_has_obs_correction(const std::string& signal, uint32_t tow_obs, int prn, uint8_t mask_id, uint8_t iod_set_id);
     void clear_applied_has_phase_bias_discontinuity(const HAS_obs_corrections* has_correction, int prn);
 
     /*!
+     * Inserts a GPS, QZSS or Galileo observation into its RTKLIB record. With
+     * a HAS-corrected ephemeris, it also gets its HAS code and phase biases.
+     * A change in the HAS corrections applied to its carrier phase since the
+     * previous epoch is flagged as a cycle slip.
+     */
+    obsd_t insert_obs_with_has_corrections(obsd_t& rtklib_obs,
+        const Gnss_Synchro& gnss_synchro,
+        int week,
+        int band,
+        int ref_week,
+        bool has_corrected_ephemeris);
+
+    /*!
      * Substitutes a base-stream broadcast ephemeris for a satellite whose
      * navigation message the rover has not decoded yet, inserting both the
-     * ephemeris and the observation. Owns the per-system week derivation and
-     * mirrors the rover-decoded path's HAS-correction handling, so the two
-     * conversion policies cannot drift. Returns false when the base stream
-     * has no ephemeris for the satellite.
+     * ephemeris and the observation. Owns the per-system week derivation.
+     * The substituted ephemeris carries no HAS orbit and clock corrections,
+     * so, as on the rover-decoded path, the observation gets no HAS biases.
+     * Returns false when the base stream has no ephemeris for the satellite.
      */
     bool substitute_base_ephemeris(const Ntrip_Rtcm_Snapshot* fixed_base,
         int sat,
@@ -285,9 +370,43 @@ private:
         std::vector<eph_t>& eph_data,
         int& valid_obs,
         int glo_valid_obs);
-    bool has_active_has_do_not_use(const std::string& system, int prn, uint32_t tow_obs) const;
-    bool has_active_has_orbit_clock(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs) const;
-    bool get_active_has_context(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs, uint8_t& mask_id, uint8_t& iod_set_id) const;
+    bool has_active_has_orbit_clock(const std::string& system, int prn, uint32_t tow_obs) const;
+
+    /*!
+     * Gets the Mask ID and IOD Set ID of the HAS corrections to apply to a
+     * satellite: those of its stored clock correction, if the orbit correction
+     * of the same set is stored, both are valid for the observation time, and
+     * the receiver has the broadcast ephemeris they refer to.
+     */
+    bool get_active_has_context(const std::string& system, int prn, uint32_t tow_obs, uint8_t& mask_id, uint8_t& iod_set_id) const;
+
+    /*!
+     * true if the receiver has the broadcast ephemeris (GPS LNAV, Galileo
+     * I/NAV) with the issue of data that HAS corrections refer to. HAS
+     * follows an update of the broadcast ephemeris with some delay, so it is
+     * either the current ephemeris of the satellite or the one it replaced.
+     */
+    bool has_reference_ephemeris_stored(const std::string& system, int prn, uint16_t iod) const;
+
+    /*!
+     * GPS LNAV ephemeris of a satellite with a given IODE: the current one or
+     * the one it replaced. Returns nullptr if there is none.
+     */
+    const Gps_Ephemeris* find_gps_ephemeris_issue(int prn, uint16_t iode) const;
+
+    /*!
+     * LNAV ephemeris that the HAS corrections applied to a GPS satellite in
+     * the current epoch refer to. Returns nullptr if the satellite has no HAS
+     * corrections, or that ephemeris is too old for the observation time.
+     */
+    const Gps_Ephemeris* select_gps_has_ephemeris(int prn, uint32_t observation_tow) const;
+
+    /*!
+     * Stored orbit correction of a satellite for a Mask ID and IOD Set ID,
+     * either the latest received or the one it superseded. Returns nullptr
+     * if there is none.
+     */
+    const HAS_orbit_corrections* find_has_orbit_correction(const std::string& system, int prn, uint8_t mask_id, uint8_t iod_set_id) const;
 
     void reset_relative_filter();
 
@@ -308,7 +427,25 @@ private:
 
     std::map<std::string, std::map<int, HAS_orbit_corrections>> d_has_orbit_corrections_store_map;  // first key is system, second key is PRN
     std::map<std::string, std::map<int, HAS_clock_corrections>> d_has_clock_corrections_store_map;  // first key is system, second key is PRN
-    std::map<std::string, std::map<int, uint32_t>> d_has_satellite_do_not_use_until;                // first key is system, second key is PRN
+    // Orbit corrections and biases superseded by those of another Mask ID or
+    // IOD Set ID. The clock corrections of a new set come in a later message
+    // than its orbit corrections and biases, and corrections can be related
+    // only within the same set (HAS SIS ICD 1.0 Section 7.6.1), so the
+    // superseded set stays in use, within its validity intervals, until then.
+    std::map<std::string, std::map<int, HAS_orbit_corrections>> d_has_orbit_corrections_previous_store_map;  // first key is system, second key is PRN
+    std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_code_bias_previous_store_map;           // first key is signal, second key is PRN
+    std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_phase_bias_previous_store_map;          // first key is signal, second key is PRN
+    struct Has_Do_Not_Use_Interval
+    {
+        uint32_t valid_from{};
+        uint32_t valid_until{};
+    };
+    // Validity intervals of the messages that flagged each satellite as not to be
+    // used. Observations can precede the latest message, so each message keeps
+    // its own interval until the observations have passed it. First key is
+    // system, second key is PRN.
+    std::map<std::string, std::map<int, std::vector<Has_Do_Not_Use_Interval>>> d_has_satellite_do_not_use_intervals;
+    static void prune_has_do_not_use_intervals(std::vector<Has_Do_Not_Use_Interval>& intervals, uint32_t tow_obs);
 
     std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_code_bias_store_map;         // first key is signal, second key is PRN
     std::map<std::string, std::map<int, HAS_bias_corrections>> d_has_phase_bias_store_map;        // first key is signal, second key is PRN
@@ -316,6 +453,14 @@ private:
     std::map<std::string, std::map<int, bool>> d_has_phase_bias_discontinuity_map;                // first key is signal, second key is PRN
 
     std::map<std::string, std::map<int, HAS_obs_corrections>> d_has_obs_corr_map;  // first key is signal, second key is PRN
+
+    // HAS corrections applied to each carrier phase in the previous epoch. Kept
+    // across clear_has_corrections(), since dropping them is also a step
+    HAS_carrier_continuity d_has_carrier_continuity;
+
+    // Orbit and clock corrections of the satellites selected by get_has_biases() in the current epoch
+    std::map<std::string, std::map<int, HAS_orbit_corrections>> d_has_orbit_corrections_applied_map;  // first key is system, second key is PRN
+    std::map<std::string, std::map<int, HAS_clock_corrections>> d_has_clock_corrections_applied_map;  // first key is system, second key is PRN
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
@@ -337,6 +482,10 @@ private:
     bool d_fixed_base_was_applied = false;
     bool d_duplicated_rover_observations_logged = false;
     bool d_solution_attempted = false;
+    // Satellites (RTKLIB satellite number - 1) whose orbit and clock carry HAS
+    // corrections in the last solution, and how many of them it used
+    std::array<bool, MAXSAT> d_has_corrected_satellite{};
+    uint8_t d_has_corrected_satellites_used{};
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
 };

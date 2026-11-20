@@ -59,6 +59,9 @@ public:
         // Broadcast health status, independent of `used` (which alone can't
         // tell a monitor client *why* a satellite was excluded).
         bool healthy{true};
+        // The satellite's orbit and clock carry Galileo HAS corrections, and
+        // this signal its HAS code bias. Independent of `used`.
+        bool has_corrected{};
 
         template <class Archive>
         void serialize(Archive& ar, const unsigned int version)
@@ -78,6 +81,14 @@ public:
             else if (Archive::is_loading::value)
                 {
                     observation_code.clear();
+                }
+            if (version > 1)
+                {
+                    ar& BOOST_SERIALIZATION_NVP(has_corrected);
+                }
+            else if (Archive::is_loading::value)
+                {
+                    has_corrected = false;
                 }
         }
     };
@@ -123,7 +134,7 @@ public:
     // Course Over Ground (COG) [deg]
     double cog;
 
-    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not available
+    // Galileo HAS status: 1 - HAS corrections applied to at least one satellite of the solution, 0 - not applied
     uint32_t galhas_status;
 
     // NUMBER OF VALID SATS
@@ -211,7 +222,7 @@ public:
 };
 
 
-BOOST_CLASS_VERSION(Monitor_Pvt::TrackedSatelliteInfo, 1)
+BOOST_CLASS_VERSION(Monitor_Pvt::TrackedSatelliteInfo, 2)
 
 /** \} */
 /** \} */

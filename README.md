@@ -1925,7 +1925,7 @@ PVT.satellite_ephemeris=Broadcast ; options: Broadcast, SBAS
 PVT.sbas_satellite=0             ; 0: first SBAS GEO received, or select PRN 120-138
 PVT.iono_model=Broadcast         ; options: OFF, Broadcast, SBAS, Iono-Free-LC, Estimate_STEC, IONEX
 PVT.trop_model=Saastamoinen      ; options: OFF, Saastamoinen, SBAS, Estimate_ZTD, Estimate_ZTD_Grad
-PVT.rinex_version=2              ; options: 2 or 3
+PVT.rinex_version=2              ; options: 2, 3 or 4
 PVT.output_rate_ms=100           ; Period in [ms] between two PVT outputs
 PVT.display_rate_ms=500          ; Position console print (std::out) interval [ms].
 PVT.nmea_dump_filename=./gnss_sdr_pvt.nmea ; NMEA log path and filename
@@ -1938,6 +1938,7 @@ PVT.rtcm_dump_devname=/dev/pts/1 ; serial device descriptor for RTCM logging
 PVT.rtcm_tcp_port=2101
 PVT.rtcm_MT1019_rate_ms=5000
 PVT.rtcm_MT1045_rate_ms=5000
+PVT.rtcm_MT1046_rate_ms=5000
 PVT.rtcm_MT1097_rate_ms=1000
 PVT.rtcm_MT1077_rate_ms=1000
 ```
@@ -2134,12 +2135,12 @@ PVT.rinex_version=2
   _RTCM 10403.2, Differential GNSS (Global Navigation Satellite Systems)
   Services - Version 3_ (February 1, 2013), which can be
   [purchased online](https://ssl29.pair.com/dmarkle/puborder.php?show=3 "RTCM Online Publication Order Form").
-  By default, the generated RTCM binary messages are dumped into a text file in
-  hexadecimal format. GNSS-SDR can also expose those generated messages through
-  an outbound raw TCP server. This output can be forwarded to an NTRIP caster by
-  a separate tool, but the server is not itself an NTRIP caster client. NTRIP
-  (Networked Transport of RTCM via Internet Protocol) is an open standard
-  protocol that can be freely downloaded from
+  By default, the generated RTCM binary messages are dumped into a file.
+  GNSS-SDR can also expose those generated messages through an outbound raw TCP
+  server. This output can be forwarded to an NTRIP caster by a separate tool,
+  but the server is not itself an NTRIP caster client. NTRIP (Networked
+  Transport of RTCM via Internet Protocol) is an open standard protocol that can
+  be freely downloaded from
   [BKG](https://igs.bkg.bund.de/root_ftp/NTRIP/documentation/NtripDocumentation.pdf "Networked Transport of RTCM via Internet Protocol (Ntrip) Version 1.0"),
   and it is designed for disseminating differential correction data (_e.g._ in
   the RTCM-104 format) or other kinds of GNSS streaming data to stationary or

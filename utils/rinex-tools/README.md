@@ -137,6 +137,6 @@ Available command-line flags:
 | `--remove_rx_clock_error` | `false`           | Compute and remove the receivers clock error prior to compute observable differences (requires a valid RINEX nav file for both receivers) |
 | `--rinex_nav`             | `base.nav`        | Filename of reference RINEX navigation file. Only needed if `remove_rx_clock_error` is set to `true`. |
 | `--system`                | `G`               | GNSS satellite system: `G` for GPS, `E` for Galileo. |
-| `--signal`                | `1C`              | GNSS signal: `1C` for GPS L1 CA, `1B` for Galileo E1. |
+| `--signal`                | `1C`              | GNSS signal: `1C` for GPS L1 CA, `2S` for GPS L2C, `L5` for GPS L5, `1B` for Galileo E1, `5X` for Galileo E5a. For signals with a pilot, the data component is read if present, and the pilot one otherwise. |
 | `--show_plots`            | `true`            | [`true`, `false`]: If `true`, and if [gnuplot](http://www.gnuplot.info/) is found on the system, displays results plots on screen. Please set it to `false` for non-interactive testing. |
 <!-- prettier-ignore-end -->

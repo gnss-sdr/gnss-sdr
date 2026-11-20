@@ -271,6 +271,41 @@ TEST_F(GalileoHasCorrectionsTest, NotAppliedWithoutCodeBiases)
 }
 
 
+TEST_F(GalileoHasCorrectionsTest, ClockCorrectionsOfTheSupersededIodSetAreStored)
+{
+    // The orbit corrections and biases of a new IOD Set ID arrive before its
+    // clock corrections. Meanwhile, a clock correction of the previous set
+    // still goes with that set's orbit corrections and biases.
+    constexpr uint8_t short_validity_index = 2;  // 15 s
+    const auto dated = [](Galileo_HAS_data message, uint32_t tow) {
+        message.tow = tow;
+        message.header.toh = static_cast<uint16_t>(tow % 3600U);
+        message.validity_interval_index_clock_fullset_corrections = short_validity_index;
+        return message;
+    };
+    auto solver = make_solver();
+    solver->store_has_data(dated(make_message(true, e1_e6_biases()), MESSAGE_TOW));
+
+    Galileo_HAS_data new_set_orbit = dated(make_message(true, e1_e6_biases(), IOD_SET_ID + 1U), MESSAGE_TOW + 10U);
+    new_set_orbit.header.clock_fullset_flag = false;
+    solver->store_has_data(new_set_orbit);
+
+    Galileo_HAS_data previous_set_clock = dated(make_message(true, {}, IOD_SET_ID), MESSAGE_TOW + 12U);
+    previous_set_clock.header.orbit_correction_flag = false;
+    solver->store_has_data(previous_set_clock);
+
+    // the clock of the first message has expired (MESSAGE_TOW + 15): the one
+    // of the previous set received at MESSAGE_TOW + 12 applies
+    solver->update_has_corrections(make_observations(true, true, MESSAGE_TOW + 20U));
+    EXPECT_TRUE(solver->has_corrections_applied("Galileo", PRN));
+
+    // the clock corrections of the new set take over
+    solver->store_has_data(dated(make_message(true, e1_e6_biases(), IOD_SET_ID + 1U), MESSAGE_TOW + 22U));
+    solver->update_has_corrections(make_observations(true, true, MESSAGE_TOW + 30U));
+    EXPECT_TRUE(solver->has_corrections_applied("Galileo", PRN));
+}
+
+
 TEST_F(GalileoHasCorrectionsTest, NotAppliedWhenTheCodeBiasesBelongToAnotherIodSet)
 {
     // Biases for a new IOD Set ID arrive while the stored orbit and clock

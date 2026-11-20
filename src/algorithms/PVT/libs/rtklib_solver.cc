@@ -946,13 +946,13 @@ void Rtklib_Solver::store_has_clock_corrections(const Galileo_HAS_data &new_has_
     for (const int prn : has_clock_block_prns(new_has_data, system, clock_subset))
         {
             // Clock corrections go with the orbit corrections of their Mask ID
-            // and IOD Set ID (HAS SIS ICD 1.0 Section 7.6)
+            // and IOD Set ID (HAS SIS ICD 1.0 Section 7.6): the latest received
+            // or, until the clock corrections of a new set arrive, the ones
+            // they superseded
             const uint16_t gnss_iod = new_has_data.get_gnss_iod(system, prn);
-            const auto orbit_it = orbit_store_it->second.find(prn);
-            if (orbit_it == orbit_store_it->second.cend() ||
-                orbit_it->second.iod != gnss_iod ||
-                orbit_it->second.mask_id != new_has_data.header.mask_id ||
-                orbit_it->second.iod_set_id != new_has_data.header.iod_set_id)
+            const HAS_orbit_corrections *orbit_correction = find_has_orbit_correction(system, prn,
+                new_has_data.header.mask_id, new_has_data.header.iod_set_id);
+            if (orbit_correction == nullptr || orbit_correction->iod != gnss_iod)
                 {
                     continue;
                 }

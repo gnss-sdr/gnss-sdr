@@ -153,6 +153,8 @@ double prectrop(gtime_t time, const double *pos, const double *azel,
     const prcopt_t *opt, const double *x, double *dtdx,
     double *var);
 
+int ppp_clock_index(int sys, const prcopt_t *opt);
+
 int res_ppp(int iter, const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
     const nav_t *nav, const double *x, rtk_t *rtk, double *v,

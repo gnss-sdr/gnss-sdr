@@ -259,7 +259,7 @@ public:
     std::map<int, Galileo_Ephemeris> galileo_ephemeris_map;            //!< Compatibility PVT view; source-aware storage is authoritative
     std::map<int, Galileo_Reduced_CED> galileo_reduced_ced_map;        //!< Map storing provisional Galileo Reduced CED
     std::map<int, Gps_Ephemeris> gps_ephemeris_map;                    //!< Map storing new GPS_Ephemeris
-    std::map<int, Gps_Ephemeris> gps_previous_ephemeris_map;           //!< Previous GPS/QZSS issue retained for SBAS IODE handover
+    std::map<int, Gps_Ephemeris> gps_previous_ephemeris_map;           //!< Previous GPS/QZSS issue retained for the SBAS and HAS IODE handover
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Gps_CNAV2_Ephemeris> gps_cnav2_ephemeris_map;        //!< Map storing GPS L1C CNAV-2 ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
@@ -318,6 +318,19 @@ private:
     void update_has_do_not_use(const Galileo_HAS_data& new_has_data, const std::string& system, bool clock_subset, uint32_t valid_until);
 
     /*!
+     * Stores the orbit corrections of a HAS message for the satellites of a
+     * system ("GPS" or "Galileo") in its mask.
+     */
+    void store_has_orbit_corrections(const Galileo_HAS_data& new_has_data, const std::string& system);
+
+    /*!
+     * Stores the clock full-set or subset corrections of a HAS message for
+     * the satellites of a system with orbit corrections of the same Mask ID
+     * and IOD Set ID.
+     */
+    void store_has_clock_corrections(const Galileo_HAS_data& new_has_data, const std::string& system, bool clock_subset, uint32_t valid_until);
+
+    /*!
      * Selects the satellites that get HAS corrections in this epoch and their
      * code and phase biases. The broadcast group delays are replaced by the
      * HAS code biases, and the HAS-refined clock is only consistent with
@@ -357,15 +370,36 @@ private:
         std::vector<eph_t>& eph_data,
         int& valid_obs,
         int glo_valid_obs);
-    bool has_active_has_orbit_clock(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs) const;
+    bool has_active_has_orbit_clock(const std::string& system, int prn, uint32_t tow_obs) const;
 
     /*!
      * Gets the Mask ID and IOD Set ID of the HAS corrections to apply to a
      * satellite: those of its stored clock correction, if the orbit correction
-     * of the same set is stored and both are valid for the observation time
-     * and the issue of data of the broadcast ephemeris.
+     * of the same set is stored, both are valid for the observation time, and
+     * the receiver has the broadcast ephemeris they refer to.
      */
-    bool get_active_has_context(const std::string& system, int prn, uint16_t sis_iod, uint32_t tow_obs, uint8_t& mask_id, uint8_t& iod_set_id) const;
+    bool get_active_has_context(const std::string& system, int prn, uint32_t tow_obs, uint8_t& mask_id, uint8_t& iod_set_id) const;
+
+    /*!
+     * true if the receiver has the broadcast ephemeris (GPS LNAV, Galileo
+     * I/NAV) with the issue of data that HAS corrections refer to. HAS
+     * follows an update of the broadcast ephemeris with some delay, so it is
+     * either the current ephemeris of the satellite or the one it replaced.
+     */
+    bool has_reference_ephemeris_stored(const std::string& system, int prn, uint16_t iod) const;
+
+    /*!
+     * GPS LNAV ephemeris of a satellite with a given IODE: the current one or
+     * the one it replaced. Returns nullptr if there is none.
+     */
+    const Gps_Ephemeris* find_gps_ephemeris_issue(int prn, uint16_t iode) const;
+
+    /*!
+     * LNAV ephemeris that the HAS corrections applied to a GPS satellite in
+     * the current epoch refer to. Returns nullptr if the satellite has no HAS
+     * corrections, or that ephemeris is too old for the observation time.
+     */
+    const Gps_Ephemeris* select_gps_has_ephemeris(int prn, uint32_t observation_tow) const;
 
     /*!
      * Stored orbit correction of a satellite for a Mask ID and IOD Set ID,

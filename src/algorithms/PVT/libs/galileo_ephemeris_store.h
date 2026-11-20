@@ -33,8 +33,37 @@ public:
             {
                 return false;
             }
-        (*destination)[static_cast<int>(ephemeris.PRN)] = ephemeris;
+        const auto prn = static_cast<int>(ephemeris.PRN);
+        if (ephemeris.nav_message_type == Galileo_Nav_Message_Type::INAV)
+            {
+                // Galileo HAS corrections refer to an I/NAV issue of data and
+                // follow an update of the broadcast ephemeris with some delay:
+                // retain the issue that is replaced
+                const auto current = destination->find(prn);
+                if (current != destination->cend() && current->second.IOD_ephemeris != ephemeris.IOD_ephemeris)
+                    {
+                        d_previous_inav_ephemeris_map[prn] = current->second;
+                    }
+            }
+        (*destination)[prn] = ephemeris;
         return true;
+    }
+
+    //! I/NAV ephemeris of a satellite with a given issue of data: the current
+    //! one or the one it replaced. Returns nullptr if there is none.
+    const Galileo_Ephemeris* find_inav_issue(int prn, int iod_ephemeris) const
+    {
+        const auto current = d_inav_ephemeris_map.find(prn);
+        if (current != d_inav_ephemeris_map.cend() && current->second.IOD_ephemeris == iod_ephemeris)
+            {
+                return &current->second;
+            }
+        const auto previous = d_previous_inav_ephemeris_map.find(prn);
+        if (previous != d_previous_inav_ephemeris_map.cend() && previous->second.IOD_ephemeris == iod_ephemeris)
+            {
+                return &previous->second;
+            }
+        return nullptr;
     }
 
     const Galileo_Ephemeris* find(int prn, Galileo_Nav_Message_Type source) const
@@ -118,6 +147,7 @@ public:
     {
         d_inav_ephemeris_map.clear();
         d_fnav_ephemeris_map.clear();
+        d_previous_inav_ephemeris_map.clear();
     }
 
 private:
@@ -149,6 +179,7 @@ private:
 
     Ephemeris_Map d_inav_ephemeris_map;
     Ephemeris_Map d_fnav_ephemeris_map;
+    Ephemeris_Map d_previous_inav_ephemeris_map;  // I/NAV issue replaced by the current one
 };
 
 #endif  // GNSS_SDR_GALILEO_EPHEMERIS_STORE_H

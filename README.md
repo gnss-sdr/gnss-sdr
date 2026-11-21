@@ -890,7 +890,7 @@ $ cmake --build build --target doc
 and can be viewed doing:
 
 ```
-$ open ./docs/html/index.html
+$ open ./build/docs/html/index.html
 ```
 
 GNSS-SDR comes with a library which is a module of the Vector-Optimized Library

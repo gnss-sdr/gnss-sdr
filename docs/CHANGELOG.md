@@ -322,6 +322,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   Graphviz DOT format. Set `GNSS-SDR.dump_flowgraph=true` and, optionally,
   `GNSS-SDR.flowgraph_dump_filename` (default `flowgraph.dot`). Contributed by
   @edmondj.
+- A new tracking parameter `Tracking_XX.dump_every_code_period` (default
+  `false`) makes the DLL/PLL tracking dump (`Tracking_XX.dump=true`) write a
+  record for every code period also once the channel has reached symbol
+  synchronization. By default the dump then gets one record per symbol, so the
+  prompt correlator output of the code periods inside a symbol (for instance,
+  each of the 20 periods of a GPS L1 C/A bit, or the secondary code chips of a
+  BeiDou B1I symbol) is not stored. The record layout is the same in both cases.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

@@ -209,13 +209,6 @@ void covecef(const double *pos, const double *Q, double *P);
 void ast_args(double t, double *f);
 void nut_iau1980(double t, const double *f, double *dpsi, double *deps);
 void eci2ecef(gtime_t tutc, const double *erpv, double *U, double *gmst);
-int decodef(char *p, int n, double *v);
-void addpcv(const pcv_t *pcv, pcvs_t *pcvs);
-int readngspcv(const char *file, pcvs_t *pcvs);
-int readantex(const char *file, pcvs_t *pcvs);
-int readpcv(const char *file, pcvs_t *pcvs);
-pcv_t *searchpcv(int sat, const char *type, gtime_t time,
-    const pcvs_t *pcvs);
 void readpos(const char *file, const char *rcv, double *pos);
 int readblqrecord(FILE *fp, double *odisp);
 int readblq(const char *file, const char *sta, double *odisp);

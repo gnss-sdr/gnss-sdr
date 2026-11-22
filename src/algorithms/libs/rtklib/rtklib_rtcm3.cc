@@ -2387,6 +2387,7 @@ int decode_ssr1(rtcm_t *rtcm, int sys)
             rtcm->ssr[sat - 1].iod[0] = iod;
             rtcm->ssr[sat - 1].iode = iode;     /* sbas/bds: toe/t0 modulo */
             rtcm->ssr[sat - 1].iodcrc = iodcrc; /* sbas/bds: iod crc */
+            rtcm->ssr[sat - 1].iode_lsb = 0;
             rtcm->ssr[sat - 1].refd = refd;
 
             for (k = 0; k < 3; k++)
@@ -2490,6 +2491,7 @@ int decode_ssr3(rtcm_t *rtcm, int sys)
     double udint;
     double bias;
     double cbias[MAXCODE];
+    unsigned char vcbias[MAXCODE];
     int i;
     int j;
     int k;
@@ -2563,6 +2565,7 @@ int decode_ssr3(rtcm_t *rtcm, int sys)
             for (k = 0; k < MAXCODE; k++)
                 {
                     cbias[k] = 0.0;
+                    vcbias[k] = 0;
                 }
             for (k = 0; k < nbias && i + 19 <= rtcm->len * 8; k++)
                 {
@@ -2573,6 +2576,7 @@ int decode_ssr3(rtcm_t *rtcm, int sys)
                     if (mode <= ncode)
                         {
                             cbias[codes[mode] - 1] = static_cast<float>(bias);
+                            vcbias[codes[mode] - 1] = 1;
                         }
                     else
                         {
@@ -2591,6 +2595,7 @@ int decode_ssr3(rtcm_t *rtcm, int sys)
             for (k = 0; k < MAXCODE; k++)
                 {
                     rtcm->ssr[sat - 1].cbias[k] = static_cast<float>(cbias[k]);
+                    rtcm->ssr[sat - 1].vcbias[k] = vcbias[k];
                 }
             rtcm->ssr[sat - 1].update = 1;
         }
@@ -2708,6 +2713,7 @@ int decode_ssr4(rtcm_t *rtcm, int sys)
             rtcm->ssr[sat - 1].iod[0] = rtcm->ssr[sat - 1].iod[1] = iod;
             rtcm->ssr[sat - 1].iode = iode;
             rtcm->ssr[sat - 1].iodcrc = iodcrc;
+            rtcm->ssr[sat - 1].iode_lsb = 0;
             rtcm->ssr[sat - 1].refd = refd;
 
             for (k = 0; k < 3; k++)
@@ -2994,6 +3000,365 @@ int decode_ssr7(rtcm_t *rtcm, int sys)
                 }
         }
     return 20;
+}
+
+
+/* signal and tracking mode identifiers of IGS SSR v1.00 (IDF024) ------------
+ * 0: reserved in that version, or a signal with no observation code here
+ *-----------------------------------------------------------------------------*/
+static const int IGS_SSR_CODES_GPS[] = {
+    CODE_L1C, CODE_L1P, CODE_L1W, CODE_L1S, CODE_L1L, CODE_L2C, CODE_L2D, CODE_L2S,
+    CODE_L2L, 0, CODE_L2P, CODE_L2W, 0, 0, CODE_L5I, CODE_L5Q};
+
+
+static const int IGS_SSR_CODES_GLO[] = {
+    CODE_L1C, CODE_L1P, CODE_L2C, CODE_L2P, 0, 0, 0, 0, CODE_L3I, CODE_L3Q};
+
+
+static const int IGS_SSR_CODES_GAL[] = {
+    CODE_L1A, CODE_L1B, CODE_L1C, 0, 0, CODE_L5I, CODE_L5Q, 0, CODE_L7I, CODE_L7Q,
+    0, 0, 0, 0, CODE_L6A, CODE_L6B, CODE_L6C};
+
+
+static const int IGS_SSR_CODES_QZS[] = {
+    CODE_L1C, CODE_L1S, CODE_L1L, CODE_L2S, CODE_L2L, 0, CODE_L5I, CODE_L5Q, 0,
+    CODE_L6S, CODE_L6L};
+
+
+static const int IGS_SSR_CODES_BDS[] = {
+    CODE_L2I, CODE_L2Q, 0, CODE_L6I, CODE_L6Q, 0, CODE_L7I, CODE_L7Q, 0, CODE_L1D,
+    CODE_L1P, 0, CODE_L5D, CODE_L5P, 0, CODE_L1A, 0, 0, CODE_L6A};
+
+
+static const int IGS_SSR_CODES_SBS[] = {
+    CODE_L1C, CODE_L5I, CODE_L5Q};
+
+
+/* decode IGS SSR message -------------------------------------------------------
+ * sub-types of the RTCM message 4076 (IGS SSR v1.00): orbit (IGM01), clock
+ * (IGM02), combined orbit and clock (IGM03), high rate clock (IGM04), code bias
+ * (IGM05), phase bias (IGM06) and URA (IGM07) of GPS, GLONASS, Galileo, QZSS,
+ * BDS and SBAS. The ionosphere message (IM201) is not supported
+ *-----------------------------------------------------------------------------*/
+int decode_igs_ssr(rtcm_t *rtcm)
+{
+    const int nbits = rtcm->len * 8;
+    const int *codes;
+    double deph[3] = {0.0, 0.0, 0.0};
+    double ddeph[3] = {0.0, 0.0, 0.0};
+    double dclk[3] = {0.0, 0.0, 0.0};
+    double hrclk = 0.0;
+    double tow;
+    double udint;
+    double pbias[MAXCODE];
+    float cbias[MAXCODE];
+    unsigned char vcbias[MAXCODE];
+    int i = 24 + 12;
+    int j;
+    int k;
+    int subtype;
+    int igm;
+    int sys;
+    int ncode;
+    int offp = 0;
+    int udi;
+    int sync;
+    int iod;
+    int refd = 0;
+    int nsat;
+    int prn;
+    int sat;
+    int iode = 0;
+    int ura = 0;
+    int nbias;
+    int mode;
+    int yaw_ang = 0;
+    int yaw_rate = 0;
+    int size;
+
+    if (i + 3 + 8 > nbits)
+        {
+            trace(2, "rtcm3 4076 length error: len=%d\n", rtcm->len);
+            return -1;
+        }
+    i += 3; /* IGS SSR version */
+    subtype = getbitu(rtcm->buff, i, 8);
+    i += 8;
+
+    switch (subtype / 20)
+        {
+        case 1:
+            sys = SYS_GPS;
+            codes = IGS_SSR_CODES_GPS;
+            ncode = sizeof(IGS_SSR_CODES_GPS) / sizeof(int);
+            break;
+        case 2:
+            sys = SYS_GLO;
+            codes = IGS_SSR_CODES_GLO;
+            ncode = sizeof(IGS_SSR_CODES_GLO) / sizeof(int);
+            break;
+        case 3:
+            sys = SYS_GAL;
+            codes = IGS_SSR_CODES_GAL;
+            ncode = sizeof(IGS_SSR_CODES_GAL) / sizeof(int);
+            break;
+        case 4:
+            sys = SYS_QZS;
+            codes = IGS_SSR_CODES_QZS;
+            ncode = sizeof(IGS_SSR_CODES_QZS) / sizeof(int);
+            offp = 192;
+            break;
+        case 5:
+            sys = SYS_BDS;
+            codes = IGS_SSR_CODES_BDS;
+            ncode = sizeof(IGS_SSR_CODES_BDS) / sizeof(int);
+            break;
+        case 6:
+            sys = SYS_SBS;
+            codes = IGS_SSR_CODES_SBS;
+            ncode = sizeof(IGS_SSR_CODES_SBS) / sizeof(int);
+            offp = 119;
+            break;
+        default:
+            return 0; /* ionosphere and reserved sub-types */
+        }
+    igm = subtype % 20;
+    if (igm < 1 || igm > 7)
+        {
+            return 0; /* reserved sub-types */
+        }
+
+    /* header: the orbit messages have the CRS indicator and the phase bias
+       message has the two consistency indicators before the number of satellites */
+    size = 20 + 4 + 1 + 4 + 16 + 4 + ((igm == 1 || igm == 3) ? 1 : 0) + (igm == 6 ? 2 : 0) + 6;
+    if (i + size > nbits)
+        {
+            trace(2, "rtcm3 4076 sub-type %d length error: len=%d\n", subtype, rtcm->len);
+            return -1;
+        }
+    tow = getbitu(rtcm->buff, i, 20); /* in the GPS time scale for all the systems */
+    i += 20;
+    adjweek(rtcm, tow);
+    udi = getbitu(rtcm->buff, i, 4);
+    i += 4;
+    sync = getbitu(rtcm->buff, i, 1);
+    i += 1;
+    iod = getbitu(rtcm->buff, i, 4);
+    i += 4;
+    i += 16; /* provider id */
+    i += 4;  /* solution id */
+    if (igm == 1 || igm == 3)
+        {
+            refd = getbitu(rtcm->buff, i, 1);
+            i += 1;
+        }
+    if (igm == 6)
+        {
+            i += 2; /* dispersive bias and MW consistency indicators */
+        }
+    nsat = getbitu(rtcm->buff, i, 6);
+    i += 6;
+    udint = SSRUDINT[udi];
+
+    trace(4, "decode_igs_ssr: time=%s sub-type=%d nsat=%d sync=%d iod=%d\n",
+        time_str(rtcm->time, 2), subtype, nsat, sync, iod);
+
+    /* size of the part of a satellite, before its biases */
+    switch (igm)
+        {
+        case 1:
+            size = 6 + 8 + 121;
+            break;
+        case 2:
+            size = 6 + 70;
+            break;
+        case 3:
+            size = 6 + 8 + 121 + 70;
+            break;
+        case 4:
+            size = 6 + 22;
+            break;
+        case 5:
+            size = 6 + 5;
+            break;
+        case 6:
+            size = 6 + 5 + 9 + 8;
+            break;
+        default:
+            size = 6 + 6;
+            break;
+        }
+
+    for (j = 0; j < nsat && i + size <= nbits; j++)
+        {
+            prn = getbitu(rtcm->buff, i, 6) + offp;
+            i += 6;
+            if (igm == 1 || igm == 3)
+                {
+                    iode = getbitu(rtcm->buff, i, 8);
+                    i += 8;
+                    deph[0] = getbits(rtcm->buff, i, 22) * 1E-4;
+                    i += 22;
+                    deph[1] = getbits(rtcm->buff, i, 20) * 4E-4;
+                    i += 20;
+                    deph[2] = getbits(rtcm->buff, i, 20) * 4E-4;
+                    i += 20;
+                    ddeph[0] = getbits(rtcm->buff, i, 21) * 1E-6;
+                    i += 21;
+                    ddeph[1] = getbits(rtcm->buff, i, 19) * 4E-6;
+                    i += 19;
+                    ddeph[2] = getbits(rtcm->buff, i, 19) * 4E-6;
+                    i += 19;
+                }
+            if (igm == 2 || igm == 3)
+                {
+                    dclk[0] = getbits(rtcm->buff, i, 22) * 1E-4;
+                    i += 22;
+                    dclk[1] = getbits(rtcm->buff, i, 21) * 1E-6;
+                    i += 21;
+                    dclk[2] = getbits(rtcm->buff, i, 27) * 2E-8;
+                    i += 27;
+                }
+            if (igm == 4)
+                {
+                    hrclk = getbits(rtcm->buff, i, 22) * 1E-4;
+                    i += 22;
+                }
+            if (igm == 5)
+                {
+                    nbias = getbitu(rtcm->buff, i, 5);
+                    i += 5;
+                    for (k = 0; k < MAXCODE; k++)
+                        {
+                            cbias[k] = 0.0;
+                            vcbias[k] = 0;
+                        }
+                    for (k = 0; k < nbias && i + 19 <= nbits; k++)
+                        {
+                            mode = getbitu(rtcm->buff, i, 5);
+                            i += 5;
+                            const double bias = getbits(rtcm->buff, i, 14) * 0.01;
+                            i += 14;
+                            if (mode < ncode && codes[mode] != 0)
+                                {
+                                    cbias[codes[mode] - 1] = static_cast<float>(bias);
+                                    vcbias[codes[mode] - 1] = 1;
+                                }
+                            else
+                                {
+                                    trace(2, "rtcm3 4076 sub-type %d not supported mode: mode=%d\n", subtype, mode);
+                                }
+                        }
+                }
+            if (igm == 6)
+                {
+                    nbias = getbitu(rtcm->buff, i, 5);
+                    i += 5;
+                    yaw_ang = getbitu(rtcm->buff, i, 9);
+                    i += 9;
+                    yaw_rate = getbits(rtcm->buff, i, 8);
+                    i += 8;
+                    for (k = 0; k < MAXCODE; k++)
+                        {
+                            pbias[k] = 0.0;
+                        }
+                    for (k = 0; k < nbias && i + 32 <= nbits; k++)
+                        {
+                            mode = getbitu(rtcm->buff, i, 5);
+                            i += 5;
+                            i += 1; /* integer indicator */
+                            i += 2; /* wide-lane integer indicator */
+                            i += 4; /* discontinuity counter */
+                            const double bias = getbits(rtcm->buff, i, 20) * 0.0001;
+                            i += 20;
+                            if (mode < ncode && codes[mode] != 0)
+                                {
+                                    pbias[codes[mode] - 1] = bias;
+                                }
+                            else
+                                {
+                                    trace(2, "rtcm3 4076 sub-type %d not supported mode: mode=%d\n", subtype, mode);
+                                }
+                        }
+                }
+            if (igm == 7)
+                {
+                    ura = getbitu(rtcm->buff, i, 6);
+                    i += 6;
+                }
+
+            if (!(sat = satno(sys, prn)))
+                {
+                    trace(2, "rtcm3 4076 sub-type %d satellite number error: prn=%d\n", subtype, prn);
+                    continue;
+                }
+            ssr_t *ssr = rtcm->ssr + sat - 1;
+            if (igm == 1 || igm == 3)
+                {
+                    ssr->t0[0] = rtcm->time;
+                    ssr->udi[0] = udint;
+                    ssr->iod[0] = iod;
+                    ssr->iode = iode;
+                    ssr->iodcrc = 0;
+                    ssr->iode_lsb = sys == SYS_GAL ? 1 : 0; /* 8 LSBs of the IODnav */
+                    ssr->refd = refd;
+                    for (k = 0; k < 3; k++)
+                        {
+                            ssr->deph[k] = deph[k];
+                            ssr->ddeph[k] = ddeph[k];
+                        }
+                }
+            if (igm == 2 || igm == 3)
+                {
+                    ssr->t0[1] = rtcm->time;
+                    ssr->udi[1] = udint;
+                    ssr->iod[1] = iod;
+                    for (k = 0; k < 3; k++)
+                        {
+                            ssr->dclk[k] = dclk[k];
+                        }
+                }
+            if (igm == 4)
+                {
+                    ssr->t0[2] = rtcm->time;
+                    ssr->udi[2] = udint;
+                    ssr->iod[2] = iod;
+                    ssr->hrclk = hrclk;
+                }
+            if (igm == 5)
+                {
+                    ssr->t0[4] = rtcm->time;
+                    ssr->udi[4] = udint;
+                    ssr->iod[4] = iod;
+                    for (k = 0; k < MAXCODE; k++)
+                        {
+                            ssr->cbias[k] = cbias[k];
+                            ssr->vcbias[k] = vcbias[k];
+                        }
+                }
+            if (igm == 6)
+                {
+                    ssr->t0[5] = rtcm->time;
+                    ssr->udi[5] = udint;
+                    ssr->iod[5] = iod;
+                    ssr->yaw_ang = yaw_ang / 256.0 * 180.0;    /* (deg) */
+                    ssr->yaw_rate = yaw_rate / 8192.0 * 180.0; /* (deg/s) */
+                    for (k = 0; k < MAXCODE; k++)
+                        {
+                            ssr->pbias[k] = pbias[k];
+                            ssr->stdpb[k] = 0.0;
+                        }
+                }
+            if (igm == 7)
+                {
+                    ssr->t0[3] = rtcm->time;
+                    ssr->udi[3] = udint;
+                    ssr->iod[3] = iod;
+                    ssr->ura = ura;
+                }
+            ssr->update = 1;
+        }
+    return sync ? 0 : 10;
 }
 
 
@@ -4302,6 +4667,9 @@ int decode_rtcm3(rtcm_t *rtcm)
         case 2070:
             ret = decode_ssr7(rtcm, SYS_BDS);
             break; /* tentative */
+        case 4076:
+            ret = decode_igs_ssr(rtcm);
+            break;
         }
     if (ret >= 0)
         {

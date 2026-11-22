@@ -66,6 +66,24 @@ public:
         return nullptr;
     }
 
+    //! I/NAV ephemeris of a satellite whose issue of data ends in the given
+    //! eight bits, which is how IGS SSR identifies it: the current one or the
+    //! one it replaced. Returns nullptr if there is none.
+    const Galileo_Ephemeris* find_inav_issue_lsb(int prn, int iod_ephemeris_lsb) const
+    {
+        const auto current = d_inav_ephemeris_map.find(prn);
+        if (current != d_inav_ephemeris_map.cend() && (current->second.IOD_ephemeris & 0xFF) == iod_ephemeris_lsb)
+            {
+                return &current->second;
+            }
+        const auto previous = d_previous_inav_ephemeris_map.find(prn);
+        if (previous != d_previous_inav_ephemeris_map.cend() && (previous->second.IOD_ephemeris & 0xFF) == iod_ephemeris_lsb)
+            {
+                return &previous->second;
+            }
+        return nullptr;
+    }
+
     const Galileo_Ephemeris* find(int prn, Galileo_Nav_Message_Type source) const
     {
         const Ephemeris_Map* source_map = map(source);

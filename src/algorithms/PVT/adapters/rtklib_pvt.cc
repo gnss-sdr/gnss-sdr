@@ -387,11 +387,34 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // Single-band sets run single-frequency RTK.
     const bool ntrip_valid_channel_set = ntrip_rtk_valid_channel_set(signal_enabled_flags);
 
-    if (pvt_output_parameters.ntrip_client_enabled)
+    // An NTRIP stream gives the observations of a base station to the relative
+    // positioning modes, or State Space Representation (SSR) corrections to the
+    // broadcast orbits and clocks to the PPP modes
+    pvt_output_parameters.ntrip_ssr_corrections = pvt_output_parameters.ntrip_client_enabled &&
+                                                  (positioning_mode == PMODE_PPP_STATIC || positioning_mode == PMODE_PPP_KINEMA);
+    if (pvt_output_parameters.ntrip_ssr_corrections)
+        {
+            // SSR corrections change more slowly than the observations of a base station
+            pvt_output_parameters.ntrip_max_correction_age_s = configuration->property(role + ".ntrip_max_correction_age_s", 90.0);
+            const std::string ssr_reference_point = configuration->property(role + ".ssr_reference_point", std::string("Primary_Frequency"));
+            if (ssr_reference_point == "Navigation_Message")
+                {
+                    pvt_output_parameters.ssr_reference_point = 1;
+                }
+            else if (ssr_reference_point == "Center_Of_Mass")
+                {
+                    pvt_output_parameters.ssr_reference_point = 2;
+                }
+            else if (ssr_reference_point != "Primary_Frequency")
+                {
+                    LOG(WARNING) << "Bad specification of " << role << ".ssr_reference_point (" << ssr_reference_point << "). Possible values: Primary_Frequency / Navigation_Message / Center_Of_Mass. Setting it to Primary_Frequency";
+                }
+        }
+    if (pvt_output_parameters.ntrip_client_enabled && !pvt_output_parameters.ntrip_ssr_corrections)
         {
             if (positioning_mode != PMODE_STATIC && positioning_mode != PMODE_KINEMA)
                 {
-                    throw std::invalid_argument(role + ".ntrip_client_enabled requires positioning_mode=Static or positioning_mode=Kinematic");
+                    throw std::invalid_argument(role + ".ntrip_client_enabled requires positioning_mode=Static or positioning_mode=Kinematic, with the stream of a base station, or PPP_Static or PPP_Kinematic, with a stream of SSR corrections");
                 }
             if (!ntrip_valid_channel_set)
                 {
@@ -434,7 +457,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             // warn user and set the default
             number_of_frequencies = num_bands;
         }
-    if (pvt_output_parameters.ntrip_client_enabled)
+    if (pvt_output_parameters.ntrip_client_enabled && !pvt_output_parameters.ntrip_ssr_corrections)
         {
             // The slot count is fully determined by the channel set (see the
             // slot column of ntrip_rtk_signals()): single-band sets run on the
@@ -567,8 +590,9 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         }
 
     /* RTKLIB positioning options */
-    int sat_PCV = 0; /*  Set whether the satellite antenna PCV (phase center variation) model is used or not. This feature requires a Satellite Antenna PCV File. */
-    int rec_PCV = 0; /*  Set whether the receiver antenna PCV (phase center variation) model is used or not. This feature requires a Receiver Antenna PCV File. */
+    /* Satellite and receiver antenna models. The solver enables them if it reads the antenna calibrations (see antex_file and antenna_type below). */
+    const int sat_PCV = 0;
+    const int rec_PCV = 0;
 
     /* Set whether the phase windup correction for PPP modes is applied or not. Only applicable to PPP‐* modes.*/
     const int phwindup = configuration->property(role + ".phwindup", 0);
@@ -583,6 +607,35 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const int raim_fde = configuration->property(role + ".raim_fde", 0);
 
     const int earth_tide = configuration->property(role + ".earth_tide", 0);
+
+    /* Antenna models, applied in the PPP modes. The ANTEX file (version 1.4 or 2.0) has the phase center offsets and variations
+    of the satellite antennas and, for the type given in antenna_type, of the receiver antenna, which can also be in a file of
+    its own. ANTEX 2.0 identifies the satellites by their SVN, so their antennas also need the IGS satellite metadata file.
+    The antenna delta is the position of the antenna reference point with respect to the marker, for which the position is
+    then computed. */
+    pvt_output_parameters.antex_file = configuration->property(role + ".antex_file", pvt_output_parameters.antex_file);
+    pvt_output_parameters.receiver_antex_file = configuration->property(role + ".receiver_antex_file", pvt_output_parameters.receiver_antex_file);
+    pvt_output_parameters.satellite_metadata_file = configuration->property(role + ".satellite_metadata_file", pvt_output_parameters.satellite_metadata_file);
+    pvt_output_parameters.antenna_type = configuration->property(role + ".antenna_type", pvt_output_parameters.antenna_type);
+    pvt_output_parameters.antenna_delta_east_m = configuration->property(role + ".antenna_delta_east_m", pvt_output_parameters.antenna_delta_east_m);
+    pvt_output_parameters.antenna_delta_north_m = configuration->property(role + ".antenna_delta_north_m", pvt_output_parameters.antenna_delta_north_m);
+    pvt_output_parameters.antenna_delta_up_m = configuration->property(role + ".antenna_delta_up_m", pvt_output_parameters.antenna_delta_up_m);
+    const bool antenna_models_requested = !pvt_output_parameters.antex_file.empty() || !pvt_output_parameters.receiver_antex_file.empty() ||
+                                          !pvt_output_parameters.satellite_metadata_file.empty() || !pvt_output_parameters.antenna_type.empty() ||
+                                          pvt_output_parameters.antenna_delta_east_m != 0.0 || pvt_output_parameters.antenna_delta_north_m != 0.0 ||
+                                          pvt_output_parameters.antenna_delta_up_m != 0.0;
+    const bool ppp_mode = positioning_mode == PMODE_PPP_STATIC || positioning_mode == PMODE_PPP_KINEMA;
+    if (antenna_models_requested && !ppp_mode)
+        {
+            LOG(WARNING) << "The antenna options (" << role << ".antex_file, .receiver_antex_file, .satellite_metadata_file, .antenna_type and .antenna_delta_*_m) only apply with positioning_mode=PPP_Static or PPP_Kinematic. They are ignored.";
+        }
+    if (pvt_output_parameters.ntrip_ssr_corrections && pvt_output_parameters.ssr_reference_point == 2 && pvt_output_parameters.antex_file.empty())
+        {
+            LOG(WARNING) << role << ".ssr_reference_point=Center_Of_Mass requires the offsets of the satellite antennas (" << role << ".antex_file). Without them, the corrected orbits are taken as those of the antenna phase centers.";
+        }
+    const double antenna_delta_east_m = ppp_mode ? pvt_output_parameters.antenna_delta_east_m : 0.0;
+    const double antenna_delta_north_m = ppp_mode ? pvt_output_parameters.antenna_delta_north_m : 0.0;
+    const double antenna_delta_up_m = ppp_mode ? pvt_output_parameters.antenna_delta_up_m : 0.0;
 
     int nsys = 0;
     if (signal_enabled_flags.check_any_enabled(GPS_1C, GPS_2S, GPS_L5, GPS_L1C))
@@ -613,7 +666,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             LOG(WARNING) << "Erroneous Navigation System. Setting to default value of (0:none)";
             navigation_system = nsys;
         }
-    if (pvt_output_parameters.ntrip_client_enabled)
+    if (pvt_output_parameters.ntrip_client_enabled && !pvt_output_parameters.ntrip_ssr_corrections)
         {
             const int expected_navigation_system = ntrip_rtk_navigation_systems(signal_enabled_flags);
             if (navigation_system != expected_navigation_system)
@@ -747,8 +800,9 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const bool estimate_qzss_isb = configuration->property(role + ".estimate_qzss_isb", false); /* estimate a separate QZS-GPS inter-system bias in single-point positioning. It requires one extra satellite in mixed GPS+QZSS epochs, so keep disabled under degraded visibility. */
 
     snrmask_t snrmask = {{}, {{}, {}}};
-    const double max_time_difference_s = pvt_output_parameters.ntrip_client_enabled ? pvt_output_parameters.ntrip_max_correction_age_s : 30.0;
-    const int output_single_on_outage = (!pvt_output_parameters.ntrip_client_enabled || pvt_output_parameters.ntrip_fallback_to_single) ? 1 : 0;
+    const bool ntrip_base_station = pvt_output_parameters.ntrip_client_enabled && !pvt_output_parameters.ntrip_ssr_corrections;
+    const double max_time_difference_s = ntrip_base_station ? pvt_output_parameters.ntrip_max_correction_age_s : 30.0;
+    const int output_single_on_outage = (!ntrip_base_station || pvt_output_parameters.ntrip_fallback_to_single) ? 1 : 0;
 
     prcopt_t rtklib_configuration_options = {
         positioning_mode,                                                                  /* positioning mode (PMODE_XXX) see src/algorithms/libs/rtklib/rtklib.h */
@@ -796,7 +850,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {},                                                                                     /* double ru[3]  rover position for fixed mode {x,y,z} (ecef) (m) */
         {},                                                                                     /* double rb[3]  base position for relative mode {x,y,z} (ecef) (m) */
         {"", ""},                                                                               /* char anttype[2][MAXANT]  antenna types {rover,base}  */
-        {{}, {}},                                                                               /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
+        {{antenna_delta_east_m, antenna_delta_north_m, antenna_delta_up_m}, {}},                /* double antdel[2][3]   antenna delta {{rov_e,rov_n,rov_u},{ref_e,ref_n,ref_u}} */
         {},                                                                                     /* pcv_t pcvr[2]   receiver antenna parameters {rov,base} */
         {},                                                                                     /* unsigned char exsats[MAXSAT]  excluded satellites (1:excluded, 2:included) */
         0,                                                                                      /* max averaging epoches */

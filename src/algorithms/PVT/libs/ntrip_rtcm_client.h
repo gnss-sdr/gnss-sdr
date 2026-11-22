@@ -25,6 +25,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Ntrip_Rtcm_Client_Test_Access;
@@ -146,6 +147,12 @@ struct Ntrip_Rtcm_Snapshot
     // sorted by satellite number for binary lookup. The records own no
     // dynamic memory.
     std::vector<eph_t> ephemerides;
+
+    // Latest State Space Representation (SSR) corrections of each GPS or
+    // Galileo satellite seen on the correction stream (RTCM MT1057-1062 and
+    // 1240-1245, or the IGS SSR sub-types of MT4076): orbit, clock, high-rate
+    // clock and code biases, with their epoch times. Sorted by satellite number.
+    std::vector<std::pair<int, ssr_t>> ssr_corrections;
 
     //! Recomputes the rover-time-dependent fields age_s and fresh. A cached
     //! copy must call this per epoch: the generation covers the received

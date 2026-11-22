@@ -35,6 +35,7 @@
 #define GNSS_SDR_RTKLIB_SOLVER_H
 
 
+#include "antex_reader.h"
 #include "beidou_cnav1_ephemeris.h"
 #include "beidou_cnav1_iono.h"
 #include "beidou_cnav1_navigation_message.h"
@@ -82,6 +83,7 @@
 #include <cstdint>
 #include <fstream>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -193,6 +195,14 @@ public:
     void store_has_data(const Galileo_HAS_data& new_has_data);
     void clear_has_corrections();
     void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);
+
+    /*!
+     * \brief Selects, for the satellites of the observations, the State Space
+     * Representation (SSR) corrections received from an NTRIP stream: orbit,
+     * clock and code biases. They are applied in place of the Galileo HAS
+     * ones, and in the same way.
+     */
+    void update_ssr_corrections(const std::map<int, Gnss_Synchro>& obs_map, const Ntrip_Rtcm_Snapshot& corrections);
 
     //! true if the last call to update_has_corrections() selected the HAS
     //! orbit, clock and code bias corrections for the satellite ("GPS" or
@@ -308,6 +318,32 @@ private:
     bool galileo_ephemeris_is_usable(const Galileo_Ephemeris& ephemeris, uint32_t observation_tow) const;
     void update_galileo_observation_wavelengths(const obsd_t& observation);
 
+    // Antenna models of the PPP modes. RTKLIB has a phase center offset and
+    // variation per frequency slot: they are those of the signal that each
+    // slot holds, for each satellite and, in the receiver antenna, for each
+    // system
+    struct Satellite_Antenna
+    {
+        const Antex_Antenna* calibration;       // antenna of the satellite at the time of the observations
+        pcv_t model;                            // offsets (x, y, z) and variations of the signal in each slot
+        std::array<double, 3> reference;        // offset (x, y, z) of the reference point of the orbit
+        std::array<unsigned char, NFREQ> code;  // observation code that each slot of the model was set for
+        int64_t next_search_s;                  // time of the next search of a calibration
+        bool has_reference;
+        bool ssr_orbit;  // the reference point is the one of the SSR corrections
+    };
+    struct Receiver_Antenna
+    {
+        pcv_t model;                            // offsets (east, north, up) and variations of the signal in each slot
+        std::array<unsigned char, NFREQ> code;  // observation code that each slot of the model was set for
+    };
+    void load_antenna_calibrations(prcopt_t& options);
+    void update_antenna_models(const obsd_t* observations, int number_of_observations);
+    void update_satellite_antenna(const obsd_t& observation, int sys, int prn);
+    void update_receiver_antenna(const obsd_t& observation, int sys);
+    bool satellite_antenna_reference(const Antex_Antenna& calibration, int sys, bool ssr_orbit, std::array<double, 3>& reference) const;
+    void log_antenna_message_once(const std::string& message, bool warning);
+
     void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);
 
     /*!
@@ -339,6 +375,16 @@ private:
      * every signal it contributes to the PVT solution has a code bias.
      */
     void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
+
+    // Signals of a satellite that get_PVT() inserts next to its corrected ephemeris
+    struct Corrected_Satellite_Signals
+    {
+        double tow_s{};  // time of week of the observations
+        uint32_t tow{};  // the same, in whole seconds
+        std::vector<std::string> signals;
+    };
+    std::map<std::pair<char, int>, Corrected_Satellite_Signals> corrected_satellite_signals(const std::map<int, Gnss_Synchro>& obs_map) const;
+    void erase_obs_corrections(char system_id, const std::vector<std::string>& signals, int prn);
     void get_current_has_obs_correction(const std::string& signal, uint32_t tow_obs, int prn, uint8_t mask_id, uint8_t iod_set_id);
     void clear_applied_has_phase_bias_discontinuity(const HAS_obs_corrections* has_correction, int prn);
 
@@ -470,6 +516,12 @@ private:
     Monitor_Pvt d_monitor_pvt{};
     Pvt_Conf d_conf;
     Pvt_Kf d_pvt_kf;
+    Antex_Reader d_antex;
+    Antex_Reader d_receiver_antex;
+    std::vector<Satellite_Antenna> d_satellite_antennas;
+    std::vector<Receiver_Antenna> d_receiver_antennas;
+    std::set<std::string> d_antenna_messages;
+    const Antex_Antenna* d_receiver_calibration = nullptr;
     uint32_t d_signal_enabled_flags;
     std::array<double, 3> d_fixed_base_position_ecef_m{};
     gtime_t d_fixed_base_last_observation_time{0, 0.0};

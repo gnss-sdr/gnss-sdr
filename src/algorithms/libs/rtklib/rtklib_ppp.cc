@@ -1554,6 +1554,73 @@ void satantpcv(const double *rs, const double *rr, const pcv_t *pcv,
 }
 
 
+/* satellite antenna phase center offset ---------------------------------------
+ * adds to a range correction the offset of the phase center of each frequency
+ * with respect to the reference point of the satellite position
+ * args   : double *rs       I   satellite position (ecef) (m)
+ *          double *e        I   line-of-sight vector, receiver to satellite (ecef)
+ *          double *rsun     I   sun position (ecef) (m)
+ *          pcv_t  *pcv      I   satellite antenna offsets, x/y/z (m)
+ *          double *ref      I   offset of the reference point of the satellite
+ *                               position, x/y/z (m)
+ *          double *dant     IO  range correction of each frequency (m)
+ * return : none
+ * notes  : nominal attitude, as in satantoff(): z-axis to the center of the
+ *          Earth, y-axis along the solar panels and normal to the direction of
+ *          the Sun (Galileo HAS Reference User Algorithm TN, Issue 1.0,
+ *          Appendix C)
+ *-----------------------------------------------------------------------------*/
+void satantpco(const double *rs, const double *e, const double *rsun, const pcv_t *pcv,
+    const double *ref, double *dant)
+{
+    double ex[3];
+    double ey[3];
+    double ez[3];
+    double es[3];
+    double r[3];
+    double los[3];
+    int i;
+    int j;
+
+    /* unit vectors of satellite fixed coordinates */
+    for (i = 0; i < 3; i++)
+        {
+            r[i] = -rs[i];
+        }
+    if (!normv3(r, ez))
+        {
+            return;
+        }
+    for (i = 0; i < 3; i++)
+        {
+            r[i] = rsun[i] - rs[i];
+        }
+    if (!normv3(r, es))
+        {
+            return;
+        }
+    cross3(ez, es, r);
+    if (!normv3(r, ey))
+        {
+            return;
+        }
+    cross3(ey, ez, ex);
+
+    /* line of sight in satellite fixed coordinates */
+    los[0] = dot(e, ex, 3);
+    los[1] = dot(e, ey, 3);
+    los[2] = dot(e, ez, 3);
+
+    for (i = 0; i < NFREQ; i++)
+        {
+            for (j = 0; j < 3; j++)
+                {
+                    dant[i] += los[j] * (pcv->off[i][j] - ref[j]);
+                }
+        }
+}
+
+
 /* precise tropospheric model ------------------------------------------------*/
 double prectrop(gtime_t time, const double *pos, const double *azel,
     const prcopt_t *opt, const double *x, double *dtdx,
@@ -1620,6 +1687,31 @@ int ppp_clock_index(int sys, const prcopt_t *opt)
 }
 
 
+/* index of the system of a satellite, for the tables with an entry per system */
+int ppp_system_index(int sys)
+{
+    int index = 0;
+    switch (sys)
+        {
+        case SYS_GLO:
+            index = 1;
+            break;
+        case SYS_GAL:
+            index = 2;
+            break;
+        case SYS_BDS:
+            index = 3;
+            break;
+        case SYS_QZS:
+            index = 4;
+            break;
+        default:
+            break;
+        }
+    return index < NSYS ? index : 0;
+}
+
+
 /* phase and code residuals --------------------------------------------------*/
 int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
@@ -1636,6 +1728,7 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
     double dtdx[3];
     double dantr[NFREQ] = {0};
     double dants[NFREQ] = {0};
+    double rsun[3] = {0};
     std::vector<double> var(MAXOBS * 2, 0.0);
     std::vector<int> row_obs(MAXOBS * 2, 0);   /* observation of each row */
     std::vector<int> row_type(MAXOBS * 2, 0);  /* 0: phase, 1: code */
@@ -1681,6 +1774,14 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
         }
     ecef2pos(rr, pos);
 
+    /* sun position, for the attitude of the satellites */
+    if (opt->posopt[0] && n > 0)
+        {
+            const double erpv[5] = {0};
+            double gmst;
+            sunmoonpos(gpst2utc(obs[0].time), erpv, rsun, nullptr, &gmst);
+        }
+
     for (i = 0; i < n && i < MAXOBS; i++)
         {
             sat = obs[i].sat;
@@ -1720,13 +1821,15 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                 {
                     dtrp = prectrop(obs[i].time, pos, azel + i * 2, opt, x, dtdx, &vart);
                 }
-            /* satellite antenna model */
+            /* satellite antenna model: variation of the phase center, and its
+               offset from the reference point of the satellite position */
             if (opt->posopt[0])
                 {
                     satantpcv(rs + i * 6, rr, nav->pcvs + sat - 1, dants);
+                    satantpco(rs + i * 6, e, rsun, nav->pcvs + sat - 1, nav->pcoref[sat - 1], dants);
                 }
-            /* receiver antenna model */
-            antmodel(opt->pcvr, opt->antdel[0], azel + i * 2, opt->posopt[1], dantr);
+            /* receiver antenna model, for the signals of the system */
+            antmodel(nav->pcvrcv + ppp_system_index(sys), opt->antdel[0], azel + i * 2, opt->posopt[1], dantr);
 
             /* phase windup correction */
             if (opt->posopt[2])

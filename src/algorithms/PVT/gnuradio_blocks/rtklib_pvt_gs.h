@@ -212,6 +212,7 @@ private:
         double rx_clock_offset_s);
 
     void update_HAS_corrections();
+    void update_SSR_corrections();
 
     void report_fixed_base_status();
 
@@ -419,6 +420,7 @@ private:
     const bool d_show_local_time_zone;
     const bool d_enable_rx_clock_correction;
     const bool d_ntrip_client_enabled;
+    const bool d_ntrip_ssr_corrections;
     bool d_enable_has_messages;
     const bool d_an_printer_enabled;
     bool d_log_timetag;

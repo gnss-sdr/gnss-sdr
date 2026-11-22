@@ -438,13 +438,6 @@ typedef struct
 
 
 typedef struct
-{                /* antenna parameters type */
-    int n, nmax; /* number of data/allocated */
-    pcv_t *pcv;  /* antenna parameters data */
-} pcvs_t;
-
-
-typedef struct
 {                /* almanac type */
     int sat;     /* satellite number */
     int svh;     /* sv health (0:ok) */
@@ -706,6 +699,10 @@ typedef struct
     float stdpb[MAXCODE];     /* std-dev of phase biases (m) */
     double yaw_ang, yaw_rate; /* yaw angle and yaw rate (deg,deg/s) */
     unsigned char update;     /* update flag (0:no update,1:update) */
+    /* code bias given in the last code bias message (0:no,1:yes) */
+    unsigned char vcbias[MAXCODE];
+    /* iode has the 8 LSBs of the issue of data, as IGS SSR gives it for Galileo (0:no,1:yes) */
+    unsigned char iode_lsb;
 } ssr_t;
 
 
@@ -826,6 +823,8 @@ typedef struct
     double glo_cpbias[4];         /* glonass code-phase bias {1C,1P,2C,2P} (m) */
     char glo_fcn[MAXPRNGLO + 1];  /* glonass frequency channel number + 8 */
     pcv_t pcvs[MAXSAT];           /* satellite antenna pcv */
+    double pcoref[MAXSAT][3];     /* satellite antenna offset of the reference point of the broadcast orbit, x/y/z (m) */
+    pcv_t pcvrcv[NSYS];           /* receiver antenna pcv for the signals of each system (see ppp_system_index()) */
     sbssat_t sbssat;              /* SBAS satellite corrections */
     sbsion_t sbsion[MAXBAND + 1]; /* SBAS ionosphere corrections */
     dgps_t dgps[MAXSAT];          /* DGPS corrections */

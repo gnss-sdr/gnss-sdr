@@ -296,15 +296,16 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_flag_monitor_pvt_enabled(conf_.monitor_enabled),
       d_flag_monitor_ephemeris_enabled(conf_.monitor_ephemeris_enabled),
       d_show_local_time_zone(conf_.show_local_time_zone),
-      d_enable_rx_clock_correction(conf_.enable_rx_clock_correction || conf_.ntrip_client_enabled),
+      d_enable_rx_clock_correction(conf_.enable_rx_clock_correction || (conf_.ntrip_client_enabled && !conf_.ntrip_ssr_corrections)),
       d_ntrip_client_enabled(conf_.ntrip_client_enabled),
+      d_ntrip_ssr_corrections(conf_.ntrip_ssr_corrections),
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag),
       d_use_has_corrections(conf_.use_has_corrections),
       d_use_unhealthy_sats(conf_.use_unhealthy_sats),
       d_osnma_strict(conf_.osnma_strict)
 {
-    if (conf_.ntrip_client_enabled && !conf_.enable_rx_clock_correction)
+    if (conf_.ntrip_client_enabled && !conf_.ntrip_ssr_corrections && !conf_.enable_rx_clock_correction)
         {
             // do not override an explicit user setting silently: the timetag
             // processing path only runs when the clock correction is disabled
@@ -2823,9 +2824,26 @@ void rtklib_pvt_gs::update_HAS_corrections()
 }
 
 
+void rtklib_pvt_gs::update_SSR_corrections()
+{
+    // deep-copy the snapshot only when the client's data changed
+    const uint64_t snapshot_generation = d_ntrip_client->snapshot_generation();
+    if (!d_fixed_base_snapshot || snapshot_generation != d_ntrip_snapshot_generation)
+        {
+            d_fixed_base_snapshot.reset(new Ntrip_Rtcm_Snapshot(d_ntrip_client->latest_snapshot()));
+            d_ntrip_snapshot_generation = snapshot_generation;
+        }
+    this->d_internal_pvt_solver->update_ssr_corrections(this->d_gnss_observables_map, *d_fixed_base_snapshot);
+    if (d_enable_rx_clock_correction == true)
+        {
+            this->d_user_pvt_solver->update_ssr_corrections(this->d_gnss_observables_map, *d_fixed_base_snapshot);
+        }
+}
+
+
 void rtklib_pvt_gs::report_fixed_base_status()
 {
-    if (!d_ntrip_client)
+    if (!d_ntrip_client || d_ntrip_ssr_corrections)
         {
             return;
         }
@@ -3341,6 +3359,11 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                 {
                     this->update_HAS_corrections();
                 }
+            // SSR corrections of an NTRIP stream, in place of the Galileo HAS ones
+            if (d_ntrip_ssr_corrections && d_ntrip_client && !d_gnss_observables_map.empty())
+                {
+                    this->update_SSR_corrections();
+                }
 
             // ############ 2 COMPUTE THE PVT ################################
             bool flag_pvt_valid = false;
@@ -3522,7 +3545,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     if (flag_compute_pvt_output == true && d_enable_rx_clock_correction == true)
                         {
                             const Ntrip_Rtcm_Snapshot* fixed_base = nullptr;
-                            if (d_ntrip_client)
+                            if (d_ntrip_client && !d_ntrip_ssr_corrections)
                                 {
                                     /* deep-copy the snapshot only when the client's data
                                        actually changed; base epochs arrive at ~1 Hz while

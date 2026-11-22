@@ -39,10 +39,36 @@ All notable changes to GNSS-SDR will be documented in this file.
   from the first position fixes, and without gaps when the corrections or the
   broadcast ephemeris are updated. A solution is reported as PPP only if all its
   satellites use precise orbits and clocks, such as HAS corrections, and the PPP
-  modes now also work without GPS satellites. The corrected satellites are
-  reported in the PVT dump (`has_corrected_sats`) and in the PVT monitor
-  (`has_corrected`). Also fixed the RTCM SSR messages generated from HAS, and
-  the RINEX output of receivers with E6 as their only Galileo signal.
+  modes now also work without GPS satellites. In those modes, the satellites
+  with HAS corrections are weighted by the accuracy of the corrected orbits and
+  clocks, so the carrier phase measurements drive the solution. The corrected
+  satellites are reported in the PVT dump (`has_corrected_sats`) and in the PVT
+  monitor (`has_corrected`). Also fixed the RTCM SSR messages generated from
+  HAS, and the RINEX output of receivers with E6 as their only Galileo signal.
+- Fixed `PVT.positioning_mode=PPP_Static` staying tens of meters off for minutes
+  after a start with few satellites in poor geometry. The innovation test
+  (`PVT.threshold_reject_innovation`) now leaves out the offset common to the
+  satellites of a receiver clock, so it no longer rejects the satellites that
+  correct the position.
+- Added antenna models to the PPP positioning modes. `PVT.antex_file` sets an
+  ANTEX file (version 1.4 or 2.0) with the calibrations of the satellite
+  antennas: the measurements of GPS and Galileo satellites are then referred to
+  the phase center of the signals in use, which differs from the one of the
+  broadcast orbits and of the Galileo HAS corrections. ANTEX 2.0 identifies the
+  satellites by their SVN, so it also needs the IGS satellite metadata file
+  (`PVT.satellite_metadata_file`). `PVT.antenna_type` selects the calibration of
+  the receiver antenna in that ANTEX file, or in the one set by
+  `PVT.receiver_antex_file`, and `PVT.antenna_delta_east_m`,
+  `PVT.antenna_delta_north_m` and `PVT.antenna_delta_up_m` set the position of
+  its reference point with respect to the marker.
+- Added SSR corrections received from an NTRIP caster to the PPP positioning
+  modes. With `PVT.ntrip_client_enabled=true` and
+  `PVT.positioning_mode=PPP_Static` or `PPP_Kinematic`, the orbit, clock and
+  code bias corrections of GPS and Galileo, in the RTCM SSR (messages 1057 to
+  1062 and 1240 to 1245) or IGS SSR (message 4076) formats, are applied to the
+  broadcast ephemeris in the same way as the Galileo HAS ones, which they
+  replace. `PVT.ssr_reference_point` sets the point of the satellite that the
+  corrected orbits refer to, for the antenna models.
 
 ### Improvements in Availability:
 

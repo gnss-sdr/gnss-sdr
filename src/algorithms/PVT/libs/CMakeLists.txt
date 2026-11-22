@@ -14,6 +14,7 @@ set_source_files_properties(${PROTO_SRCS} ${PROTO_SRCS2} ${PROTO_SRCS3}
 
 set(PVT_LIB_SOURCES
     an_packet_printer.cc
+    antex_reader.cc
     pvt_solution.cc
     geojson_printer.cc
     gpx_printer.cc
@@ -35,6 +36,7 @@ set(PVT_LIB_SOURCES
 
 set(PVT_LIB_HEADERS
     an_packet_printer.h
+    antex_reader.h
     pvt_conf.h
     pvt_solution.h
     geojson_printer.h

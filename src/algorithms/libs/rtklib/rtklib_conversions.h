@@ -228,6 +228,36 @@ unsigned char rtklib_obs_code(char system, const std::string& signal, int band);
 std::vector<std::string> has_signal_candidates(char system, const std::string& signal, bool tracking_pilot = false);
 
 /*!
+ * \brief RTKLIB observation code of a HAS signal (HAS SIS ICD 1.0 Table 20),
+ * as returned by has_signal_candidates()
+ * \param system GNSS-SDR system identifier ('G' or 'E')
+ * \param has_signal HAS signal name (e.g. "L1 C/A", "E6-C")
+ * \return observation code (CODE_XXX), CODE_NONE if the signal is not known
+ */
+unsigned char has_signal_obs_code(char system, const std::string& has_signal);
+
+/*!
+ * \brief Orbit and clock corrections of a satellite at a time, from its State
+ * Space Representation (SSR) corrections (RTCM 10403.3, IGS SSR v1.00), in the
+ * form of the Galileo HAS corrections that eph_to_rtklib() takes. Both correct
+ * the broadcast orbit in the same radial, in-track and cross-track directions
+ * and add the same clock term, but the SSR orbit correction is subtracted from
+ * the broadcast position and the HAS one is added to it.
+ * \param ssr SSR corrections of the satellite
+ * \param time time of the corrections (GPST)
+ * \param max_age_s maximum age of the SSR orbit and clock corrections
+ * \param[out] orbit orbit correction, for the ephemeris of issue ssr.iode
+ * \param[out] clock clock correction, for the ephemeris of issue ssr.iode
+ * \return false if the orbit or the clock correction is missing, they are of
+ * different SSR issues, older than max_age_s, or out of range
+ */
+bool ssr_orbit_and_clock_corrections(const ssr_t& ssr,
+    const gtime_t& time,
+    double max_age_s,
+    HAS_orbit_corrections& orbit,
+    HAS_clock_corrections& clock);
+
+/*!
  * \brief HAS correction that insert_obs_to_rtklib() applies to an observation
  * \param has_obs_corr HAS corrections, first key is the HAS signal name, second key is the PRN
  * \param system GNSS-SDR system identifier ('G' or 'E')

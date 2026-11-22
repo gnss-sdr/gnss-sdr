@@ -231,6 +231,104 @@ std::vector<std::string> has_signal_candidates(char system, const std::string& s
 }
 
 
+unsigned char has_signal_obs_code(char system, const std::string& has_signal)
+{
+    struct Has_Signal_Code
+    {
+        char system;
+        const char* has_signal;
+        unsigned char code;
+    };
+    static const Has_Signal_Code codes[] = {
+        {'G', "L1 C/A", CODE_L1C},
+        {'G', "L2 CM", CODE_L2S},
+        {'G', "L2 CL", CODE_L2L},
+        {'G', "L2 CM+CL", CODE_L2X},
+        {'G', "L5 I", CODE_L5I},
+        {'G', "L5 Q", CODE_L5Q},
+        {'G', "L5 I + L5 Q", CODE_L5X},
+        {'E', "E1-B I/NAV OS", CODE_L1B},
+        {'E', "E1-C", CODE_L1C},
+        {'E', "E1-B + E1-C", CODE_L1X},
+        {'E', "E5a-I F/NAV OS", CODE_L5I},
+        {'E', "E5a-Q", CODE_L5Q},
+        {'E', "E5a-I+E5a-Q", CODE_L5X},
+        {'E', "E5b-I I/NAV OS", CODE_L7I},
+        {'E', "E5b-Q", CODE_L7Q},
+        {'E', "E5b-I+E5b-Q", CODE_L7X},
+        {'E', "E6-B C/NAV HAS", CODE_L6B},
+        {'E', "E6-C", CODE_L6C},
+        {'E', "E6-B + E6-C", CODE_L6X}};
+    for (const auto& entry : codes)
+        {
+            if (entry.system == system && has_signal == entry.has_signal)
+                {
+                    return entry.code;
+                }
+        }
+    return CODE_NONE;
+}
+
+
+bool ssr_orbit_and_clock_corrections(const ssr_t& ssr,
+    const gtime_t& time,
+    double max_age_s,
+    HAS_orbit_corrections& orbit,
+    HAS_clock_corrections& clock)
+{
+    // limits of RTKLIB's satpos_ssr()
+    const double max_orbit_correction_m = 10.0;
+    const double max_clock_correction_m = 1e-6 * SPEED_OF_LIGHT_M_S;
+    const double max_age_high_rate_clock_s = 10.0;
+
+    // orbit and clock corrections of the same SSR issue
+    if (ssr.t0[0].time == 0 || ssr.t0[1].time == 0 || ssr.iod[0] != ssr.iod[1])
+        {
+            return false;
+        }
+    double orbit_time_s = timediff(time, ssr.t0[0]);
+    double clock_time_s = timediff(time, ssr.t0[1]);
+    if (std::fabs(orbit_time_s) > max_age_s || std::fabs(clock_time_s) > max_age_s)
+        {
+            return false;
+        }
+    // The rate terms refer to the SSR epoch time plus half the update interval,
+    // except for the update interval of 1 s (IGS SSR v1.00, Section 4.1)
+    if (ssr.udi[0] > 1.0)
+        {
+            orbit_time_s -= ssr.udi[0] / 2.0;
+        }
+    if (ssr.udi[1] > 1.0)
+        {
+            clock_time_s -= ssr.udi[1] / 2.0;
+        }
+    double orbit_m[3];
+    for (int i = 0; i < 3; i++)
+        {
+            orbit_m[i] = ssr.deph[i] + ssr.ddeph[i] * orbit_time_s;
+        }
+    double clock_m = ssr.dclk[0] + ssr.dclk[1] * clock_time_s + ssr.dclk[2] * clock_time_s * clock_time_s;
+    if (ssr.iod[0] == ssr.iod[2] && ssr.t0[2].time != 0 && std::fabs(timediff(time, ssr.t0[2])) < max_age_high_rate_clock_s)
+        {
+            clock_m += ssr.hrclk;
+        }
+    if (norm_rtk(orbit_m, 3) > max_orbit_correction_m || std::fabs(clock_m) > max_clock_correction_m)
+        {
+            return false;
+        }
+
+    orbit = HAS_orbit_corrections();
+    orbit.radial_m = static_cast<float>(-orbit_m[0]);
+    orbit.in_track_m = static_cast<float>(-orbit_m[1]);
+    orbit.cross_track_m = static_cast<float>(-orbit_m[2]);
+    orbit.iod = static_cast<uint16_t>(ssr.iode);
+    clock = HAS_clock_corrections();
+    clock.clock_correction_m = static_cast<float>(clock_m);
+    clock.iod = static_cast<uint16_t>(ssr.iode);
+    return true;
+}
+
+
 const HAS_obs_corrections* find_has_obs_correction(const std::map<std::string, std::map<int, HAS_obs_corrections>>& has_obs_corr,
     char system,
     const std::string& signal,

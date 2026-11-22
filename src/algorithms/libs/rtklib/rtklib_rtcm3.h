@@ -200,6 +200,8 @@ int decode_ssr6(rtcm_t *rtcm, int sys);
 
 int decode_ssr7(rtcm_t *rtcm, int sys);
 
+int decode_igs_ssr(rtcm_t *rtcm);
+
 void sigindex(int sys, const unsigned char *code, const int *freq, int n,
     const char *opt, int *ind);
 

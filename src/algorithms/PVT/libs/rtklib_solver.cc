@@ -42,12 +42,14 @@
 #include "ntrip_rtcm_client.h"
 #include "ntrip_rtk_signals.h"
 #include "rtklib_pntpos.h"
+#include "rtklib_ppp.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_rtkpos.h"
 #include "signal_enabled_flags.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdio>
 #include <exception>
 #include <iostream>
 #include <iterator>
@@ -293,7 +295,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
             d_rtklib_freq_index[2] = 4;
         }
 
-    if (d_conf.ntrip_client_enabled)
+    if (d_conf.ntrip_client_enabled && !d_conf.ntrip_ssr_corrections)
         {
             // the fixed-base path pairs rover and base observations by slot,
             // so the signal table's slot column and this solver's finished
@@ -349,12 +351,375 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
         {
             check_iono_free_band_pairs(options);
         }
+    load_antenna_calibrations(options);
 
     // rtk_t owns dynamically allocated filter state. A struct copy would make
     // the adapter, clock solver, and user solver alias the same state and would
     // make independent RTK updates unsafe. Initialize it after all potentially
     // throwing C++ setup so a failed constructor cannot leak the C allocation.
     rtkinit(&d_rtk, &options);
+}
+
+
+namespace
+{
+char antex_system_letter(int sys)
+{
+    switch (sys)
+        {
+        case SYS_GPS:
+            return 'G';
+        case SYS_GLO:
+            return 'R';
+        case SYS_GAL:
+            return 'E';
+        case SYS_BDS:
+            return 'C';
+        case SYS_QZS:
+            return 'J';
+        default:
+            return '\0';
+        }
+}
+
+
+// ANTEX frequency code of an observation code: "E07" for the Galileo "7X"
+std::string antex_frequency_code(char system, unsigned char code)
+{
+    const char *observation = code2obs(code, nullptr);
+    if (observation == nullptr || observation[0] == '\0')
+        {
+            return std::string();
+        }
+    return std::string(1, system) + '0' + observation[0];
+}
+}  // namespace
+
+
+void Rtklib_Solver::load_antenna_calibrations(prcopt_t &options)
+{
+    options.posopt[0] = 0;  // satellite antenna model
+    options.posopt[1] = 0;  // variation of the phase center of the receiver antenna
+    if (options.mode != PMODE_PPP_KINEMA && options.mode != PMODE_PPP_STATIC)
+        {
+            return;
+        }
+    // Satellite antennas
+    if (!d_conf.antex_file.empty())
+        {
+            if (!d_antex.read(d_conf.antex_file))
+                {
+                    LOG(WARNING) << "No antenna calibrations read from the ANTEX file " << d_conf.antex_file << ". Its antennas are not modeled.";
+                }
+            else
+                {
+                    LOG(INFO) << "Calibrations of " << d_antex.get_number_of_satellite_antennas() << " satellite antennas and "
+                              << d_antex.get_number_of_receiver_antennas() << " receiver antennas read from " << d_conf.antex_file;
+                    bool satellites_found = d_antex.get_number_of_satellite_antennas() > 0;
+                    if (d_antex.has_satellites_by_svn())
+                        {
+                            // ANTEX 2.0: the satellite of an antenna is given by its SVN
+                            if (d_conf.satellite_metadata_file.empty())
+                                {
+                                    LOG(WARNING) << d_conf.antex_file << " identifies the satellites by their SVN: set PVT.satellite_metadata_file to the IGS satellite metadata file. The satellite antennas are not modeled.";
+                                    satellites_found = false;
+                                }
+                            else if (!d_antex.read_satellite_metadata(d_conf.satellite_metadata_file))
+                                {
+                                    LOG(WARNING) << "No PRN assignments read from the satellite metadata file " << d_conf.satellite_metadata_file << ". The satellite antennas are not modeled.";
+                                    satellites_found = false;
+                                }
+                        }
+                    if (satellites_found)
+                        {
+                            d_satellite_antennas.assign(MAXSAT, Satellite_Antenna());
+                            options.posopt[0] = 1;
+                        }
+                }
+        }
+
+    // Receiver antenna, from its own file if given
+    if (!d_conf.antenna_type.empty())
+        {
+            const std::string &receiver_file = d_conf.receiver_antex_file.empty() ? d_conf.antex_file : d_conf.receiver_antex_file;
+            if (receiver_file.empty())
+                {
+                    LOG(WARNING) << "PVT.antenna_type needs the ANTEX file of PVT.antex_file or PVT.receiver_antex_file. The receiver antenna is not modeled.";
+                    return;
+                }
+            const Antex_Reader *reader = &d_antex;
+            if (!d_conf.receiver_antex_file.empty())
+                {
+                    reader = &d_receiver_antex;
+                    if (!d_receiver_antex.read(d_conf.receiver_antex_file))
+                        {
+                            LOG(WARNING) << "No antenna calibrations read from the ANTEX file " << d_conf.receiver_antex_file << ". The receiver antenna is not modeled.";
+                            return;
+                        }
+                    LOG(INFO) << "Calibrations of " << d_receiver_antex.get_number_of_receiver_antennas() << " receiver antennas read from " << d_conf.receiver_antex_file;
+                }
+            d_receiver_calibration = reader->find_receiver(d_conf.antenna_type);
+            if (d_receiver_calibration == nullptr)
+                {
+                    LOG(WARNING) << "Receiver antenna " << d_conf.antenna_type << " not found in " << receiver_file << ". It is not modeled.";
+                }
+            else
+                {
+                    LOG(INFO) << "Receiver antenna calibration: " << d_receiver_calibration->type;
+                    d_receiver_antennas.assign(NSYS, Receiver_Antenna());
+                    options.posopt[1] = 1;
+                }
+        }
+}
+
+
+void Rtklib_Solver::log_antenna_message_once(const std::string &message, bool warning)
+{
+    if (d_antenna_messages.insert(message).second)
+        {
+            if (warning)
+                {
+                    LOG(WARNING) << message;
+                }
+            else
+                {
+                    LOG(INFO) << message;
+                }
+        }
+}
+
+
+bool Rtklib_Solver::satellite_antenna_reference(const Antex_Antenna &calibration, int sys, bool ssr_orbit, std::array<double, 3> &reference) const
+{
+    // The broadcast orbit, and the Galileo HAS corrections to it, refer to the
+    // phase center of the ionosphere-free combination of the signals of the
+    // clock model of the navigation message (HAS SIS ICD, Issue 1.0, Section
+    // 7.1.2): GPS L1 and L2, Galileo E1 and E5b (I/NAV) or E5a (F/NAV)
+    std::string first("G01");
+    std::string second("G02");
+    double first_frequency_hz = FREQ1;
+    double second_frequency_hz = FREQ2;
+    if (ssr_orbit && d_conf.ssr_reference_point == 2)
+        {
+            // center of mass: the origin of the offsets of the calibration
+            reference.fill(0.0);
+            return true;
+        }
+    if (ssr_orbit && d_conf.ssr_reference_point == 0)
+        {
+            // phase center of the primary frequency of the system, L1 or E1
+            // (IGS SSR v1.00, Table 2)
+            const auto primary = calibration.frequencies.find(sys == SYS_GAL ? "E01" : "G01");
+            if (primary == calibration.frequencies.cend())
+                {
+                    return false;
+                }
+            reference = primary->second.offset;
+            return true;
+        }
+    if (sys == SYS_GAL)
+        {
+            first = "E01";
+            const bool fnav = d_galileo_nav_message_type_for_pvt == Galileo_Nav_Message_Type::FNAV;
+            second = fnav ? "E05" : "E07";
+            second_frequency_hz = fnav ? FREQ5 : FREQ7;
+        }
+    const auto first_calibration = calibration.frequencies.find(first);
+    const auto second_calibration = calibration.frequencies.find(second);
+    if (first_calibration == calibration.frequencies.cend() || second_calibration == calibration.frequencies.cend())
+        {
+            return false;
+        }
+    const double first_coefficient = first_frequency_hz * first_frequency_hz /
+                                     (first_frequency_hz * first_frequency_hz - second_frequency_hz * second_frequency_hz);
+    for (size_t i = 0; i < 3; i++)
+        {
+            reference[i] = first_coefficient * first_calibration->second.offset[i] +
+                           (1.0 - first_coefficient) * second_calibration->second.offset[i];
+        }
+    return true;
+}
+
+
+void Rtklib_Solver::update_satellite_antenna(const obsd_t &observation, int sys, int prn)
+{
+    Satellite_Antenna &antenna = d_satellite_antennas[observation.sat - 1];
+    const char system = antex_system_letter(sys);
+    const auto time_s = static_cast<int64_t>(observation.time.time);
+    char satellite[8];
+    std::snprintf(satellite, sizeof(satellite), "%c%02d", system, prn % 100);
+
+    const bool expired = antenna.calibration != nullptr && antenna.calibration->valid_until != 0 &&
+                         time_s > antenna.calibration->valid_until;
+    if ((antenna.calibration == nullptr || expired) && time_s >= antenna.next_search_s)
+        {
+            antenna = Satellite_Antenna();
+            antenna.code.fill(0xFF);  // set every slot again
+            antenna.next_search_s = time_s + 3600;
+            antenna.calibration = d_antex.find_satellite(satellite, time_s);
+            if (antenna.calibration == nullptr)
+                {
+                    log_antenna_message_once(std::string("No antenna calibration for satellite ") + satellite + " in the ANTEX file. Its antenna is not modeled.", true);
+                }
+            else
+                {
+                    antenna.has_reference = satellite_antenna_reference(*antenna.calibration, sys, false, antenna.reference);
+                    if (!antenna.has_reference)
+                        {
+                            log_antenna_message_once(std::string("The antenna calibration of satellite ") + satellite + " lacks the frequencies of its navigation message. Its antenna is not modeled.", true);
+                        }
+                }
+        }
+
+    // The orbit of a satellite with SSR corrections refers to the point that
+    // its provider states, and the broadcast orbit, to the one of the
+    // navigation message. The corrections going on or off already count as a
+    // cycle slip
+    const bool ssr_orbit = d_conf.ntrip_ssr_corrections && has_corrections_applied(sys == SYS_GAL ? "Galileo" : "GPS", prn);
+    if (antenna.calibration != nullptr && ssr_orbit != antenna.ssr_orbit)
+        {
+            antenna.ssr_orbit = ssr_orbit;
+            antenna.has_reference = satellite_antenna_reference(*antenna.calibration, sys, ssr_orbit, antenna.reference);
+            antenna.code.fill(0xFF);  // set every slot again
+            if (!antenna.has_reference)
+                {
+                    log_antenna_message_once(std::string("The antenna calibration of satellite ") + satellite + " lacks the frequency that its orbit refers to. Its antenna is not modeled.", true);
+                }
+        }
+
+    for (int slot = 0; slot < NFREQ; slot++)
+        {
+            const unsigned char code = observation.code[slot];
+            if (code == antenna.code[slot])
+                {
+                    continue;
+                }
+            antenna.code[slot] = code;
+            // A signal with no calibration is left at the reference point of the orbit: no correction
+            for (int i = 0; i < 3; i++)
+                {
+                    antenna.model.off[slot][i] = antenna.reference[i];
+                }
+            for (double &variation : antenna.model.var[slot])
+                {
+                    variation = 0.0;
+                }
+            if (code == CODE_NONE || antenna.calibration == nullptr || !antenna.has_reference)
+                {
+                    continue;
+                }
+            const std::string frequency_code = antex_frequency_code(system, code);
+            const auto frequency = antenna.calibration->frequencies.find(frequency_code);
+            if (frequency == antenna.calibration->frequencies.cend())
+                {
+                    log_antenna_message_once(std::string("The antenna calibration of satellite ") + satellite + " lacks the frequency " + frequency_code + ". That signal is not corrected.", true);
+                    continue;
+                }
+            for (int i = 0; i < 3; i++)
+                {
+                    antenna.model.off[slot][i] = frequency->second.offset[i];
+                }
+            std::copy(frequency->second.variation.cbegin(), frequency->second.variation.cend(), antenna.model.var[slot]);
+        }
+
+    d_nav_data.pcvs[observation.sat - 1] = antenna.model;
+    for (int i = 0; i < 3; i++)
+        {
+            d_nav_data.pcoref[observation.sat - 1][i] = antenna.reference[i];
+        }
+}
+
+
+void Rtklib_Solver::update_receiver_antenna(const obsd_t &observation, int sys)
+{
+    Receiver_Antenna &antenna = d_receiver_antennas[ppp_system_index(sys)];
+    const char system = antex_system_letter(sys);
+    for (int slot = 0; slot < NFREQ; slot++)
+        {
+            const unsigned char code = observation.code[slot];
+            if (code == CODE_NONE || code == antenna.code[slot])
+                {
+                    continue;
+                }
+            antenna.code[slot] = code;
+            for (double &offset : antenna.model.off[slot])
+                {
+                    offset = 0.0;
+                }
+            for (double &variation : antenna.model.var[slot])
+                {
+                    variation = 0.0;
+                }
+            // Calibration of the frequency or, as most antennas only have those
+            // of GPS, the GPS one of the same band, or else the one of GPS L2
+            const std::string frequency_code = antex_frequency_code(system, code);
+            if (frequency_code.empty())
+                {
+                    continue;
+                }
+            std::string used_code = frequency_code;
+            auto frequency = d_receiver_calibration->frequencies.find(used_code);
+            if (frequency == d_receiver_calibration->frequencies.cend())
+                {
+                    used_code = std::string("G0") + frequency_code[2];
+                    frequency = d_receiver_calibration->frequencies.find(used_code);
+                }
+            if (frequency == d_receiver_calibration->frequencies.cend() && frequency_code[2] != '1')
+                {
+                    used_code = "G02";
+                    frequency = d_receiver_calibration->frequencies.find(used_code);
+                }
+            if (frequency == d_receiver_calibration->frequencies.cend())
+                {
+                    log_antenna_message_once("The calibration of the receiver antenna lacks the frequency " + frequency_code + ". Only the antenna delta applies to that signal.", true);
+                    continue;
+                }
+            if (used_code != frequency_code)
+                {
+                    log_antenna_message_once("The calibration of the receiver antenna lacks the frequency " + frequency_code + ": using the one of " + used_code + '.', false);
+                }
+            // ANTEX: north, east, up. RTKLIB: east, north, up
+            antenna.model.off[slot][0] = frequency->second.offset[1];
+            antenna.model.off[slot][1] = frequency->second.offset[0];
+            antenna.model.off[slot][2] = frequency->second.offset[2];
+            std::copy(frequency->second.variation.cbegin(), frequency->second.variation.cend(), antenna.model.var[slot]);
+        }
+}
+
+
+void Rtklib_Solver::update_antenna_models(const obsd_t *observations, int number_of_observations)
+{
+    if (d_satellite_antennas.empty() && d_receiver_calibration == nullptr)
+        {
+            return;
+        }
+    for (int i = 0; i < number_of_observations; i++)
+        {
+            const obsd_t &observation = observations[i];
+            if (observation.rcv != 1 || observation.sat < 1 || observation.sat > MAXSAT)
+                {
+                    continue;
+                }
+            int prn = 0;
+            const int sys = satsys(observation.sat, &prn);
+            if (antex_system_letter(sys) == '\0')
+                {
+                    continue;
+                }
+            if (d_receiver_calibration != nullptr)
+                {
+                    update_receiver_antenna(observation, sys);
+                }
+            // The reference point of the orbit is only defined here for GPS and Galileo
+            if (!d_satellite_antennas.empty() && (sys == SYS_GPS || sys == SYS_GAL))
+                {
+                    update_satellite_antenna(observation, sys, prn);
+                }
+        }
+    for (size_t i = 0; i < d_receiver_antennas.size(); i++)
+        {
+            d_nav_data.pcvrcv[i] = d_receiver_antennas[i].model;
+        }
 }
 
 
@@ -1337,26 +1702,13 @@ void Rtklib_Solver::check_has_orbit_clock_validity(const std::map<int, Gnss_Sync
 }
 
 
-void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
+std::map<std::pair<char, int>, Rtklib_Solver::Corrected_Satellite_Signals> Rtklib_Solver::corrected_satellite_signals(const std::map<int, Gnss_Synchro> &obs_map) const
 {
-    d_has_obs_corr_map.clear();
-    d_has_orbit_corrections_applied_map.clear();
-    d_has_clock_corrections_applied_map.clear();
-    if (d_has_clock_corrections_store_map.empty() || d_has_orbit_corrections_store_map.empty())
-        {
-            return;
-        }
-
-    // Signals that get_PVT() inserts next to each satellite's HAS-corrected
+    // Signals that get_PVT() inserts next to each satellite's corrected
     // ephemeris: the Galileo signals admitted to the PVT solution, and GPS
     // L1 C/A plus the L2C and L5 observations that join its LNAV record when
     // the CNAV ephemeris is available
-    struct Has_Satellite_Signals
-    {
-        uint32_t tow{};
-        std::vector<std::string> signals;
-    };
-    std::map<std::pair<char, int>, Has_Satellite_Signals> satellites;
+    std::map<std::pair<char, int>, Corrected_Satellite_Signals> satellites;
     for (const auto &it : obs_map)
         {
             const std::string sig(it.second.Signal, 2);
@@ -1374,11 +1726,161 @@ void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
             if (used_in_pvt)
                 {
                     auto &satellite = satellites[std::make_pair(it.second.System, prn)];
-                    satellite.tow = static_cast<uint32_t>(it.second.interp_TOW_ms / 1000.0);
+                    satellite.tow_s = it.second.interp_TOW_ms / 1000.0;
+                    satellite.tow = static_cast<uint32_t>(satellite.tow_s);
                     satellite.signals.push_back(sig);
                 }
         }
+    return satellites;
+}
 
+
+void Rtklib_Solver::erase_obs_corrections(char system_id, const std::vector<std::string> &signals, int prn)
+{
+    for (const auto &signal : signals)
+        {
+            for (const auto &has_signal : has_signal_candidates(system_id, signal))
+                {
+                    auto signal_it = d_has_obs_corr_map.find(has_signal);
+                    if (signal_it != d_has_obs_corr_map.end())
+                        {
+                            signal_it->second.erase(prn);
+                            if (signal_it->second.empty())
+                                {
+                                    d_has_obs_corr_map.erase(signal_it);
+                                }
+                        }
+                }
+        }
+}
+
+
+void Rtklib_Solver::update_ssr_corrections(const std::map<int, Gnss_Synchro> &obs_map, const Ntrip_Rtcm_Snapshot &corrections)
+{
+    // The SSR corrections take the place of the Galileo HAS ones, and reach the
+    // broadcast orbit and clock and the observations through the same fields
+    d_has_obs_corr_map.clear();
+    d_has_orbit_corrections_applied_map.clear();
+    d_has_clock_corrections_applied_map.clear();
+    if (corrections.ssr_corrections.empty())
+        {
+            return;
+        }
+
+    const auto satellites = corrected_satellite_signals(obs_map);
+    const auto &inav_ephemerides = galileo_ephemeris_store.by_source(Galileo_Nav_Message_Type::INAV);
+    for (const auto &satellite : satellites)
+        {
+            const char system_id = satellite.first.first;
+            const int prn = satellite.first.second;
+            const std::vector<std::string> &signals = satellite.second.signals;
+            const std::string system = (system_id == 'E') ? "Galileo" : "GPS";
+
+            // The SSR corrections refer to the Galileo I/NAV and GPS LNAV messages (IGS SSR v1.00, Table 1)
+            if (system_id == 'E')
+                {
+                    if (inav_ephemerides.find(prn) == inav_ephemerides.cend())
+                        {
+                            continue;
+                        }
+                }
+            else if (gps_ephemeris_map.find(prn) == gps_ephemeris_map.cend() || std::find(signals.cbegin(), signals.cend(), "1C") == signals.cend())
+                {
+                    continue;
+                }
+
+            const int sat = satno(system_id == 'E' ? SYS_GAL : SYS_GPS, prn);
+            const auto stored = std::lower_bound(
+                corrections.ssr_corrections.cbegin(), corrections.ssr_corrections.cend(), sat,
+                [](const std::pair<int, ssr_t> &entry, int satellite_number) { return entry.first < satellite_number; });
+            if (sat == 0 || stored == corrections.ssr_corrections.cend() || stored->first != sat)
+                {
+                    continue;
+                }
+            const ssr_t &ssr = stored->second;
+
+            // time of the observations, in the week of the corrections
+            int week = 0;
+            const double ssr_tow = time2gpst(ssr.t0[0], &week);
+            double tow = satellite.second.tow_s;
+            if (tow < ssr_tow - 302400.0)
+                {
+                    tow += 604800.0;
+                }
+            else if (tow > ssr_tow + 302400.0)
+                {
+                    tow -= 604800.0;
+                }
+            HAS_orbit_corrections orbit;
+            HAS_clock_corrections clock;
+            if (!ssr_orbit_and_clock_corrections(ssr, gpst2time(week, tow), d_conf.ntrip_max_correction_age_s, orbit, clock))
+                {
+                    continue;
+                }
+            if (system_id == 'E' && ssr.iode_lsb != 0)
+                {
+                    // IGS SSR gives the eight least significant bits of the IODnav
+                    const Galileo_Ephemeris *reference = galileo_ephemeris_store.find_inav_issue_lsb(prn, static_cast<int>(orbit.iod));
+                    if (reference == nullptr)
+                        {
+                            continue;
+                        }
+                    orbit.iod = static_cast<uint16_t>(reference->IOD_ephemeris);
+                    clock.iod = orbit.iod;
+                }
+            // the corrections are for an issue of the broadcast ephemeris
+            if (!has_reference_ephemeris_stored(system, prn, orbit.iod))
+                {
+                    continue;
+                }
+
+            // The SSR clock comes with the code bias of each signal, in place of
+            // the broadcast group delays: all the signals of the satellite need theirs
+            bool all_code_biases_available = true;
+            for (const auto &signal : signals)
+                {
+                    for (const auto &has_signal : has_signal_candidates(system_id, signal))
+                        {
+                            const unsigned char code = has_signal_obs_code(system_id, has_signal);
+                            if (code != CODE_NONE && ssr.vcbias[code - 1] != 0)
+                                {
+                                    auto &correction = d_has_obs_corr_map[has_signal][prn];
+                                    correction.signal = has_signal;
+                                    correction.code_bias_m = ssr.cbias[code - 1];
+                                    correction.code_bias_available = true;
+                                }
+                        }
+                    const HAS_obs_corrections *applied = find_has_obs_correction(d_has_obs_corr_map, system_id, signal, prn);
+                    if (applied == nullptr || !applied->code_bias_available)
+                        {
+                            all_code_biases_available = false;
+                            DLOG(INFO) << "SSR: no code bias for " << system << " PRN " << prn << " signal " << signal
+                                       << ", using the broadcast orbit, clock and group delays for this satellite";
+                        }
+                }
+            if (!all_code_biases_available)
+                {
+                    erase_obs_corrections(system_id, signals, prn);
+                    continue;
+                }
+
+            d_has_orbit_corrections_applied_map[system][prn] = orbit;
+            d_has_clock_corrections_applied_map[system][prn] = clock;
+        }
+}
+
+
+void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
+{
+    d_has_obs_corr_map.clear();
+    d_has_orbit_corrections_applied_map.clear();
+    d_has_clock_corrections_applied_map.clear();
+    if (d_has_clock_corrections_store_map.empty() || d_has_orbit_corrections_store_map.empty())
+        {
+            return;
+        }
+
+    const auto satellites = corrected_satellite_signals(obs_map);
     const auto &inav_ephemerides = galileo_ephemeris_store.by_source(Galileo_Nav_Message_Type::INAV);
     for (const auto &satellite : satellites)
         {
@@ -1430,21 +1932,7 @@ void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
 
             if (!all_code_biases_available)
                 {
-                    for (const auto &signal : signals)
-                        {
-                            for (const auto &has_signal : has_signal_candidates(system_id, signal))
-                                {
-                                    auto signal_it = d_has_obs_corr_map.find(has_signal);
-                                    if (signal_it != d_has_obs_corr_map.end())
-                                        {
-                                            signal_it->second.erase(prn);
-                                            if (signal_it->second.empty())
-                                                {
-                                                    d_has_obs_corr_map.erase(signal_it);
-                                                }
-                                        }
-                                }
-                        }
+                    erase_obs_corrections(system_id, signals, prn);
                     continue;
                 }
 
@@ -3284,6 +3772,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                     update_beidou_observation_wavelengths(d_obs_data[k]);
                 }
+            update_antenna_models(d_obs_data.data(), nobs_total);
             const int configured_positioning_mode = d_rtk.opt.mode;
             if (use_single_fallback)
                 {

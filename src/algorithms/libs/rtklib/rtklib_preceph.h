@@ -67,8 +67,6 @@ void combpeph(nav_t *nav, int opt);
 
 void readsp3(const char *file, nav_t *nav, int opt);
 
-int readsap(const char *file, gtime_t time, nav_t *nav);
-
 int readdcbf(const char *file, nav_t *nav, const sta_t *sta);
 
 int readdcb(const char *file, nav_t *nav, const sta_t *sta);

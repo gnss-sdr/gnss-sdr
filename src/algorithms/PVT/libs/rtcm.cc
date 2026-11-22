@@ -4559,6 +4559,11 @@ bool Rtcm::get_IGM05_tracking_mode_id(uint8_t gnss_id, const std::string& signal
                     tracking_mode_id = 8;
                     return true;
                 }
+            if (signal == "L2 P")
+                {
+                    tracking_mode_id = 10;
+                    return true;
+                }
             if (signal == "L5 I")
                 {
                     tracking_mode_id = 14;

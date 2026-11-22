@@ -86,7 +86,10 @@ class Gps_Ephemeris;
  *  .rtcm_MT1087_rate_ms - (.rtcm_MSM_rate_ms)
  *  .rtcm_MT1097_rate_ms - (.rtcm_MSM_rate_ms)
  *
- * Fixed-base RTK input through NTRIP (disabled by default):
+ * Corrections through NTRIP (disabled by default): the observations of a base
+ * station for the relative positioning modes (RTK), or State Space
+ * Representation (SSR) corrections to the broadcast orbits and clocks for the
+ * PPP modes:
  *  .ntrip_client_enabled - (false)
  *  .ntrip_caster_address - caster hostname or IPv4 address, without a scheme or port ("")
  *  .ntrip_caster_port - (2101)
@@ -98,7 +101,7 @@ class Gps_Ephemeris;
  *  .ntrip_tls_enabled - TLS 1.2-or-newer transport with system-CA certificate and hostname verification (false)
  *  .ntrip_inactivity_timeout_ms - (10000)
  *  .ntrip_reconnect_interval_ms - (10000)
- *  .ntrip_max_correction_age_s - (5.0)
+ *  .ntrip_max_correction_age_s - (5.0 for the observations of a base station, 90.0 for SSR corrections)
  *  .ntrip_send_gga - upload the rover position as NMEA GGA, required by VRS/nearest-station casters (true)
  *  .ntrip_gga_period_ms - period of the GGA upload (10000)
  *  .ntrip_station_id - expected RTCM station ID, or zero to accept any stream station (0)
@@ -110,6 +113,21 @@ class Gps_Ephemeris;
  * Kinematic. The base must provide its position through RTCM 1005/1006 and
  * observations through legacy 1002/1004 or MSM messages; VRS/nearest-station
  * casters are supported through the periodic GGA upload.
+ * With positioning_mode PPP_Static or PPP_Kinematic, the stream must carry
+ * instead SSR messages with the orbit, clock and code bias corrections of GPS
+ * (for the LNAV message) or Galileo (for the I/NAV message), which then take
+ * the place of the Galileo HAS corrections: RTCM SSR (1057 to 1062 for GPS,
+ * 1240 to 1245 for Galileo) or IGS SSR v1.00 (message 4076, sub-types 21 to 25
+ * for GPS and 61 to 65 for Galileo). They are applied to the satellites whose
+ * issue of ephemeris is the one of the corrections and with a code bias for
+ * each of their signals in the solution; the other satellites keep the
+ * broadcast orbit, clock and group delays. The channel sets are those of the
+ * PPP modes.
+ *  .ssr_reference_point - point of the satellite that the SSR orbits refer to ("Primary_Frequency"):
+ *                      the antenna phase center of L1 or E1 (IGS SSR v1.00), the one of the
+ *                      navigation message as in Galileo HAS ("Navigation_Message"), or the center
+ *                      of mass ("Center_Of_Mass"). Used by the satellite antenna models (.antex_file),
+ *                      which the center of mass requires
  *
  *  .kml_rate_ms - (1000)
  *  .gpx_rate_ms - (1000)
@@ -138,6 +156,17 @@ class Gps_Ephemeris;
  *  .reject_GPS_IIA - whether the GPS Block IIA satellites in eclipse are excluded (0). Only applies in PPP-* modes
  *  .raim_fde - whether RAIM (receiver autonomous integrity monitoring) FDE (fault detection and exclusion) is enabled (0)
  *  .earth_tide - (0)
+ *  .antex_file - ANTEX file, version 1.4 or 2.0, with the calibrations of the satellite antennas and,
+ *                      optionally, of the receiver antenna (""). Only applies in PPP-* modes, to GPS and
+ *                      Galileo satellites
+ *  .satellite_metadata_file - IGS satellite metadata file (SINEX), with the PRN of each satellite over
+ *                      time (""). Needed for the satellite antennas of an ANTEX 2.0 file, which identifies
+ *                      them by SVN. Available at https://files.igs.org/pub/station/general/igs_satellite_metadata.snx
+ *  .receiver_antex_file - ANTEX file with the calibration of the receiver antenna, if it is not in
+ *                      antex_file ("")
+ *  .antenna_type - receiver antenna and radome, as named in the ANTEX file (""). Only applies in PPP-* modes
+ *  .antenna_delta_east_m, .antenna_delta_north_m, .antenna_delta_up_m - position of the antenna reference
+ *                      point with respect to the marker, in m (0.0). Only applies in PPP-* modes
  *  .navigation_system - mask of navigation systems to use. Default based on configured channels
  *                      0x01:GPS, 0x02:SBAS, 0x04:GLONASS, 0x08:Galileo, 0x10:QZSS, 0x20:BeiDou,
  *                      0x40:IRNS, 0x80:LEO

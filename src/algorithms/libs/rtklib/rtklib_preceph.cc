@@ -455,38 +455,6 @@ void readsp3(const char *file, nav_t *nav, int opt)
 }
 
 
-/* read satellite antenna parameters -------------------------------------------
- * read satellite antenna parameters
- * args   : char   *file       I   antenna parameter file
- *          gtime_t time       I   time
- *          nav_t  *nav        IO  navigation data
- * return : status (1:ok,0:error)
- * notes  : only support antex format for the antenna parameter file
- *-----------------------------------------------------------------------------*/
-int readsap(const char *file, gtime_t time, nav_t *nav)
-{
-    pcvs_t pcvs{};
-    pcv_t pcv0{};
-    pcv_t *pcv;
-    int i;
-
-    trace(3, "readsap : file=%s time=%s\n", file, time_str(time, 0));
-
-    if (!readpcv(file, &pcvs))
-        {
-            return 0;
-        }
-
-    for (i = 0; i < MAXSAT; i++)
-        {
-            pcv = searchpcv(i + 1, "", time, &pcvs);
-            nav->pcvs[i] = pcv ? *pcv : pcv0;
-        }
-    free(pcv);
-    return 1;
-}
-
-
 /* read dcb parameters file --------------------------------------------------*/
 int readdcbf(const char *file, nav_t *nav, const sta_t *sta)
 {

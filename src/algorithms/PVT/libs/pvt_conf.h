@@ -48,6 +48,10 @@ public:
     std::string xml_output_path = std::string(".");
     std::string rtcm_output_file_path = std::string(".");
     std::string has_output_file_path = std::string(".");
+    std::string antex_file;               //!< ANTEX file with the calibrations of the satellite antennas, and of the receiver ones if it has them
+    std::string receiver_antex_file;      //!< ANTEX file with the calibration of the receiver antenna, if it is not in antex_file
+    std::string satellite_metadata_file;  //!< IGS satellite metadata file, for the satellite antennas of an ANTEX 2.0 file
+    std::string antenna_type;             //!< receiver antenna and radome, as named in the ANTEX file
     std::string udp_addresses;
     std::string udp_ports;
     std::string udp_eph_addresses;
@@ -86,6 +90,7 @@ public:
     int32_t ntrip_reconnect_interval_ms = 10000;
     int32_t ntrip_version = 2;  // 2: prefer v2 with one compatible v1 retry; 1: force legacy v1
     int32_t ntrip_gga_period_ms = 10000;
+    int32_t ssr_reference_point = 0;  // point of the satellite that the SSR orbits refer to. 0: phase center of the primary frequency; 1: phase center of the navigation message, as Galileo HAS; 2: center of mass
 
     uint16_t rtcm_tcp_port = 0;
     uint16_t rtcm_station_id = 0;
@@ -115,11 +120,15 @@ public:
     bool dump_mat = true;
     bool log_source_timetag = false;
     bool ntrip_client_enabled = false;
+    bool ntrip_ssr_corrections = false;  //!< the NTRIP stream carries SSR corrections, for the PPP modes, instead of the data of a base station
     bool ntrip_fallback_to_single = true;
     bool ntrip_tls_enabled = false;
     bool ntrip_send_gga = true;  // VRS/nearest-station casters need the rover GGA to serve corrections
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
+    double antenna_delta_east_m = 0.0;   //!< position of the antenna reference point with respect to the marker
+    double antenna_delta_north_m = 0.0;  //!< position of the antenna reference point with respect to the marker
+    double antenna_delta_up_m = 0.0;     //!< position of the antenna reference point with respect to the marker
     bool use_unhealthy_sats = false;
     bool glonass_strict_health = true;
     bool osnma_strict = false;

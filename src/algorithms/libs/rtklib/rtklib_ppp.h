@@ -149,11 +149,16 @@ void udstate_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
 
 void satantpcv(const double *rs, const double *rr, const pcv_t *pcv, double *dant);
 
+void satantpco(const double *rs, const double *e, const double *rsun, const pcv_t *pcv,
+    const double *ref, double *dant);
+
 double prectrop(gtime_t time, const double *pos, const double *azel,
     const prcopt_t *opt, const double *x, double *dtdx,
     double *var);
 
 int ppp_clock_index(int sys, const prcopt_t *opt);
+
+int ppp_system_index(int sys);
 
 int res_ppp(int iter, const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,

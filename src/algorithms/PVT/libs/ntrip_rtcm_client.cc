@@ -885,6 +885,7 @@ public:
             result.itrf = d_base_position_itrf;
             result.antenna_height_m = d_antenna_height_m;
             result.ephemerides = d_ephemerides;
+            result.ssr_corrections = d_ssr_corrections;
         }
 
         result.refresh_age(reference_time, d_config.max_age_s);
@@ -1485,6 +1486,107 @@ private:
                     {
                         store_base_position(*decoder, message_type);
                     }
+                else if (result == 10)
+                    {
+                        store_ssr_corrections(decoder);
+                    }
+            }
+    }
+
+    // The decoder reports the end of a set of SSR messages and flags the
+    // satellites that it updated. The orbit and clock corrections of a
+    // satellite are given out as a pair: the clock message does not say the
+    // ephemeris that it refers to, so an orbit correction for another issue of
+    // ephemeris, or with another SSR issue of data, waits for a clock
+    // correction that is not older than it. Until then the previous pair
+    // stays, so the corrections have no gap
+    void store_ssr_corrections(rtcm_t* decoder)
+    {
+        std::lock_guard<std::mutex> lock(d_output_mutex);
+        if (d_ssr_arrivals.empty())
+            {
+                d_ssr_arrivals.assign(MAXSAT, Ssr_Arrival());
+            }
+        bool changed = false;
+        for (int sat = 1; sat <= MAXSAT; ++sat)
+            {
+                ssr_t& corrections = decoder->ssr[sat - 1];
+                if (corrections.update == 0)
+                    {
+                        continue;
+                    }
+                corrections.update = 0;
+                const int system = satsys(sat, nullptr);
+                if ((system != SYS_GPS && system != SYS_GAL) || corrections.t0[0].time == 0 || corrections.t0[1].time == 0)
+                    {
+                        // other systems are not corrected; an orbit or a clock alone cannot be used
+                        continue;
+                    }
+
+                Ssr_Arrival& arrival = d_ssr_arrivals[sat - 1];
+                const bool new_issue = corrections.iod[0] != arrival.orbit_iod || corrections.iode != arrival.iode;
+                const bool new_clock = timediff(corrections.t0[1], arrival.clock_epoch) != 0.0;
+                arrival.clock_epoch = corrections.t0[1];
+                arrival.orbit_iod = corrections.iod[0];
+                arrival.iode = corrections.iode;
+                if (new_clock)
+                    {
+                        arrival.waiting_for_clock = false;
+                    }
+                else if (new_issue && timediff(corrections.t0[1], corrections.t0[0]) < 0.0)
+                    {
+                        arrival.waiting_for_clock = true;
+                    }
+                const bool pair = !arrival.waiting_for_clock && corrections.iod[0] == corrections.iod[1];
+
+                const auto position = std::lower_bound(
+                    d_ssr_corrections.begin(), d_ssr_corrections.end(), sat,
+                    [](const std::pair<int, ssr_t>& stored, int satellite) { return stored.first < satellite; });
+                const bool stored = position != d_ssr_corrections.end() && position->first == sat;
+                if (!pair && !stored)
+                    {
+                        continue;
+                    }
+                ssr_t latest = corrections;
+                if (!pair)
+                    {
+                        // the code biases and the rest are taken; the orbit and the clock stay
+                        const ssr_t& previous = position->second;
+                        for (int i = 0; i < 2; i++)
+                            {
+                                latest.t0[i] = previous.t0[i];
+                                latest.udi[i] = previous.udi[i];
+                                latest.iod[i] = previous.iod[i];
+                            }
+                        latest.iode = previous.iode;
+                        latest.iodcrc = previous.iodcrc;
+                        latest.refd = previous.refd;
+                        for (int i = 0; i < 3; i++)
+                            {
+                                latest.deph[i] = previous.deph[i];
+                                latest.ddeph[i] = previous.ddeph[i];
+                                latest.dclk[i] = previous.dclk[i];
+                            }
+                    }
+                if (stored)
+                    {
+                        position->second = latest;
+                    }
+                else
+                    {
+                        d_ssr_corrections.insert(position, std::make_pair(sat, latest));
+                    }
+                changed = true;
+            }
+        if (changed)
+            {
+                ++d_output_generation;
+                if (!d_logged_first_ssr_corrections)
+                    {
+                        LOG(INFO) << "NTRIP client: received SSR orbit and clock corrections for "
+                                  << d_ssr_corrections.size() << " satellites";
+                        d_logged_first_ssr_corrections = true;
+                    }
             }
     }
 
@@ -1742,6 +1844,9 @@ private:
         d_observation_station_id = 0;
         invalidate_base_position_locked();
         d_ephemerides.clear();
+        d_ssr_corrections.clear();
+        d_ssr_arrivals.clear();
+        d_logged_first_ssr_corrections = false;
         d_console_station_mismatch_reported = false;
     }
 
@@ -1946,6 +2051,17 @@ private:
     int d_base_position_itrf = 0;
     double d_antenna_height_m = 0.0;
     std::vector<eph_t> d_ephemerides;
+    // Orbit and clock corrections of a satellite as they arrived
+    struct Ssr_Arrival
+    {
+        gtime_t clock_epoch;
+        int orbit_iod;
+        int iode;
+        bool waiting_for_clock;
+    };
+    std::vector<std::pair<int, ssr_t>> d_ssr_corrections;
+    std::vector<Ssr_Arrival> d_ssr_arrivals;
+    bool d_logged_first_ssr_corrections = false;
 };
 
 

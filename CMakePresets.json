@@ -1,0 +1,42 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "debug",
+            "description": "Basic debug flags",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_RAW_UDP": "ON",
+                "ENABLE_ZMQ": "ON",
+                "ENABLE_GLOG_AND_GFLAGS": "ON",
+                "ENABLE_LOG": "ON",
+                "ENABLE_UNIT_TESTING": "ON"
+            }
+        },
+        {
+            "name": "ubuntu-ad936x",
+            "description": "Common flags for a Ubuntu with an ad936x",
+            "binaryDir": "${sourceDir}/build-ubuntu-ad936x",
+            "inherits": "debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/usr/bin/gcc",
+                "CMAKE_CXX_COMPILER": "/usr/bin/g++",
+                "ENABLE_UHD": "ON",
+                "ENABLE_OSMOSDR": "ON",
+                "ENABLE_PLUTOSDR": "ON",
+                "ENABLE_AD936X_SDR": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "debug"
+        },
+        {
+            "name": "ubuntu-ad936x",
+            "configurePreset": "ubuntu-ad936x"
+        }
+    ]
+}

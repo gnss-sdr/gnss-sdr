@@ -38,6 +38,7 @@
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
 #include "rtklib_tides.h"
+#include <algorithm>
 #include <cstring>
 #include <vector>
 
@@ -1636,6 +1637,10 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
     double dantr[NFREQ] = {0};
     double dants[NFREQ] = {0};
     std::vector<double> var(MAXOBS * 2, 0.0);
+    std::vector<int> row_obs(MAXOBS * 2, 0);   /* observation of each row */
+    std::vector<int> row_type(MAXOBS * 2, 0);  /* 0: phase, 1: code */
+    std::vector<int> row_clock(MAXOBS * 2, 0); /* receiver clock of each row */
+    std::vector<double> common(NSYS, 0.0);     /* innovation common to the rows of a receiver clock (m) */
     double dtrp = 0.0;
     double vart = 0.0;
     double varm[2] = {0};
@@ -1645,6 +1650,7 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
     int sat;
     int sys;
     int nv = 0;
+    int nrows;
     int nx = rtk->nx;
     int brk;
     int tideopt;
@@ -1737,7 +1743,8 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
             r += -SPEED_OF_LIGHT_M_S * dts[i * 2] + dtrp;
 
             /* receiver clock of the system */
-            const int clock_state = IC_PPP(ppp_clock_index(sys, opt), opt);
+            const int clock_index = ppp_clock_index(sys, opt);
+            const int clock_state = IC_PPP(clock_index, opt);
 
             trace(5, "sat=%2d azel=%6.1f %5.1f dtrp=%.3f dantr=%6.3f %6.3f dants=%6.3f %6.3f phw=%6.3f\n",
                 sat, azel[i * 2] * R2D, azel[1 + i * 2] * R2D, dtrp, dantr[0], dantr[1], dants[0],
@@ -1787,25 +1794,67 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                             rtk->ssat[sat - 1].resp[0] = v[nv];
                         }
 
-                        /* test innovation, with separate thresholds for phase (j=0) and code (j=1) */
-#if 0
-                    if (opt->maxinno[j]>0.0 && fabs(v[nv])>opt->maxinno[j])
-                        {
-#else
-                    if (opt->maxinno[j] > 0.0 && fabs(v[nv]) > opt->maxinno[j] && sys != SYS_GLO)
-                        {
-#endif
-                            trace(2, "ppp outlier rejected %s sat=%2d type=%d v=%.3f\n",
-                                time_str(obs[i].time, 0), sat, j, v[nv]);
-                            rtk->ssat[sat - 1].rejc[0]++;
-                            continue;
-                        }
-                    if (j == 0)
-                        {
-                            rtk->ssat[sat - 1].vsat[0] = 1;
-                        }
+                    row_obs[nv] = i;
+                    row_type[nv] = j;
+                    row_clock[nv] = clock_index;
                     nv++;
                 }
+        }
+
+    /* The receiver clocks are estimated anew at each epoch, from the single
+       point solution. An offset common to the innovations of the satellites of
+       a receiver clock is then not a fault of their observations: it shows that
+       the position of the filter and that solution differ, as after a start
+       with poor geometry, and testing the innovations as they are rejects the
+       satellites that would correct the position. The offset is taken as the
+       median of the code innovations */
+    for (k = 0; k < NSYS; k++)
+        {
+            std::vector<double> code_innovations;
+            for (i = 0; i < nv; i++)
+                {
+                    if (row_clock[i] == k && row_type[i] == 1)
+                        {
+                            code_innovations.push_back(v[i]);
+                        }
+                }
+            if (!code_innovations.empty())
+                {
+                    std::sort(code_innovations.begin(), code_innovations.end());
+                    const size_t middle = code_innovations.size() / 2;
+                    common[k] = code_innovations.size() % 2 ? code_innovations[middle] : 0.5 * (code_innovations[middle - 1] + code_innovations[middle]);
+                }
+        }
+
+    /* test innovation, with separate thresholds for phase (type 0) and code (type 1) */
+    nrows = nv;
+    nv = 0;
+    for (i = 0; i < nrows; i++)
+        {
+            const int type = row_type[i];
+            sat = obs[row_obs[i]].sat;
+            if (opt->maxinno[type] > 0.0 && fabs(v[i] - common[row_clock[i]]) > opt->maxinno[type] &&
+                satsys(sat, nullptr) != SYS_GLO)
+                {
+                    trace(2, "ppp outlier rejected %s sat=%2d type=%d v=%.3f common=%.3f\n",
+                        time_str(obs[row_obs[i]].time, 0), sat, type, v[i], common[row_clock[i]]);
+                    rtk->ssat[sat - 1].rejc[0]++;
+                    continue;
+                }
+            if (type == 0)
+                {
+                    rtk->ssat[sat - 1].vsat[0] = 1;
+                }
+            if (nv != i)
+                {
+                    v[nv] = v[i];
+                    var[nv] = var[i];
+                    for (k = 0; k < nx; k++)
+                        {
+                            H[k + nx * nv] = H[k + nx * i];
+                        }
+                }
+            nv++;
         }
     for (i = 0; i < nv; i++)
         {
@@ -1872,6 +1921,17 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 
     /* satellite positions and clocks */
     satposs(obs[0].time, obs, n, nav, rtk->opt.sateph, rs, dts, var, svh.data());
+
+    /* The broadcast accuracy would weight the carrier phases of a satellite
+       with Galileo HAS corrections at the meter level. The single point
+       solution keeps it, as a margin for its validation of residuals */
+    if (rtk->opt.sateph == EPHOPT_BRDC)
+        {
+            for (i = 0; i < n && i < MAXOBS; i++)
+                {
+                    var[i] = var_has(obs[0].time, obs[i].sat, nav, var[i]);
+                }
+        }
 
     /* exclude measurements of eclipsing satellite */
     if (rtk->opt.posopt[3])

@@ -65,6 +65,9 @@ const double MAXCCORSSR = 1e-6 * SPEED_OF_LIGHT_M_S; /* max clock correction of 
 const double MAXAGESSR = 90.0;                       /* max age of ssr orbit and clock (s) */
 const double MAXAGESSR_HRCLK = 10.0;                 /* max age of ssr high-rate clock (s) */
 const double STD_BRDCCLK = 30.0;                     /* error of broadcast clock (m) */
+const double STD_HAS_ORBIT = 0.1;                    /* accuracy of a satellite position with Galileo HAS corrections, per axis (m) */
+const double STD_HAS_CLOCK = 0.2;                    /* accuracy of a satellite clock with Galileo HAS corrections (m) */
+const double STD_NO_ACCURACY_PREDICTION = 6144.0;    /* accuracy assigned to a navigation message without accuracy prediction (m) */
 
 const int MAX_ITER_KEPLER = 30; /* max number of iteration of Kelpler */
 
@@ -221,6 +224,35 @@ static double cnav_uraeph(gtime_t time, const eph_t *eph)
 
     const double composite_ura_m = std::hypot(cnav_ura_upper_bound_m(eph->cnav_uraed), ned_ura_m);
     return std::isfinite(composite_ura_m) ? composite_ura_m : 6144.0;
+}
+
+
+/* variance of a satellite with galileo has corrections -------------------------
+ * variance of the position and clock of a satellite with Galileo HAS corrections
+ * args   : gtime_t teph     I   time to select ephemeris (gpst)
+ *          int    sat       I   satellite number
+ *          nav_t  *nav      I   navigation data
+ *          double var       I   variance by broadcast ephemeris (m^2)
+ * return : variance (m^2). It is var if the broadcast ephemeris of the satellite
+ *          has no HAS corrections, or no accuracy prediction
+ * notes  : the accuracy index of the navigation message describes the broadcast
+ *          orbit and clock, and the HAS message has no accuracy indicator. The
+ *          accuracies are those of the Galileo HAS Reference User Algorithm TN,
+ *          Issue 1.0, Appendix F
+ *-----------------------------------------------------------------------------*/
+double var_has(gtime_t teph, int sat, const nav_t *nav, double var)
+{
+    if (!(satsys(sat, nullptr) & (SYS_GPS | SYS_GAL)) ||
+        var >= std::pow(STD_NO_ACCURACY_PREDICTION, 2.0))
+        {
+            return var;
+        }
+    const eph_t *eph = seleph(teph, sat, -1, nav);
+    if (eph == nullptr || !eph->apply_has_corrections)
+        {
+            return var;
+        }
+    return std::pow(STD_HAS_ORBIT, 2.0) + std::pow(STD_HAS_CLOCK, 2.0);
 }
 
 

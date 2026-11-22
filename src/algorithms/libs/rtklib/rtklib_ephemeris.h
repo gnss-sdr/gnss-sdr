@@ -40,6 +40,7 @@
 double var_uraeph(int ura);
 double var_sisaeph(int sisa);
 double var_urassr(int ura);
+double var_has(gtime_t teph, int sat, const nav_t *nav, double var);
 void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts);
 double eph2clk(gtime_t time, const eph_t *eph);
 void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,

@@ -148,7 +148,14 @@ class Gps_Ephemeris;
  *                      received stream; set a PRN in [120,138] when tracking multiple GEOs
  *  .iono_model - ("OFF"). Supported values are "OFF", "Broadcast", "SBAS", "Iono-Free-LC",
  *                      "Estimate_STEC", "IONEX". Unsupported values include QZSS broadcast, QZSS
- *                      LEX, and SLANT TEC.
+ *                      LEX, and SLANT TEC. In the PPP-* modes, "Estimate_STEC" uses the signals of each
+ *                      satellite without combining them: the filter estimates the slant ionospheric
+ *                      delay of each satellite, a carrier phase bias for each of its signals, the
+ *                      code biases of the receiver between frequencies and a receiver clock for the
+ *                      carrier phases of each band, so the satellites with one, two or three signals
+ *                      all take part in the solution and the bands need not be coherent in phase.
+ *                      The satellites with one frequency take part once four or more have two; with
+ *                      fewer satellites than the solution needs, the output is the single-point one
  *  .trop_model - ("OFF"). Supported values are "OFF", "Saastamoinen", "SBAS", "Estimate_ZTD", and
  *                      "Estimate_ZTD_Grad". Unsupported values include ZTD correction and ZTD+grad
  *                      correction
@@ -188,7 +195,10 @@ class Gps_Ephemeris;
  *  .iono_0 - (0.03)
  *  .trop_0 - (0.3)
  *  .sigma_bias - process noise stddev of carrier-phase bias(ambiguity)(cycle/sqrt(s)) (1e-4)
- *  .sigma_iono - process noise stddev of vertical ionospheric delay per 10km baseline (m/sqrt(s)) (1e-3)
+ *  .sigma_iono - process noise stddev of vertical ionospheric delay per 10km baseline (m/sqrt(s)) (1e-3).
+ *                      In the PPP-* modes with iono_model=Estimate_STEC, the one of the slant ionospheric
+ *                      delay of each satellite (0.1, as in the Galileo HAS Reference User Algorithm, which
+ *                      suggests down to 0.005 for a quiet ionosphere at middle latitudes)
  *  .sigma_trop - process noise stddev of zenith tropospheric delay (m/sqrt(s)) (1e-4)
  *  .sigma_acch - process noise stddev of the receiver acceleration horizontal component (m/s2/sqrt(s)) (1e-1)
  *  .sigma_accv - process noise stddev of the receiver acceleration vertical component (m/s2/sqrt(s)) (1e-2)

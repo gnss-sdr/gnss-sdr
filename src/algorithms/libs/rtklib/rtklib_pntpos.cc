@@ -586,6 +586,49 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
 }
 
 
+/* pseudorange of a frequency slot with code bias correction -------------------
+ * The pseudorange of one frequency slot of an observation record, with the group
+ * delay corrections that prange() applies to a satellite observed in that slot
+ * alone. A slot that prange() does not read (the second one of Galileo) has no
+ * correction in the navigation message and is returned as measured.
+ * return : pseudorange (m) (0.0: no measurement)
+ *-----------------------------------------------------------------------------*/
+double prange_slot(const obsd_t *obs, int slot, const nav_t *nav, const prcopt_t *opt)
+{
+    if (slot < 0 || slot >= NFREQ || obs->P[slot] == 0.0 || obs->code[slot] == CODE_NONE)
+        {
+            return 0.0;
+        }
+    obsd_t single = *obs;
+    for (int f = 0; f < NFREQ + NEXOBS; f++)
+        {
+            if (f != slot)
+                {
+                    single.code[f] = CODE_NONE;
+                    single.P[f] = 0.0;
+                    single.L[f] = 0.0;
+                }
+        }
+    int i = 0;
+    int j = 1;
+    prange_band_pair(&single, &i, &j);
+    if (i != slot && j != slot)
+        {
+            return obs->P[slot];
+        }
+    /* prange() gives the single-frequency corrections with any option but the
+       iono-free combination, and needs the wavelengths of its two bands */
+    if (opt->ionoopt == IONOOPT_IFLC || nav->lam[obs->sat - 1][i] == 0.0 || nav->lam[obs->sat - 1][j] == 0.0)
+        {
+            return 0.0;
+        }
+    const double azel[2] = {0.0, 0.0};
+    double var = 0.0;
+    double iono_scale = 1.0;
+    return prange(&single, nav, azel, 0, opt, &var, &iono_scale);
+}
+
+
 /* ionospheric correction ------------------------------------------------------
  * compute ionospheric correction
  * args   : gtime_t time     I   time

@@ -761,7 +761,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const double sigma_bias = configuration->property(role + ".sigma_bias", 1e-4); /* Set the process noise standard deviation of carrier‐phase
                                                                                 bias (ambiguity) (cycle/sqrt(s)) */
 
-    const double sigma_iono = configuration->property(role + ".sigma_iono", 1e-3); /* Set the process noise standard deviation of vertical ionospheric delay per 10 km baseline (m/sqrt(s)). */
+    /* Set the process noise standard deviation of vertical ionospheric delay per 10 km baseline (m/sqrt(s)). In the PPP modes
+    with iono_model=Estimate_STEC, it is the one of the slant ionospheric delay of each satellite, with the default of the
+    Galileo HAS Reference User Algorithm, which suggests down to 0.005 for a quiet ionosphere at middle latitudes */
+    const bool ppp_iono_estimation = iono_model == IONOOPT_EST && (positioning_mode == PMODE_PPP_STATIC || positioning_mode == PMODE_PPP_KINEMA);
+    const double sigma_iono = configuration->property(role + ".sigma_iono", ppp_iono_estimation ? 0.1 : 1e-3);
 
     const double sigma_trop = configuration->property(role + ".sigma_trop", 1e-4); /* Set the process noise standard deviation of zenith tropospheric delay (m/sqrt(s)). */
 

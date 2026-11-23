@@ -931,6 +931,22 @@ double varerr(int sat __attribute__((unused)), int sys, double el, int type, con
 }
 
 
+/* measurement error variance of a frequency slot -----------------------------*/
+double varerr_slot(int sys, double el, int type, int f, const prcopt_t *opt)
+{
+    double fact = sysefact(sys);
+    const double sinel = sin(el);
+
+    if (type == 1)
+        { /* code */
+            fact *= opt->eratio[f] > 0.0 ? opt->eratio[f] : opt->eratio[0];
+        }
+    const double a = fact * opt->err[1];
+    const double b = fact * opt->err[2];
+    return a * a + b * b / sinel / sinel;
+}
+
+
 /* initialize state and covariance -------------------------------------------*/
 void initx(rtk_t *rtk, double xi, double var, int i)
 {
@@ -940,6 +956,44 @@ void initx(rtk_t *rtk, double xi, double var, int i)
         {
             rtk->P[i + j * rtk->nx] = rtk->P[j + i * rtk->nx] = i == j ? var : 0.0;
         }
+}
+
+
+/* frequency slots of the iono-free measurements of a satellite ---------------*/
+void ifmeas_slots(const obsd_t *obs, int *i, int *j)
+{
+    *i = 0;
+    *j = 1;
+
+    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
+    if (NFREQ >= 3 && (satsys(obs->sat, nullptr) & (SYS_GAL | SYS_SBS)))
+        {
+            *j = 2;
+        }
+
+    if (satsys(obs->sat, nullptr) == SYS_BDS)
+        {
+            bds_observation_slots(obs, i, j);
+        }
+}
+
+
+/* receiver phase clock state of the phase of a satellite, in the models with one
+ * phase for each satellite (see udphaseclock_ppp()): for the iono-free
+ * measurements, one for each system and pair of frequency slots; otherwise, the
+ * one of the first frequency slot of the system
+ *-----------------------------------------------------------------------------*/
+int ppp_phase_clock(const obsd_t *obs, const prcopt_t *opt)
+{
+    int i = 0;
+    int j = 0;
+    const int system_index = ppp_system_index(satsys(obs->sat, nullptr));
+    if (opt->ionoopt != IONOOPT_IFLC)
+        {
+            return IH_PPP(system_index, 0, opt);
+        }
+    ifmeas_slots(obs, &i, &j);
+    return IH_PPP(system_index, (i + j + NFREQ - 1) % NFREQ, opt);
 }
 
 
@@ -958,22 +1012,13 @@ int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
     double P1_C1;
     double P2_C2;
     double gamma;
-    int i = 0;
-    int j = 1;
+    int i;
+    int j;
     int k;
 
     trace(4, "ifmeas  :\n");
 
-    /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
-    if (NFREQ >= 3 && (satsys(obs->sat, nullptr) & (SYS_GAL | SYS_SBS)))
-        {
-            j = 2;
-        }
-
-    if (satsys(obs->sat, nullptr) == SYS_BDS)
-        {
-            bds_observation_slots(obs, &i, &j);
-        }
+    ifmeas_slots(obs, &i, &j);
 
     if (NFREQ < 2 || i == j || lam[i] == 0.0 || lam[j] == 0.0 || lam[i] == lam[j])
         {
@@ -1206,17 +1251,10 @@ int corrmeas(const obsd_t *obs, const nav_t *nav, const double *pos,
 }
 
 
-/* geometry-free phase measurement ------------------------------------------*/
-double gfmeas(const obsd_t *obs, const nav_t *nav)
+/* geometry-free phase measurement of two frequency slots --------------------*/
+double gfmeas(const obsd_t *obs, const nav_t *nav, int i, int j)
 {
     const double *lam = nav->lam[obs->sat - 1];
-    int i = 0;
-    int j = 1;
-
-    if (satsys(obs->sat, nullptr) == SYS_BDS)
-        {
-            bds_observation_slots(obs, &i, &j);
-        }
 
     if (i == j || lam[i] == 0.0 || lam[j] == 0.0 || obs->L[i] == 0.0 || obs->L[j] == 0.0)
         {
@@ -1358,9 +1396,31 @@ void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n)
 }
 
 
-/* detect cycle slip by geometry free phase jump -----------------------------*/
+/* median of a set of values ---------------------------------------------------*/
+double ppp_median(std::vector<double> values)
+{
+    if (values.empty())
+        {
+            return 0.0;
+        }
+    std::sort(values.begin(), values.end());
+    const size_t middle = values.size() / 2;
+    return values.size() % 2 ? values[middle] : 0.5 * (values[middle - 1] + values[middle]);
+}
+
+
+/* detect cycle slip by geometry free phase jump -------------------------------
+ * with the two frequency slots of the iono-free measurements, or with the first
+ * two otherwise. The phases of two bands may drift with respect to each other by
+ * the same amount for all the satellites (see udphaseclock_ppp()), so a jump is
+ * what departs from the median of the changes over the satellites of the system
+ * with that pair of slots. A satellite alone with its pair is tested by its
+ * change
+ *-----------------------------------------------------------------------------*/
 void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
+    std::vector<double> change(MAXOBS, 0.0);
+    std::vector<int> group(MAXOBS, -1);
     double g0;
     double g1;
     int i;
@@ -1370,7 +1430,17 @@ void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 
     for (i = 0; i < n && i < MAXOBS; i++)
         {
-            if ((g1 = gfmeas(obs + i, nav)) == 0.0)
+            int first = 0;
+            int second = 1;
+            if (rtk->opt.ionoopt == IONOOPT_IFLC)
+                {
+                    ifmeas_slots(obs + i, &first, &second);
+                }
+            else if (satsys(obs[i].sat, nullptr) == SYS_BDS)
+                {
+                    bds_observation_slots(obs + i, &first, &second);
+                }
+            if ((g1 = gfmeas(obs + i, nav, first, second)) == 0.0)
                 {
                     continue;
                 }
@@ -1380,10 +1450,32 @@ void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 
             trace(4, "detslip_gf: sat=%2d gf0=%8.3f gf1=%8.3f\n", obs[i].sat, g0, g1);
 
-            if (g0 != 0.0 && fabs(g1 - g0) > rtk->opt.thresslip)
+            if (g0 != 0.0)
                 {
-                    trace(3, "detslip_gf: slip detected sat=%2d gf=%8.3f->%8.3f\n",
-                        obs[i].sat, g0, g1);
+                    change[i] = g1 - g0;
+                    group[i] = ppp_system_index(satsys(obs[i].sat, nullptr)) * NFREQ + (first + second + NFREQ - 1) % NFREQ;
+                }
+        }
+
+    for (i = 0; i < n && i < MAXOBS; i++)
+        {
+            if (group[i] < 0)
+                {
+                    continue;
+                }
+            std::vector<double> changes;
+            for (j = 0; j < n && j < MAXOBS; j++)
+                {
+                    if (group[j] == group[i])
+                        {
+                            changes.push_back(change[j]);
+                        }
+                }
+            const double common = changes.size() > 1 ? ppp_median(changes) : 0.0;
+            if (fabs(change[i] - common) > rtk->opt.thresslip)
+                {
+                    trace(3, "detslip_gf: slip detected sat=%2d change=%8.3f common=%8.3f\n",
+                        obs[i].sat, change[i], common);
 
                     for (j = 0; j < NFREQ; j++)
                         {
@@ -1452,9 +1544,12 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             bias[i] = meas[0] - meas[1];
             int primary = 0;
             int secondary = 1;
-            if (rtk->opt.ionoopt == IONOOPT_IFLC && satsys(sat, nullptr) == SYS_BDS)
+            /* the phase bias is that of the phase with its receiver clock */
+            bias[i] -= rtk->x[ppp_phase_clock(obs + i, &rtk->opt)];
+            if (rtk->opt.ionoopt == IONOOPT_IFLC)
                 {
-                    bds_observation_slots(obs + i, &primary, &secondary);
+                    /* frequency slots of the iono-free measurements */
+                    ifmeas_slots(obs + i, &primary, &secondary);
                 }
             slip[i] = brk || rtk->ssat[sat - 1].slip[primary] || rtk->ssat[sat - 1].slip[secondary];
             if (rtk->x[j] == 0.0 || slip[i])
@@ -1503,6 +1598,457 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 }
 
 
+/* factor of the ionospheric delay in a frequency slot --------------------------
+ * the slant ionospheric delays are estimated at the L1 frequency: the delay of
+ * the signal of a frequency slot is that one times (f_L1 / f)^2
+ *-----------------------------------------------------------------------------*/
+double ppp_iono_factor(const nav_t *nav, int sat, int f)
+{
+    const double lam = nav->lam[sat - 1][f];
+    return (lam / LAM_CARR[0]) * (lam / LAM_CARR[0]);
+}
+
+
+/* detect cycle slips by geometry free phase jumps, per frequency slot ----------
+ * with the geometry-free phases of the first frequency slot with the second and
+ * with the third: a jump of both is a slip in the first slot, and a jump of one
+ * is a slip in the other slot of that pair. The phases of a band may drift with
+ * respect to those of another by the same amount for all the satellites (see
+ * udphaseclock_ppp()), so a jump is what departs from the median of the changes
+ * over the satellites of the system
+ *-----------------------------------------------------------------------------*/
+void detslp_gf_est(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
+{
+    std::vector<double> change(MAXOBS * 2, 0.0);
+    std::vector<bool> measured(MAXOBS * 2, false);
+    std::vector<bool> compared(MAXOBS * 2, false);
+    int i;
+    int f;
+
+    trace(3, "detslp_gf_est: n=%d\n", n);
+
+    for (i = 0; i < n && i < MAXOBS; i++)
+        {
+            const double *lam = nav->lam[obs[i].sat - 1];
+            ssat_t *ssat = rtk->ssat + obs[i].sat - 1;
+            double *previous[2] = {&ssat->gf, &ssat->gf2};
+
+            for (f = 1; f < NFREQ && f < 3; f++)
+                {
+                    double g1 = 0.0;
+                    if (lam[0] != 0.0 && lam[f] != 0.0 && obs[i].L[0] != 0.0 && obs[i].L[f] != 0.0)
+                        {
+                            g1 = lam[0] * obs[i].L[0] - lam[f] * obs[i].L[f];
+                        }
+                    const double g0 = *previous[f - 1];
+                    *previous[f - 1] = g1;
+                    measured[i * 2 + f - 1] = g1 != 0.0;
+                    compared[i * 2 + f - 1] = g0 != 0.0 && g1 != 0.0;
+                    change[i * 2 + f - 1] = g1 - g0;
+                }
+        }
+
+    /* change common to the satellites of each system, for each pair of slots */
+    std::vector<double> common(NSYS * 2, 0.0);
+    for (int s = 0; s < NSYS; s++)
+        {
+            for (int pair = 0; pair < 2; pair++)
+                {
+                    std::vector<double> changes;
+                    for (i = 0; i < n && i < MAXOBS; i++)
+                        {
+                            const int sys = satsys(obs[i].sat, nullptr);
+                            if (sys && ppp_system_index(sys) == s && compared[i * 2 + pair])
+                                {
+                                    changes.push_back(change[i * 2 + pair]);
+                                }
+                        }
+                    common[s * 2 + pair] = ppp_median(changes);
+                }
+        }
+
+    for (i = 0; i < n && i < MAXOBS; i++)
+        {
+            const int sys = satsys(obs[i].sat, nullptr);
+            if (!sys)
+                {
+                    continue;
+                }
+            ssat_t *ssat = rtk->ssat + obs[i].sat - 1;
+            bool jump[2] = {false, false};
+            for (int pair = 0; pair < 2; pair++)
+                {
+                    jump[pair] = compared[i * 2 + pair] &&
+                                 fabs(change[i * 2 + pair] - common[ppp_system_index(sys) * 2 + pair]) > rtk->opt.thresslip;
+                }
+            if (!jump[0] && !jump[1])
+                {
+                    continue;
+                }
+            trace(3, "detslp_gf_est: slip detected sat=%2d jumps=%d %d\n", obs[i].sat, jump[0] ? 1 : 0, jump[1] ? 1 : 0);
+
+            if (jump[0] && jump[1])
+                {
+                    for (f = 0; f < NFREQ; f++)
+                        {
+                            ssat->slip[f] |= 1;
+                        }
+                }
+            else
+                {
+                    /* the other slot of the pair, or both of them if no other pair tells which */
+                    const int pair = jump[0] ? 0 : 1;
+                    ssat->slip[pair + 1] |= 1;
+                    if (!measured[i * 2 + 1 - pair])
+                        {
+                            ssat->slip[0] |= 1;
+                        }
+                }
+        }
+}
+
+
+/* temporal update of slant ionospheric delays ---------------------------------
+ * a new state starts at the delay of the broadcast model, and then follows a
+ * random walk. The phase biases of a satellite are reset here after an outage
+ * of their observations, and its ionospheric delay when none of them is left
+ *-----------------------------------------------------------------------------*/
+void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
+{
+    const prcopt_t *opt = &rtk->opt;
+    double pos[3] = {0};
+    int i;
+    int j;
+    int f;
+
+    trace(3, "udiono_ppp: n=%d\n", n);
+
+    for (i = 0; i < MAXSAT; i++)
+        {
+            bool any_phase_bias = false;
+            for (f = 0; f < NFREQ; f++)
+                {
+                    j = IBF_PPP(i + 1, f, opt);
+                    if (++rtk->ssat[i].outc[f] > static_cast<unsigned int>(opt->maxout) && rtk->x[j] != 0.0)
+                        {
+                            initx(rtk, 0.0, 0.0, j);
+                        }
+                    any_phase_bias = any_phase_bias || rtk->x[j] != 0.0;
+                }
+            j = II_PPP(i + 1, opt);
+            if (!any_phase_bias && rtk->x[j] != 0.0)
+                {
+                    initx(rtk, 0.0, 0.0, j);
+                }
+        }
+
+    ecef2pos(rtk->sol.rr, pos);
+
+    /* The phases of two frequencies follow the changes of the delay of a
+       satellite. With one, the measurements do not tell the delay from the
+       range unless other satellites give the position: the errors of the
+       phases in time would pass to the position through the slow change of
+       the geometry. A satellite with one frequency takes part once four or
+       more satellites with two give the position */
+    std::vector<int> phases(MAXOBS, 0);
+    int satellites_with_two_phases = 0;
+    for (i = 0; i < n && i < MAXOBS; i++)
+        {
+            for (f = 0; f < NFREQ; f++)
+                {
+                    phases[i] += (obs[i].L[f] != 0.0 && nav->lam[obs[i].sat - 1][f] != 0.0) ? 1 : 0;
+                }
+            satellites_with_two_phases += (rtk->ssat[obs[i].sat - 1].vs && phases[i] >= 2) ? 1 : 0;
+        }
+
+    for (i = 0; i < n && i < MAXOBS; i++)
+        {
+            const int sat = obs[i].sat;
+            const double *azel = rtk->ssat[sat - 1].azel;
+            if (!rtk->ssat[sat - 1].vs || azel[1] <= 0.0)
+                {
+                    continue;
+                }
+            j = II_PPP(sat, opt);
+            if (phases[i] < 2 && satellites_with_two_phases < 4)
+                {
+                    /* out of the solution: its states start again later */
+                    if (rtk->x[j] != 0.0)
+                        {
+                            initx(rtk, 0.0, 0.0, j);
+                        }
+                    for (f = 0; f < NFREQ; f++)
+                        {
+                            const int k = IBF_PPP(sat, f, opt);
+                            if (rtk->x[k] != 0.0)
+                                {
+                                    initx(rtk, 0.0, 0.0, k);
+                                }
+                        }
+                    continue;
+                }
+            if (rtk->x[j] == 0.0)
+                {
+                    double ion = ionmodel(obs[i].time, nav->ion_gps, pos, azel);
+                    const double var = std::pow(ion * ERR_BRDCI, 2.0) + VAR_IONO_MODEL;
+                    if (ion == 0.0)
+                        {
+                            ion = 1E-6; /* a state at zero is not estimated */
+                        }
+                    initx(rtk, ion, var, j);
+                }
+            else
+                {
+                    rtk->P[j + j * rtk->nx] += std::pow(opt->prn[1], 2.0) * fabs(rtk->tt);
+                }
+        }
+}
+
+
+/* temporal update of receiver code biases -------------------------------------
+ * code bias of the receiver in the second and in the third frequency slot of
+ * each system, with respect to the first one. A new state starts at the median
+ * over the satellites of the difference of the pseudoranges, less the
+ * ionospheric delay
+ *-----------------------------------------------------------------------------*/
+void udifb_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
+{
+    const prcopt_t *opt = &rtk->opt;
+    int i;
+    int f;
+    int s;
+
+    trace(3, "udifb_ppp: n=%d\n", n);
+
+    for (s = 0; s < NSYS; s++)
+        {
+            for (f = 1; f < NFREQ; f++)
+                {
+                    const int j = ID_PPP(s, f, opt);
+                    if (rtk->x[j] != 0.0)
+                        {
+                            rtk->P[j + j * rtk->nx] += std::pow(PRN_IFB, 2.0) * fabs(rtk->tt);
+                            continue;
+                        }
+                    std::vector<double> bias;
+                    for (i = 0; i < n && i < MAXOBS; i++)
+                        {
+                            const int sat = obs[i].sat;
+                            const int sys = satsys(sat, nullptr);
+                            if (!sys || ppp_system_index(sys) != s)
+                                {
+                                    continue;
+                                }
+                            const double ion = rtk->x[II_PPP(sat, opt)];
+                            const double code_first = prange_slot(obs + i, 0, nav, opt);
+                            const double code = prange_slot(obs + i, f, nav, opt);
+                            if (ion == 0.0 || code_first == 0.0 || code == 0.0)
+                                {
+                                    continue;
+                                }
+                            bias.push_back(code - code_first - (ppp_iono_factor(nav, sat, f) - ppp_iono_factor(nav, sat, 0)) * ion);
+                        }
+                    if (bias.empty())
+                        {
+                            continue;
+                        }
+                    double median = ppp_median(bias);
+                    if (median == 0.0)
+                        {
+                            median = 1E-6; /* a state at zero is not estimated */
+                        }
+                    initx(rtk, median, VAR_IFB, j);
+                    trace(3, "udifb_ppp: system=%d slot=%d code bias=%.3f\n", s, f, median);
+                }
+        }
+}
+
+
+/* temporal update of receiver phase clocks ------------------------------------
+ * The phases of a frequency band have their own receiver clock, with respect
+ * to the one of the codes of the system: the oscillators of the bands of a
+ * front end are not at their nominal frequencies by the same fraction, so the
+ * phases of a band drift with respect to the codes and to the phases of the
+ * other bands, by the same amount for all the satellites. One state for each
+ * system and frequency slot with a phase in the model (with the iono-free
+ * measurements, for each system and pair of frequency slots), as a random walk
+ * loose enough to follow it. It
+ * takes the part common to the satellites and leaves the phases with what
+ * differs between them, as in a model of differences between satellites
+ *-----------------------------------------------------------------------------*/
+void udphaseclock_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
+{
+    const prcopt_t *opt = &rtk->opt;
+    int i;
+    int f;
+
+    trace(3, "udphaseclock_ppp: n=%d\n", n);
+
+    for (i = 0; i < n && i < MAXOBS; i++)
+        {
+            const int sat = obs[i].sat;
+            const int sys = satsys(sat, nullptr);
+            if (!sys || !rtk->ssat[sat - 1].vs)
+                {
+                    continue;
+                }
+            if (opt->ionoopt == IONOOPT_IFLC)
+                {
+                    /* one for each pair of frequency slots of the iono-free measurements */
+                    int first;
+                    int second;
+                    ifmeas_slots(obs + i, &first, &second);
+                    if (first == second || obs[i].L[first] == 0.0 || obs[i].L[second] == 0.0 ||
+                        nav->lam[sat - 1][first] == 0.0 || nav->lam[sat - 1][second] == 0.0)
+                        {
+                            continue;
+                        }
+                    const int j = ppp_phase_clock(obs + i, opt);
+                    if (rtk->x[j] == 0.0)
+                        {
+                            initx(rtk, 1E-6, VAR_PHASE_CLOCK, j);
+                        }
+                    continue;
+                }
+            if (opt->ionoopt != IONOOPT_EST)
+                {
+                    /* the phase of the first frequency slot */
+                    if (obs[i].L[0] == 0.0 || nav->lam[sat - 1][0] == 0.0)
+                        {
+                            continue;
+                        }
+                    const int j = ppp_phase_clock(obs + i, opt);
+                    if (rtk->x[j] == 0.0)
+                        {
+                            initx(rtk, 1E-6, VAR_PHASE_CLOCK, j);
+                        }
+                    continue;
+                }
+            for (f = 0; f < NFREQ; f++)
+                {
+                    if (obs[i].L[f] == 0.0 || nav->lam[sat - 1][f] == 0.0)
+                        {
+                            continue;
+                        }
+                    const int j = IH_PPP(ppp_system_index(sys), f, opt);
+                    if (rtk->x[j] == 0.0)
+                        {
+                            initx(rtk, 1E-6, VAR_PHASE_CLOCK, j); /* a state at zero is not estimated */
+                        }
+                }
+        }
+    for (i = 0; i < NSYS; i++)
+        {
+            for (f = 0; f < NFREQ; f++)
+                {
+                    const int j = IH_PPP(i, f, opt);
+                    if (rtk->x[j] != 0.0)
+                        {
+                            rtk->P[j + j * rtk->nx] += std::pow(PRN_PHASE_CLOCK, 2.0) * fabs(rtk->tt);
+                        }
+                }
+        }
+}
+
+
+/* temporal update of phase biases, per frequency slot --------------------------
+ * a phase bias starts, and starts again after a cycle slip, at the phase less
+ * the code, plus twice the ionospheric delay, less the receiver phase clock
+ *-----------------------------------------------------------------------------*/
+void udbias_est_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
+{
+    const prcopt_t *opt = &rtk->opt;
+    std::vector<double> bias(MAXOBS, 0.0);
+    std::vector<bool> slip(MAXOBS, false);
+    int i;
+    int j;
+    int f;
+
+    trace(3, "udbias_est_ppp: n=%d\n", n);
+
+    for (i = 0; i < MAXSAT; i++)
+        {
+            for (f = 0; f < NFREQ; f++)
+                {
+                    rtk->ssat[i].slip[f] = 0;
+                }
+        }
+    /* detect cycle slip by LLI */
+    detslp_ll(rtk, obs, n);
+
+    /* detect cycle slip by geometry-free phase jump */
+    detslp_gf_est(rtk, obs, n, nav);
+
+    for (f = 0; f < NFREQ; f++)
+        {
+            double offset = 0.0;
+            int k = 0;
+            for (i = 0; i < n && i < MAXOBS; i++)
+                {
+                    const int sat = obs[i].sat;
+                    const int sys = satsys(sat, nullptr);
+                    const double lam = nav->lam[sat - 1][f];
+                    const double ion = rtk->x[II_PPP(sat, opt)];
+                    j = IBF_PPP(sat, f, opt);
+                    bias[i] = 0.0;
+                    slip[i] = false;
+                    if (!sys || lam == 0.0 || obs[i].L[f] == 0.0 || ion == 0.0)
+                        {
+                            continue;
+                        }
+                    double code = prange_slot(obs + i, f, nav, opt);
+                    if (code == 0.0)
+                        {
+                            continue;
+                        }
+                    if (f > 0)
+                        {
+                            code -= rtk->x[ID_PPP(ppp_system_index(sys), f, opt)];
+                        }
+                    bias[i] = obs[i].L[f] * lam - code + 2.0 * ppp_iono_factor(nav, sat, f) * ion -
+                              rtk->x[IH_PPP(ppp_system_index(sys), f, opt)];
+                    slip[i] = rtk->ssat[sat - 1].slip[f] != 0;
+                    if (rtk->x[j] == 0.0 || slip[i])
+                        {
+                            continue;
+                        }
+                    offset += bias[i] - rtk->x[j];
+                    k++;
+                }
+            /* correct phase-code jump to ensure phase-code coherency */
+            if (k >= 2 && fabs(offset / k) > 0.0005 * SPEED_OF_LIGHT_M_S)
+                {
+                    for (i = 0; i < MAXSAT; i++)
+                        {
+                            j = IBF_PPP(i + 1, f, opt);
+                            if (rtk->x[j] != 0.0)
+                                {
+                                    rtk->x[j] += offset / k;
+                                }
+                        }
+                    trace(2, "phase-code jump corrected: %s f=%d n=%2d dt=%12.9fs\n",
+                        time_str(rtk->sol.time, 0), f + 1, k, offset / k / SPEED_OF_LIGHT_M_S);
+                }
+            for (i = 0; i < n && i < MAXOBS; i++)
+                {
+                    j = IBF_PPP(obs[i].sat, f, opt);
+                    if (rtk->x[j] != 0.0)
+                        {
+                            rtk->P[j + j * rtk->nx] += std::pow(opt->prn[0], 2.0) * fabs(rtk->tt);
+                        }
+                    if (bias[i] == 0.0 || (rtk->x[j] != 0.0 && !slip[i]))
+                        {
+                            continue;
+                        }
+                    /* (re)initialize the phase bias */
+                    initx(rtk, bias[i], VAR_BIAS, j);
+
+                    trace(5, "udbias_est_ppp: sat=%2d f=%d bias=%.3f\n", obs[i].sat, f + 1, bias[i]);
+                }
+        }
+}
+
+
 /* temporal update of states --------------------------------------------------*/
 void udstate_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
@@ -1519,6 +2065,19 @@ void udstate_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         {
             udtrop_ppp(rtk);
         }
+    if (rtk->opt.ionoopt == IONOOPT_EST)
+        {
+            /* temporal update of slant ionospheric delays, receiver code biases
+               and phase clocks, and the phase biases of each frequency slot */
+            udiono_ppp(rtk, obs, n, nav);
+            udifb_ppp(rtk, obs, n, nav);
+            udphaseclock_ppp(rtk, obs, n, nav);
+            udbias_est_ppp(rtk, obs, n, nav);
+            return;
+        }
+    /* temporal update of receiver phase clocks */
+    udphaseclock_ppp(rtk, obs, n, nav);
+
     /* temporal update of phase-bias */
     udbias_ppp(rtk, obs, n, nav);
 }
@@ -1729,11 +2288,15 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
     double dantr[NFREQ] = {0};
     double dants[NFREQ] = {0};
     double rsun[3] = {0};
-    std::vector<double> var(MAXOBS * 2, 0.0);
-    std::vector<int> row_obs(MAXOBS * 2, 0);   /* observation of each row */
-    std::vector<int> row_type(MAXOBS * 2, 0);  /* 0: phase, 1: code */
-    std::vector<int> row_clock(MAXOBS * 2, 0); /* receiver clock of each row */
-    std::vector<double> common(NSYS, 0.0);     /* innovation common to the rows of a receiver clock (m) */
+    const int max_rows = MAXOBS * 2 * NF_PPP(opt);
+    std::vector<double> var(max_rows, 0.0);
+    std::vector<int> row_obs(max_rows, 0);               /* observation of each row */
+    std::vector<int> row_type(max_rows, 0);              /* 0: phase, 1: code */
+    std::vector<int> row_clock(max_rows, 0);             /* receiver clock of each row */
+    std::vector<int> row_freq(max_rows, 0);              /* frequency slot of each row */
+    std::vector<int> row_group(max_rows, 0);             /* rows with a common receiver term: codes of a clock, or phases of a clock and frequency slot */
+    std::vector<double> row_common_var(max_rows, 0.0);   /* variance of the errors common to the rows of a satellite (m^2) */
+    std::vector<double> common(NSYS * (1 + NFREQ), 0.0); /* innovation common to the rows of a group (m) */
     double dtrp = 0.0;
     double vart = 0.0;
     double varm[2] = {0};
@@ -1753,6 +2316,14 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
     for (i = 0; i < MAXSAT; i++)
         {
             rtk->ssat[i].vsat[0] = 0;
+            if (opt->ionoopt == IONOOPT_EST)
+                {
+                    /* phases of each frequency slot in the solution */
+                    for (j = 0; j < NFREQ; j++)
+                        {
+                            rtk->ssat[i].fix[j] = 0;
+                        }
+                }
         }
 
     for (i = 0; i < 3; i++)
@@ -1836,6 +2407,114 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                 {
                     windupcorr(rtk->sol.time, rs + i * 6, rr, &rtk->ssat[sat - 1].phw);
                 }
+            if (opt->ionoopt == IONOOPT_EST)
+                {
+                    /* phase and code of each frequency slot, with the slant
+                       ionospheric delay of the satellite as a state */
+                    const double ion = x[II_PPP(sat, opt)];
+                    if (ion == 0.0)
+                        {
+                            continue;
+                        }
+                    const int est_clock_index = ppp_clock_index(sys, opt);
+                    const int est_clock_state = IC_PPP(est_clock_index, opt);
+                    const int system_index = ppp_system_index(sys);
+
+                    /* satellite clock and tropospheric delay */
+                    r += -SPEED_OF_LIGHT_M_S * dts[i * 2] + dtrp;
+
+                    for (int f = 0; f < NFREQ; f++)
+                        {
+                            const double lam = nav->lam[sat - 1][f];
+                            if (lam == 0.0 || obs[i].code[f] == CODE_NONE ||
+                                testsnr(0, f, azel[1 + i * 2], obs[i].SNR[f] * 0.25, &opt->snrmask))
+                                {
+                                    continue;
+                                }
+                            const double factor = ppp_iono_factor(nav, sat, f);
+                            const int iono_state = II_PPP(sat, opt);
+                            const int bias_state = IBF_PPP(sat, f, opt);
+                            const int code_bias_state = f > 0 ? ID_PPP(system_index, f, opt) : -1;
+                            const int phase_clock_state = IH_PPP(system_index, f, opt);
+
+                            for (j = 0; j < 2; j++)
+                                { /* for phase and code */
+                                    double measurement;
+                                    if (j == 0)
+                                        {
+                                            /* a phase needs its phase bias */
+                                            if (obs[i].L[f] == 0.0 || x[bias_state] == 0.0)
+                                                {
+                                                    continue;
+                                                }
+                                            measurement = obs[i].L[f] * lam - lam * rtk->ssat[sat - 1].phw;
+                                        }
+                                    else
+                                        {
+                                            measurement = prange_slot(obs + i, f, nav, opt);
+                                            if (measurement == 0.0)
+                                                {
+                                                    continue;
+                                                }
+                                        }
+                                    measurement -= dants[f] + dantr[f];
+
+                                    for (k = 0; k < nx; k++)
+                                        {
+                                            H[k + nx * nv] = 0.0;
+                                        }
+                                    v[nv] = measurement - r - x[est_clock_state];
+                                    for (k = 0; k < 3; k++)
+                                        {
+                                            H[k + nx * nv] = -e[k];
+                                        }
+                                    H[est_clock_state + nx * nv] = 1.0;
+                                    if (opt->tropopt >= TROPOPT_EST)
+                                        {
+                                            for (k = 0; k < (opt->tropopt >= TROPOPT_ESTG ? 3 : 1); k++)
+                                                {
+                                                    H[IT_PPP(opt) + k + nx * nv] = dtdx[k];
+                                                }
+                                        }
+                                    /* the ionosphere delays the code and advances the phase */
+                                    const double sign = j == 0 ? -1.0 : 1.0;
+                                    v[nv] -= sign * factor * ion;
+                                    H[iono_state + nx * nv] = sign * factor;
+                                    if (j == 0)
+                                        {
+                                            v[nv] -= x[bias_state] + x[phase_clock_state];
+                                            H[bias_state + nx * nv] = 1.0;
+                                            H[phase_clock_state + nx * nv] = 1.0;
+                                        }
+                                    else if (code_bias_state >= 0 && x[code_bias_state] != 0.0)
+                                        {
+                                            v[nv] -= x[code_bias_state];
+                                            H[code_bias_state + nx * nv] = 1.0;
+                                        }
+                                    /* the errors of the orbit, the clock and the troposphere
+                                       are the same in all the rows of the satellite */
+                                    row_common_var[nv] = vare[i] + vart;
+                                    var[nv] = varerr_slot(sys, azel[1 + i * 2], j, f, opt) + (j == 1 ? std::pow(ERR_CBIAS, 2.0) : 0.0) + row_common_var[nv];
+
+                                    if (j == 0)
+                                        {
+                                            rtk->ssat[sat - 1].resc[f] = v[nv];
+                                        }
+                                    else
+                                        {
+                                            rtk->ssat[sat - 1].resp[f] = v[nv];
+                                        }
+                                    row_obs[nv] = i;
+                                    row_type[nv] = j;
+                                    row_clock[nv] = est_clock_index;
+                                    row_freq[nv] = f;
+                                    row_group[nv] = j == 1 ? est_clock_index : NSYS + system_index * NFREQ + f;
+                                    nv++;
+                                }
+                        }
+                    continue;
+                }
+
             /* ionosphere and antenna phase corrected measurements */
             if (!corrmeas(obs + i, nav, pos, azel + i * 2, &rtk->opt, dantr, dants,
                     rtk->ssat[sat - 1].phw, meas, varm, &brk))
@@ -1848,6 +2527,9 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
             /* receiver clock of the system */
             const int clock_index = ppp_clock_index(sys, opt);
             const int clock_state = IC_PPP(clock_index, opt);
+
+            /* receiver clock of the phase */
+            const int phase_clock_state = ppp_phase_clock(obs + i, opt);
 
             trace(5, "sat=%2d azel=%6.1f %5.1f dtrp=%.3f dantr=%6.3f %6.3f dants=%6.3f %6.3f phw=%6.3f\n",
                 sat, azel[i * 2] * R2D, azel[1 + i * 2] * R2D, dtrp, dantr[0], dantr[1], dants[0],
@@ -1885,6 +2567,8 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                         {
                             v[nv] -= x[IB_PPP(obs[i].sat, opt)];
                             H[IB_PPP(obs[i].sat, opt) + nx * nv] = 1.0;
+                            v[nv] -= x[phase_clock_state];
+                            H[phase_clock_state + nx * nv] = 1.0;
                         }
                     var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], j, opt) + varm[j] + vare[i] + vart;
 
@@ -1900,6 +2584,7 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                     row_obs[nv] = i;
                     row_type[nv] = j;
                     row_clock[nv] = clock_index;
+                    row_group[nv] = j == 0 ? NSYS + phase_clock_state - IH_PPP(0, 0, opt) : clock_index;
                     nv++;
                 }
         }
@@ -1910,13 +2595,15 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
        the position of the filter and that solution differ, as after a start
        with poor geometry, and testing the innovations as they are rejects the
        satellites that would correct the position. The offset is taken as the
-       median of the code innovations */
-    for (k = 0; k < NSYS; k++)
+       median of the code innovations. The phases have a receiver clock of
+       their own for each system and frequency slot, or pair of them with the
+       iono-free measurements, and take the median of their innovations */
+    for (k = 0; k < static_cast<int>(common.size()); k++)
         {
             std::vector<double> code_innovations;
             for (i = 0; i < nv; i++)
                 {
-                    if (row_clock[i] == k && row_type[i] == 1)
+                    if (row_group[i] == k && (k >= NSYS || row_type[i] == 1))
                         {
                             code_innovations.push_back(v[i]);
                         }
@@ -1936,22 +2623,28 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
         {
             const int type = row_type[i];
             sat = obs[row_obs[i]].sat;
-            if (opt->maxinno[type] > 0.0 && fabs(v[i] - common[row_clock[i]]) > opt->maxinno[type] &&
+            if (opt->maxinno[type] > 0.0 && fabs(v[i] - common[row_group[i]]) > opt->maxinno[type] &&
                 satsys(sat, nullptr) != SYS_GLO)
                 {
                     trace(2, "ppp outlier rejected %s sat=%2d type=%d v=%.3f common=%.3f\n",
-                        time_str(obs[row_obs[i]].time, 0), sat, type, v[i], common[row_clock[i]]);
-                    rtk->ssat[sat - 1].rejc[0]++;
+                        time_str(obs[row_obs[i]].time, 0), sat, type, v[i], common[row_group[i]]);
+                    rtk->ssat[sat - 1].rejc[row_freq[i]]++;
                     continue;
                 }
             if (type == 0)
                 {
                     rtk->ssat[sat - 1].vsat[0] = 1;
+                    if (opt->ionoopt == IONOOPT_EST)
+                        {
+                            rtk->ssat[sat - 1].fix[row_freq[i]] = 4;
+                        }
                 }
             if (nv != i)
                 {
                     v[nv] = v[i];
                     var[nv] = var[i];
+                    row_obs[nv] = row_obs[i];
+                    row_common_var[nv] = row_common_var[i];
                     for (k = 0; k < nx; k++)
                         {
                             H[k + nx * nv] = H[k + nx * i];
@@ -1959,11 +2652,12 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
                 }
             nv++;
         }
+    const bool correlated_rows = opt->ionoopt == IONOOPT_EST;
     for (i = 0; i < nv; i++)
         {
             for (j = 0; j < nv; j++)
                 {
-                    R[i + j * nv] = i == j ? var[i] : 0.0;
+                    R[i + j * nv] = i == j ? var[i] : ((correlated_rows && row_obs[i] == row_obs[j]) ? row_common_var[i] : 0.0);
                 }
         }
     trace(5, "x=\n");
@@ -2044,7 +2738,7 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     xp = mat(rtk->nx, 1);
     Pp = zeros(rtk->nx, rtk->nx);
     matcpy(xp, rtk->x, rtk->nx, 1);
-    nv = n * rtk->opt.nf * 2;
+    nv = n * std::max(rtk->opt.nf, NF_PPP(opt)) * 2;
     v = mat(nv, 1);
     H = mat(rtk->nx, nv);
     R = mat(nv, nv);
@@ -2093,6 +2787,20 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                 {
                     if (!rtk->ssat[obs[i].sat - 1].vsat[0])
                         {
+                            continue;
+                        }
+                    if (opt->ionoopt == IONOOPT_EST)
+                        {
+                            /* res_ppp() flags the phases of each frequency slot */
+                            for (int f = 0; f < NFREQ; f++)
+                                {
+                                    if (rtk->ssat[obs[i].sat - 1].fix[f])
+                                        {
+                                            rtk->ssat[obs[i].sat - 1].lock[f]++;
+                                            rtk->ssat[obs[i].sat - 1].outc[f] = 0;
+                                        }
+                                }
+                            rtk->sol.ns++;
                             continue;
                         }
                     rtk->ssat[obs[i].sat - 1].lock[0]++;

@@ -50,6 +50,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   (`PVT.threshold_reject_innovation`) now leaves out the offset common to the
   satellites of a receiver clock, so it no longer rejects the satellites that
   correct the position.
+- Fixed the PPP positioning modes degrading by meters with front ends whose
+  carrier phases are not coherent with the code phases, or among frequency
+  bands. With `PVT.iono_model=Iono-Free-LC`, the cycle slips of Galileo
+  satellites in the second band of the combination were also missed.
 - Added antenna models to the PPP positioning modes. `PVT.antex_file` sets an
   ANTEX file (version 1.4 or 2.0) with the calibrations of the satellite
   antennas: the measurements of GPS and Galileo satellites are then referred to
@@ -69,6 +73,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   broadcast ephemeris in the same way as the Galileo HAS ones, which they
   replace. `PVT.ssr_reference_point` sets the point of the satellite that the
   corrected orbits refer to, for the antenna models.
+- Added an uncombined model to the PPP positioning modes, selected by
+  `PVT.iono_model=Estimate_STEC`, which until now left the ionosphere
+  uncorrected there. The filter estimates the slant ionospheric delay of each
+  satellite and a carrier phase ambiguity for each of its signals, so the
+  satellites with one, two or three signals all take part in the solution, and
+  the carrier phases of the bands of the front end need not be coherent.
+  `PVT.sigma_iono` sets the process noise of those delays (0.1 m/sqrt(s) by
+  default in this model).
 
 ### Improvements in Availability:
 

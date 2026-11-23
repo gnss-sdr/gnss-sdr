@@ -35,6 +35,7 @@
 #define GNSS_SDR_RTKLIB_PPP_H
 
 #include "rtklib.h"
+#include <vector>
 
 
 #define MIN_PPP(x, y) ((x) <= (y) ? (x) : (y))
@@ -70,6 +71,13 @@ const double VAR_GRA_PPP = std::pow(0.001, 2.0); /* init variance gradient (m^2)
 const double VAR_BIAS = std::pow(100.0, 2.0);    /* init variance phase-bias (m^2) */
 
 const double VAR_IONO_OFF = std::pow(10.0, 2.0); /* variance of iono-model-off */
+
+/* estimation of the ionosphere (IONOOPT_EST), and receiver phase clocks */
+const double VAR_IONO_MODEL = std::pow(1.0, 2.0);   /* variance added to the one of the broadcast model at the start of a slant ionosphere state (m^2) */
+const double VAR_IFB = std::pow(10.0, 2.0);         /* init variance of a receiver code bias (m^2) */
+const double PRN_IFB = 1E-3;                        /* process noise of a receiver code bias (m/sqrt(s)) */
+const double VAR_PHASE_CLOCK = std::pow(10.0, 2.0); /* init variance of a receiver phase clock (m^2) */
+const double PRN_PHASE_CLOCK = 1.0;                 /* process noise of a receiver phase clock (m/sqrt(s)) */
 
 
 /* functions originally included in RTKLIB/src/ppp_ar.c v2.4.2*/
@@ -113,7 +121,13 @@ void testeclipse(const obsd_t *obs, int n, const nav_t *nav, double *rs);
 
 double varerr(int sat, int sys, double el, int type, const prcopt_t *opt);
 
+double varerr_slot(int sys, double el, int type, int f, const prcopt_t *opt);
+
 void initx(rtk_t *rtk, double xi, double var, int i);
+
+void ifmeas_slots(const obsd_t *obs, int *i, int *j);
+
+int ppp_phase_clock(const obsd_t *obs, const prcopt_t *opt);
 
 int ifmeas(const obsd_t *obs, const nav_t *nav, const double *azel,
     const prcopt_t *opt, const double *dantr, const double *dants,
@@ -131,7 +145,7 @@ int corrmeas(const obsd_t *obs, const nav_t *nav, const double *pos,
     const double *dantr, const double *dants, double phw,
     double *meas, double *var, int *brk);
 
-double gfmeas(const obsd_t *obs, const nav_t *nav);
+double gfmeas(const obsd_t *obs, const nav_t *nav, int i, int j);
 
 void udpos_ppp(rtk_t *rtk);
 
@@ -141,9 +155,23 @@ void udtrop_ppp(rtk_t *rtk);
 
 void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n);
 
+double ppp_median(std::vector<double> values);
+
 void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
 
 void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
+
+double ppp_iono_factor(const nav_t *nav, int sat, int f);
+
+void detslp_gf_est(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
+
+void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
+
+void udifb_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
+
+void udphaseclock_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
+
+void udbias_est_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
 
 void udstate_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
 

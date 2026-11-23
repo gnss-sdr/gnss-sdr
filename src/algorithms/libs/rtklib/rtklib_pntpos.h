@@ -74,6 +74,8 @@ void prange_band_pair(const obsd_t *obs, int *i, int *j);
 double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int iter, const prcopt_t *opt, double *var, double *iono_scale);
 
+double prange_slot(const obsd_t *obs, int slot, const nav_t *nav, const prcopt_t *opt);
+
 /* ionospheric correction ------------------------------------------------------
  * compute ionospheric correction
  * args   : gtime_t time     I   time

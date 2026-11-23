@@ -366,8 +366,22 @@ using fatalfunc_t = void(const char *);  //!<  fatal callback function type
 #define IC_PPP(s, opt) (NP_PPP(opt) + (s))                                                                       /* state index of clocks (s=0:gps,1:glo) */
 #define IT_PPP(opt) (IC_PPP(0, opt) + NSYS)                                                                      /* state index of tropos */
 #define NR_PPP(opt) (IT_PPP(opt) + ((opt)->tropopt < TROPOPT_EST ? 0 : ((opt)->tropopt == TROPOPT_EST ? 1 : 3))) /* number of solutions */
-#define IB_PPP(s, opt) (NR_PPP(opt) + (s)-1)                                                                     /* state index of phase bias */
-#define NX_PPP(opt) (IB_PPP(MAXSAT, opt) + 1)                                                                    /* number of estimated states */
+/* With the estimation of the ionosphere (IONOOPT_EST), the PPP filter has the slant ionospheric delay of each
+   satellite, the code bias of the receiver in the second and third frequency slots of each system, the clock
+   of the receiver for the phases of each frequency slot of each system, and the phase bias of each satellite
+   in each frequency slot. Otherwise it has one phase bias for each satellite, and the clock of the receiver
+   for the phases of the first frequency slot of each system or, with the ionosphere-free combination
+   (IONOOPT_IFLC), for those of each pair of frequency slots of each system */
+#define NI_PPP(opt) ((opt)->ionoopt == IONOOPT_EST ? MAXSAT : 0)                                                 /* number of ionosphere states */
+#define ND_PPP(opt) ((opt)->ionoopt == IONOOPT_EST ? NSYS * (NFREQ - 1) : 0)                                     /* number of receiver code bias states */
+#define NH_PPP(opt) (NSYS * NFREQ)                                                                               /* number of receiver phase clock states */
+#define NF_PPP(opt) ((opt)->ionoopt == IONOOPT_EST ? NFREQ : 1)                                                  /* number of phase biases of a satellite */
+#define II_PPP(s, opt) (NR_PPP(opt) + (s)-1)                                                                     /* state index of slant ionosphere */
+#define ID_PPP(sys, f, opt) (NR_PPP(opt) + NI_PPP(opt) + (sys) * (NFREQ - 1) + (f)-1)                            /* state index of receiver code bias (sys: system index, f=1,2: frequency slot) */
+#define IH_PPP(sys, f, opt) (NR_PPP(opt) + NI_PPP(opt) + ND_PPP(opt) + (sys) * NFREQ + (f))                      /* state index of receiver phase clock (sys: system index, f: frequency slot, or pair of them) */
+#define IB_PPP(s, opt) (NR_PPP(opt) + NI_PPP(opt) + ND_PPP(opt) + NH_PPP(opt) + (s)-1)                           /* state index of phase bias (first frequency slot) */
+#define IBF_PPP(s, f, opt) (IB_PPP(s, opt) + MAXSAT * (f))                                                       /* state index of phase bias of a frequency slot */
+#define NX_PPP(opt) (IBF_PPP(MAXSAT, NF_PPP(opt) - 1, opt) + 1)                                                  /* number of estimated states */
 // clang-format on
 
 #define NF_RTK(opt) ((opt)->ionoopt == IONOOPT_IFLC ? 1 : (opt)->nf)

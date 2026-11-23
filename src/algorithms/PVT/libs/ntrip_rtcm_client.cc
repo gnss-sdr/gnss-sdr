@@ -1525,19 +1525,16 @@ private:
 
                 Ssr_Arrival& arrival = d_ssr_arrivals[sat - 1];
                 const bool new_issue = corrections.iod[0] != arrival.orbit_iod || corrections.iode != arrival.iode;
-                const bool new_clock = timediff(corrections.t0[1], arrival.clock_epoch) != 0.0;
-                arrival.clock_epoch = corrections.t0[1];
-                arrival.orbit_iod = corrections.iod[0];
-                arrival.iode = corrections.iode;
-                if (new_clock)
+                if (new_issue || arrival.issue_epoch.time == 0)
                     {
-                        arrival.waiting_for_clock = false;
+                        arrival.issue_epoch = corrections.t0[0];
+                        arrival.orbit_iod = corrections.iod[0];
+                        arrival.iode = corrections.iode;
                     }
-                else if (new_issue && timediff(corrections.t0[1], corrections.t0[0]) < 0.0)
-                    {
-                        arrival.waiting_for_clock = true;
-                    }
-                const bool pair = !arrival.waiting_for_clock && corrections.iod[0] == corrections.iod[1];
+                // Keep the epoch of the issue transition across orbit updates:
+                // a delayed clock from before it cannot complete the new pair.
+                const bool pair = timediff(corrections.t0[1], arrival.issue_epoch) >= 0.0 &&
+                                  corrections.iod[0] == corrections.iod[1];
 
                 const auto position = std::lower_bound(
                     d_ssr_corrections.begin(), d_ssr_corrections.end(), sat,
@@ -1559,6 +1556,7 @@ private:
                                 latest.iod[i] = previous.iod[i];
                             }
                         latest.iode = previous.iode;
+                        latest.iode_lsb = previous.iode_lsb;
                         latest.iodcrc = previous.iodcrc;
                         latest.refd = previous.refd;
                         for (int i = 0; i < 3; i++)
@@ -2054,10 +2052,9 @@ private:
     // Orbit and clock corrections of a satellite as they arrived
     struct Ssr_Arrival
     {
-        gtime_t clock_epoch;
+        gtime_t issue_epoch;
         int orbit_iod;
         int iode;
-        bool waiting_for_clock;
     };
     std::vector<std::pair<int, ssr_t>> d_ssr_corrections;
     std::vector<Ssr_Arrival> d_ssr_arrivals;

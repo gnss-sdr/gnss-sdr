@@ -41,6 +41,7 @@
 #include "matlab_writter_helper.h"
 #include "ntrip_rtcm_client.h"
 #include "ntrip_rtk_signals.h"
+#include "rtklib_ephemeris.h"
 #include "rtklib_pntpos.h"
 #include "rtklib_ppp.h"
 #include "rtklib_rtkcmn.h"
@@ -489,7 +490,7 @@ void Rtklib_Solver::log_antenna_message_once(const std::string &message, bool wa
 }
 
 
-bool Rtklib_Solver::satellite_antenna_reference(const Antex_Antenna &calibration, int sys, bool ssr_orbit, std::array<double, 3> &reference) const
+bool Rtklib_Solver::satellite_antenna_reference(const Antex_Antenna &calibration, int sys, bool ssr_orbit, bool fnav, std::array<double, 3> &reference) const
 {
     // The broadcast orbit, and the Galileo HAS corrections to it, refer to the
     // phase center of the ionosphere-free combination of the signals of the
@@ -520,7 +521,6 @@ bool Rtklib_Solver::satellite_antenna_reference(const Antex_Antenna &calibration
     if (sys == SYS_GAL)
         {
             first = "E01";
-            const bool fnav = d_galileo_nav_message_type_for_pvt == Galileo_Nav_Message_Type::FNAV;
             second = fnav ? "E05" : "E07";
             second_frequency_hz = fnav ? FREQ5 : FREQ7;
         }
@@ -541,7 +541,7 @@ bool Rtklib_Solver::satellite_antenna_reference(const Antex_Antenna &calibration
 }
 
 
-void Rtklib_Solver::update_satellite_antenna(const obsd_t &observation, int sys, int prn)
+void Rtklib_Solver::update_satellite_antenna(const obsd_t &observation, int sys, int prn, const eph_t &ephemeris)
 {
     Satellite_Antenna &antenna = d_satellite_antennas[observation.sat - 1];
     const char system = antex_system_letter(sys);
@@ -551,35 +551,32 @@ void Rtklib_Solver::update_satellite_antenna(const obsd_t &observation, int sys,
 
     const bool expired = antenna.calibration != nullptr && antenna.calibration->valid_until != 0 &&
                          time_s > antenna.calibration->valid_until;
+    bool calibration_changed = false;
     if ((antenna.calibration == nullptr || expired) && time_s >= antenna.next_search_s)
         {
             antenna = Satellite_Antenna();
             antenna.code.fill(0xFF);  // set every slot again
             antenna.next_search_s = time_s + 3600;
             antenna.calibration = d_antex.find_satellite(satellite, time_s);
+            calibration_changed = true;
             if (antenna.calibration == nullptr)
                 {
                     log_antenna_message_once(std::string("No antenna calibration for satellite ") + satellite + " in the ANTEX file. Its antenna is not modeled.", true);
-                }
-            else
-                {
-                    antenna.has_reference = satellite_antenna_reference(*antenna.calibration, sys, false, antenna.reference);
-                    if (!antenna.has_reference)
-                        {
-                            log_antenna_message_once(std::string("The antenna calibration of satellite ") + satellite + " lacks the frequencies of its navigation message. Its antenna is not modeled.", true);
-                        }
                 }
         }
 
     // The orbit of a satellite with SSR corrections refers to the point that
     // its provider states, and the broadcast orbit, to the one of the
-    // navigation message. The corrections going on or off already count as a
-    // cycle slip
-    const bool ssr_orbit = d_conf.ntrip_ssr_corrections && has_corrections_applied(sys == SYS_GAL ? "Galileo" : "GPS", prn);
-    if (antenna.calibration != nullptr && ssr_orbit != antenna.ssr_orbit)
+    // selected navigation message. Galileo HAS selects I/NAV even when the
+    // receiver prefers F/NAV, and broadcast fallback can change that selection.
+    const bool ssr_orbit = d_conf.ntrip_ssr_corrections && ephemeris.apply_has_corrections;
+    const bool fnav = sys == SYS_GAL && (ephemeris.code & 2) != 0;
+    if (antenna.calibration != nullptr && (calibration_changed || ssr_orbit != antenna.ssr_orbit || fnav != antenna.fnav))
         {
             antenna.ssr_orbit = ssr_orbit;
-            antenna.has_reference = satellite_antenna_reference(*antenna.calibration, sys, ssr_orbit, antenna.reference);
+            antenna.fnav = fnav;
+            antenna.reference.fill(0.0);
+            antenna.has_reference = satellite_antenna_reference(*antenna.calibration, sys, ssr_orbit, fnav, antenna.reference);
             antenna.code.fill(0xFF);  // set every slot again
             if (!antenna.has_reference)
                 {
@@ -713,7 +710,11 @@ void Rtklib_Solver::update_antenna_models(const obsd_t *observations, int number
             // The reference point of the orbit is only defined here for GPS and Galileo
             if (!d_satellite_antennas.empty() && (sys == SYS_GPS || sys == SYS_GAL))
                 {
-                    update_satellite_antenna(observation, sys, prn);
+                    const eph_t *ephemeris = seleph(observations[0].time, observation.sat, -1, &d_nav_data);
+                    if (ephemeris != nullptr)
+                        {
+                            update_satellite_antenna(observation, sys, prn, *ephemeris);
+                        }
                 }
         }
     for (size_t i = 0; i < d_receiver_antennas.size(); i++)

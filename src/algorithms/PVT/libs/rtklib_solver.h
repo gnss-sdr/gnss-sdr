@@ -331,6 +331,7 @@ private:
         int64_t next_search_s;                  // time of the next search of a calibration
         bool has_reference;
         bool ssr_orbit;  // the reference point is the one of the SSR corrections
+        bool fnav;       // the selected Galileo ephemeris uses the E1/E5a reference
     };
     struct Receiver_Antenna
     {
@@ -339,9 +340,9 @@ private:
     };
     void load_antenna_calibrations(prcopt_t& options);
     void update_antenna_models(const obsd_t* observations, int number_of_observations);
-    void update_satellite_antenna(const obsd_t& observation, int sys, int prn);
+    void update_satellite_antenna(const obsd_t& observation, int sys, int prn, const eph_t& ephemeris);
     void update_receiver_antenna(const obsd_t& observation, int sys);
-    bool satellite_antenna_reference(const Antex_Antenna& calibration, int sys, bool ssr_orbit, std::array<double, 3>& reference) const;
+    bool satellite_antenna_reference(const Antex_Antenna& calibration, int sys, bool ssr_orbit, bool fnav, std::array<double, 3>& reference) const;
     void log_antenna_message_once(const std::string& message, bool warning);
 
     void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);

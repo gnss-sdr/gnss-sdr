@@ -360,6 +360,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   Graphviz DOT format. Set `GNSS-SDR.dump_flowgraph=true` and, optionally,
   `GNSS-SDR.flowgraph_dump_filename` (default `flowgraph.dot`). Contributed by
   @edmondj.
+- Added a script at `utils/scripts/download-antenna-files.sh` that downloads the
+  latest antenna calibration (ANTEX) and satellite metadata (SINEX) files
+  published by the International GNSS Service and the European GNSS Service
+  Centre, for the antenna models of the PPP positioning modes.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

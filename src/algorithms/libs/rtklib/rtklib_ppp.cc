@@ -1422,11 +1422,11 @@ double ppp_phase_code_jump(const std::vector<double> &differences)
     const double median = ppp_median(differences);
     double sum = 0.0;
     int k = 0;
-    for (size_t i = 0; i < differences.size(); i++)
+    for (double difference : differences)
         {
-            if (fabs(differences[i] - median) <= THRES_PHASE_CODE_JUMP)
+            if (fabs(difference - median) <= THRES_PHASE_CODE_JUMP)
                 {
-                    sum += differences[i];
+                    sum += difference;
                     k++;
                 }
         }

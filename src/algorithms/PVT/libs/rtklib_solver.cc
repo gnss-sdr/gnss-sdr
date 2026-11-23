@@ -1813,7 +1813,15 @@ void Rtklib_Solver::update_ssr_corrections(const std::map<int, Gnss_Synchro> &ob
                 }
             HAS_orbit_corrections orbit;
             HAS_clock_corrections clock;
-            if (!ssr_orbit_and_clock_corrections(ssr, gpst2time(week, tow), d_conf.ntrip_max_correction_age_s, orbit, clock))
+            const gtime_t observation_time = gpst2time(week, tow);
+            if (!ssr_orbit_and_clock_corrections(ssr, observation_time, d_conf.ntrip_max_correction_age_s, orbit, clock))
+                {
+                    continue;
+                }
+            // Code biases arrive independently of the orbit and clock. Their
+            // presence flags alone do not establish a current, consistent set.
+            if (ssr.t0[4].time == 0 || ssr.iod[4] != ssr.iod[0] ||
+                std::fabs(timediff(observation_time, ssr.t0[4])) > d_conf.ntrip_max_correction_age_s)
                 {
                     continue;
                 }

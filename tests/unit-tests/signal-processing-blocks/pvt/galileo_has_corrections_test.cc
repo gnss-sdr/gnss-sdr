@@ -22,6 +22,7 @@
 #include "gps_ephemeris.h"
 #include "in_memory_configuration.h"
 #include "monitor_pvt.h"
+#include "ntrip_rtcm_client.h"
 #include "pvt_conf.h"
 #include "rtklib_conversions.h"
 #include "rtklib_ephemeris.h"
@@ -224,7 +225,113 @@ protected:
             }
         return observations;
     }
+
+    static Ntrip_Rtcm_Snapshot make_ssr_snapshot()
+    {
+        ssr_t ssr{};
+        ssr.t0[0] = ssr.t0[1] = ssr.t0[4] = gpst2time(WEEK + 1024U, MESSAGE_TOW);
+        ssr.iod[0] = ssr.iod[1] = ssr.iod[4] = IOD_SET_ID;
+        ssr.iode = IOD;
+        ssr.vcbias[CODE_L1C - 1] = ssr.vcbias[CODE_L6C - 1] = 1;
+        ssr.cbias[CODE_L1C - 1] = 0.5;
+        ssr.cbias[CODE_L6C - 1] = -0.8;
+        Ntrip_Rtcm_Snapshot snapshot;
+        snapshot.ssr_corrections.emplace_back(satno(SYS_GAL, PRN), ssr);
+        return snapshot;
+    }
 };
+
+
+TEST_F(GalileoHasCorrectionsTest, SsrRequiresMatchingCodeBiasIssue)
+{
+    auto solver = make_solver();
+    auto snapshot = make_ssr_snapshot();
+    const auto observations = make_observations(true, true);
+    solver->update_ssr_corrections(observations, snapshot);
+    ASSERT_TRUE(solver->has_corrections_applied("Galileo", PRN));
+
+    auto& ssr = snapshot.ssr_corrections.front().second;
+    ssr.iod[0] = ssr.iod[1] = IOD_SET_ID + 1;
+    solver->update_ssr_corrections(observations, snapshot);
+    EXPECT_FALSE(solver->has_corrections_applied("Galileo", PRN));
+
+    ssr.iod[4] = ssr.iod[0];
+    solver->update_ssr_corrections(observations, snapshot);
+    EXPECT_TRUE(solver->has_corrections_applied("Galileo", PRN));
+}
+
+
+TEST_F(GalileoHasCorrectionsTest, SsrRejectsExpiredCodeBias)
+{
+    auto solver = make_solver();
+    auto snapshot = make_ssr_snapshot();
+    const auto observations = make_observations(true, true);
+    solver->update_ssr_corrections(observations, snapshot);
+    ASSERT_TRUE(solver->has_corrections_applied("Galileo", PRN));
+
+    auto& ssr = snapshot.ssr_corrections.front().second;
+    ssr.t0[4] = timeadd(ssr.t0[4], -86400.0);
+    solver->update_ssr_corrections(observations, snapshot);
+    EXPECT_FALSE(solver->has_corrections_applied("Galileo", PRN));
+}
+
+
+TEST_F(GalileoHasCorrectionsTest, SsrRequiresCodeBiasEpoch)
+{
+    auto solver = make_solver();
+    auto snapshot = make_ssr_snapshot();
+    snapshot.ssr_corrections.front().second.t0[4] = gtime_t{};
+    solver->update_ssr_corrections(make_observations(true, true), snapshot);
+    EXPECT_FALSE(solver->has_corrections_applied("Galileo", PRN));
+}
+
+
+TEST_F(GalileoHasCorrectionsTest, SsrCodeBiasAgeBoundary)
+{
+    auto solver = make_solver();
+    auto snapshot = make_ssr_snapshot();
+    const auto observations = make_observations(true, true);
+    auto& ssr = snapshot.ssr_corrections.front().second;
+    const double max_age_s = Pvt_Conf().ntrip_max_correction_age_s;
+    const gtime_t observation_time = timeadd(ssr.t0[0], 1.0);
+    for (const double direction : {-1.0, 1.0})
+        {
+            ssr.t0[4] = timeadd(observation_time, direction * max_age_s);
+            solver->update_ssr_corrections(observations, snapshot);
+            EXPECT_TRUE(solver->has_corrections_applied("Galileo", PRN));
+
+            ssr.t0[4] = timeadd(ssr.t0[4], direction * 0.001);
+            solver->update_ssr_corrections(observations, snapshot);
+            EXPECT_FALSE(solver->has_corrections_applied("Galileo", PRN));
+        }
+}
+
+
+TEST_F(GalileoHasCorrectionsTest, SsrCodeBiasAgeAcrossWeekRollover)
+{
+    auto solver = make_solver();
+    auto snapshot = make_ssr_snapshot();
+    auto& ssr = snapshot.ssr_corrections.front().second;
+    ssr.t0[0] = ssr.t0[1] = gpst2time(WEEK + 1024U, 604799.0);
+    ssr.t0[4] = gpst2time(WEEK + 1024U, 604795.0);
+    solver->update_ssr_corrections(make_observations(true, true, 0U), snapshot);
+    ASSERT_TRUE(solver->has_corrections_applied("Galileo", PRN));
+
+    ssr.t0[4] = timeadd(ssr.t0[4], -1.0);
+    solver->update_ssr_corrections(make_observations(true, true, 0U), snapshot);
+    EXPECT_FALSE(solver->has_corrections_applied("Galileo", PRN));
+}
+
+
+TEST_F(GalileoHasCorrectionsTest, SsrAcceptsValidZeroCodeBiases)
+{
+    auto solver = make_solver();
+    auto snapshot = make_ssr_snapshot();
+    auto& ssr = snapshot.ssr_corrections.front().second;
+    ssr.cbias[CODE_L1C - 1] = ssr.cbias[CODE_L6C - 1] = 0.0;
+    solver->update_ssr_corrections(make_observations(true, true), snapshot);
+    EXPECT_TRUE(solver->has_corrections_applied("Galileo", PRN));
+}
 
 
 TEST_F(GalileoHasCorrectionsTest, AppliedWhenEverySignalHasACodeBias)

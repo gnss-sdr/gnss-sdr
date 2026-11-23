@@ -72,6 +72,8 @@ const double VAR_BIAS = std::pow(100.0, 2.0);    /* init variance phase-bias (m^
 
 const double VAR_IONO_OFF = std::pow(10.0, 2.0); /* variance of iono-model-off */
 
+const double THRES_PHASE_CODE_JUMP = 0.0005 * SPEED_OF_LIGHT_M_S; /* jump between codes and phases taken as a step of the receiver clock (m) */
+
 /* estimation of the ionosphere (IONOOPT_EST), and receiver phase clocks */
 const double VAR_IONO_MODEL = std::pow(1.0, 2.0);   /* variance added to the one of the broadcast model at the start of a slant ionosphere state (m^2) */
 const double VAR_IFB = std::pow(10.0, 2.0);         /* init variance of a receiver code bias (m^2) */
@@ -157,6 +159,8 @@ void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n);
 
 double ppp_median(std::vector<double> values);
 
+double ppp_phase_code_jump(const std::vector<double> &differences);
+
 void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
 
 void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
@@ -187,6 +191,9 @@ double prectrop(gtime_t time, const double *pos, const double *azel,
 int ppp_clock_index(int sys, const prcopt_t *opt);
 
 int ppp_system_index(int sys);
+
+void ppp_common_innovations(const std::vector<double> &innovations, const std::vector<int> &row_group,
+    const std::vector<int> &row_type, const std::vector<int> &row_clock, std::vector<double> &common);
 
 int res_ppp(int iter, const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,

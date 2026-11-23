@@ -37,6 +37,7 @@
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtklib_bancroft_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtklib_detslp_dop_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/rtklib_detslp_gf_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtklib_fixed_base_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtklib_pvt_ntrip_configuration_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtklib_tls_test.cc"

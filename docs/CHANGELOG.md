@@ -48,8 +48,9 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed `PVT.positioning_mode=PPP_Static` staying tens of meters off for minutes
   after a start with few satellites in poor geometry. The innovation test
   (`PVT.threshold_reject_innovation`) now leaves out the offset common to the
-  satellites of a receiver clock, so it no longer rejects the satellites that
-  correct the position.
+  satellites of a receiver clock, and keeps the satellites that agree with the
+  single point solution, so it no longer rejects the satellites that correct the
+  position.
 - Fixed the PPP positioning modes degrading by meters with front ends whose
   carrier phases are not coherent with the code phases, or among frequency
   bands. With `PVT.iono_model=Iono-Free-LC`, the cycle slips of Galileo
@@ -72,7 +73,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   1062 and 1240 to 1245) or IGS SSR (message 4076) formats, are applied to the
   broadcast ephemeris in the same way as the Galileo HAS ones, which they
   replace. `PVT.ssr_reference_point` sets the point of the satellite that the
-  corrected orbits refer to, for the antenna models.
+  corrected orbits refer to, for the antenna models. Orbit, clock, and code
+  biases must share the same SSR issue number and each pass
+  `PVT.ntrip_max_correction_age_s`; stale or mismatched code biases cause the
+  satellite to use its broadcast orbit, clock, and group delays instead.
 - Added an uncombined model to the PPP positioning modes, selected by
   `PVT.iono_model=Estimate_STEC`, which until now left the ionosphere
   uncorrected there. The filter estimates the slant ionospheric delay of each
@@ -80,7 +84,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   satellites with one, two or three signals all take part in the solution, and
   the carrier phases of the bands of the front end need not be coherent.
   `PVT.sigma_iono` sets the process noise of those delays (0.1 m/sqrt(s) by
-  default in this model).
+  default in this model). Geometry-free cycle-slip detection also covers a
+  satellite alone in its constellation or frequency pair, and resets both
+  candidate ambiguities when a returning band lacks a previous measurement to
+  identify which band slipped.
 
 ### Improvements in Availability:
 

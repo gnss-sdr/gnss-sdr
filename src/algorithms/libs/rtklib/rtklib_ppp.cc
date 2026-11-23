@@ -1409,6 +1409,35 @@ double ppp_median(std::vector<double> values)
 }
 
 
+/* phase-code jump of the receiver ---------------------------------------------
+ * A step of the receiver clock moves the codes and not the phases, by the same
+ * amount for all the satellites. The argument holds, for the satellites with a
+ * phase bias and no cycle slip, the phase bias as measured now less that of the
+ * filter. The jump is the mean of the values that agree with their median, so
+ * a single satellite is enough to tell it, and a phase bias that an earlier
+ * jump left behind does not count. It returns 0.0 if there is no jump
+ *-----------------------------------------------------------------------------*/
+double ppp_phase_code_jump(const std::vector<double> &differences)
+{
+    const double median = ppp_median(differences);
+    double sum = 0.0;
+    int k = 0;
+    for (size_t i = 0; i < differences.size(); i++)
+        {
+            if (fabs(differences[i] - median) <= THRES_PHASE_CODE_JUMP)
+                {
+                    sum += differences[i];
+                    k++;
+                }
+        }
+    if (k == 0 || fabs(sum / k) <= THRES_PHASE_CODE_JUMP)
+        {
+            return 0.0;
+        }
+    return sum / k;
+}
+
+
 /* detect cycle slip by geometry free phase jump -------------------------------
  * with the two frequency slots of the iono-free measurements, or with the first
  * two otherwise. The phases of two bands may drift with respect to each other by
@@ -1493,11 +1522,10 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     double var[2];
     std::vector<double> bias(MAXOBS, 0.0);
     std::vector<bool> slip(MAXOBS, false);
-    double offset = 0.0;
+    std::vector<double> differences;
     double pos[3] = {0};
     int i;
     int j;
-    int k;
     int sat;
     int brk = 0;
 
@@ -1526,7 +1554,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         }
     ecef2pos(rtk->sol.rr, pos);
 
-    for (i = k = 0; i < n && i < MAXOBS; i++)
+    for (i = 0; i < n && i < MAXOBS; i++)
         {
             sat = obs[i].sat;
             j = IB_PPP(sat, &rtk->opt);
@@ -1556,22 +1584,22 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                 {
                     continue;
                 }
-            offset += bias[i] - rtk->x[j];
-            k++;
+            differences.push_back(bias[i] - rtk->x[j]);
         }
-    /* correct phase-code jump to enssure phase-code coherency */
-    if (k >= 2 && fabs(offset / k) > 0.0005 * SPEED_OF_LIGHT_M_S)
+    /* correct phase-code jump to ensure phase-code coherency */
+    const double jump = ppp_phase_code_jump(differences);
+    if (jump != 0.0)
         {
             for (i = 0; i < MAXSAT; i++)
                 {
                     j = IB_PPP(i + 1, &rtk->opt);
                     if (rtk->x[j] != 0.0)
                         {
-                            rtk->x[j] += offset / k;
+                            rtk->x[j] += jump;
                         }
                 }
             trace(2, "phase-code jump corrected: %s n=%2d dt=%12.9fs\n",
-                time_str(rtk->sol.time, 0), k, offset / k / SPEED_OF_LIGHT_M_S);
+                time_str(rtk->sol.time, 0), static_cast<int>(differences.size()), jump / SPEED_OF_LIGHT_M_S);
         }
     for (i = 0; i < n && i < MAXOBS; i++)
         {
@@ -1580,7 +1608,9 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 
             rtk->P[j + j * rtk->nx] += std::pow(rtk->opt.prn[0], 2.0) * fabs(rtk->tt);
 
-            if (rtk->x[j] != 0.0 && !slip[i])
+            /* a phase bias that a jump of the receiver clock left behind starts again */
+            const bool left_behind = bias[i] != 0.0 && rtk->x[j] != 0.0 && fabs(bias[i] - rtk->x[j]) > THRES_PHASE_CODE_JUMP;
+            if (rtk->x[j] != 0.0 && !slip[i] && !left_behind)
                 {
                     continue;
                 }
@@ -1615,12 +1645,12 @@ double ppp_iono_factor(const nav_t *nav, int sat, int f)
  * is a slip in the other slot of that pair. The phases of a band may drift with
  * respect to those of another by the same amount for all the satellites (see
  * udphaseclock_ppp()), so a jump is what departs from the median of the changes
- * over the satellites of the system
+ * over the satellites of the system. A satellite alone with its pair is tested
+ * by its change
  *-----------------------------------------------------------------------------*/
 void detslp_gf_est(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
     std::vector<double> change(MAXOBS * 2, 0.0);
-    std::vector<bool> measured(MAXOBS * 2, false);
     std::vector<bool> compared(MAXOBS * 2, false);
     int i;
     int f;
@@ -1642,7 +1672,6 @@ void detslp_gf_est(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                         }
                     const double g0 = *previous[f - 1];
                     *previous[f - 1] = g1;
-                    measured[i * 2 + f - 1] = g1 != 0.0;
                     compared[i * 2 + f - 1] = g0 != 0.0 && g1 != 0.0;
                     change[i * 2 + f - 1] = g1 - g0;
                 }
@@ -1663,7 +1692,7 @@ void detslp_gf_est(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                                     changes.push_back(change[i * 2 + pair]);
                                 }
                         }
-                    common[s * 2 + pair] = ppp_median(changes);
+                    common[s * 2 + pair] = changes.size() > 1 ? ppp_median(changes) : 0.0;
                 }
         }
 
@@ -1696,10 +1725,11 @@ void detslp_gf_est(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                 }
             else
                 {
-                    /* the other slot of the pair, or both of them if no other pair tells which */
+                    /* the other slot of the pair, or both of them if the other
+                       pair has no comparison across epochs to tell which */
                     const int pair = jump[0] ? 0 : 1;
                     ssat->slip[pair + 1] |= 1;
-                    if (!measured[i * 2 + 1 - pair])
+                    if (!compared[i * 2 + 1 - pair])
                         {
                             ssat->slip[0] |= 1;
                         }
@@ -1981,8 +2011,7 @@ void udbias_est_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 
     for (f = 0; f < NFREQ; f++)
         {
-            double offset = 0.0;
-            int k = 0;
+            std::vector<double> differences;
             for (i = 0; i < n && i < MAXOBS; i++)
                 {
                     const int sat = obs[i].sat;
@@ -2012,22 +2041,22 @@ void udbias_est_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                         {
                             continue;
                         }
-                    offset += bias[i] - rtk->x[j];
-                    k++;
+                    differences.push_back(bias[i] - rtk->x[j]);
                 }
             /* correct phase-code jump to ensure phase-code coherency */
-            if (k >= 2 && fabs(offset / k) > 0.0005 * SPEED_OF_LIGHT_M_S)
+            const double jump = ppp_phase_code_jump(differences);
+            if (jump != 0.0)
                 {
                     for (i = 0; i < MAXSAT; i++)
                         {
                             j = IBF_PPP(i + 1, f, opt);
                             if (rtk->x[j] != 0.0)
                                 {
-                                    rtk->x[j] += offset / k;
+                                    rtk->x[j] += jump;
                                 }
                         }
                     trace(2, "phase-code jump corrected: %s f=%d n=%2d dt=%12.9fs\n",
-                        time_str(rtk->sol.time, 0), f + 1, k, offset / k / SPEED_OF_LIGHT_M_S);
+                        time_str(rtk->sol.time, 0), f + 1, static_cast<int>(differences.size()), jump / SPEED_OF_LIGHT_M_S);
                 }
             for (i = 0; i < n && i < MAXOBS; i++)
                 {
@@ -2036,7 +2065,9 @@ void udbias_est_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                         {
                             rtk->P[j + j * rtk->nx] += std::pow(opt->prn[0], 2.0) * fabs(rtk->tt);
                         }
-                    if (bias[i] == 0.0 || (rtk->x[j] != 0.0 && !slip[i]))
+                    /* a phase bias that a jump of the receiver clock left behind starts again */
+                    const bool left_behind = bias[i] != 0.0 && rtk->x[j] != 0.0 && fabs(bias[i] - rtk->x[j]) > THRES_PHASE_CODE_JUMP;
+                    if (bias[i] == 0.0 || (rtk->x[j] != 0.0 && !slip[i] && !left_behind))
                         {
                             continue;
                         }
@@ -2268,6 +2299,36 @@ int ppp_system_index(int sys)
             break;
         }
     return index < NSYS ? index : 0;
+}
+
+
+/* offset common to the innovations of each group of rows (see res_ppp()) --------
+ * the median of the code innovations of each receiver clock, and of the phase
+ * innovations of each receiver phase clock. The phase of a satellite alone in
+ * its group cannot be told from that clock, so it takes the offset of the codes
+ *-----------------------------------------------------------------------------*/
+void ppp_common_innovations(const std::vector<double> &innovations, const std::vector<int> &row_group,
+    const std::vector<int> &row_type, const std::vector<int> &row_clock, std::vector<double> &common)
+{
+    for (size_t k = 0; k < common.size(); k++)
+        {
+            const bool phases = k >= static_cast<size_t>(NSYS);
+            std::vector<double> values;
+            int clock = 0;
+            for (size_t i = 0; i < innovations.size(); i++)
+                {
+                    if (row_group[i] == static_cast<int>(k) && (phases || row_type[i] == 1))
+                        {
+                            values.push_back(innovations[i]);
+                            clock = row_clock[i];
+                        }
+                }
+            if (values.empty())
+                {
+                    continue;
+                }
+            common[k] = (phases && values.size() == 1) ? common[clock] : ppp_median(values);
+        }
 }
 
 
@@ -2597,24 +2658,24 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
        satellites that would correct the position. The offset is taken as the
        median of the code innovations. The phases have a receiver clock of
        their own for each system and frequency slot, or pair of them with the
-       iono-free measurements, and take the median of their innovations */
-    for (k = 0; k < static_cast<int>(common.size()); k++)
+       iono-free measurements, and take the median of their innovations.
+       For the same reason, the innovations are also computed as they would be
+       at the position of the single point solution: a satellite that agrees
+       with it is not an outlier, even if most satellites agree with a wrong
+       position of the filter */
+    std::vector<double> innovations(v, v + nv);
+    std::vector<double> innovations_spp(nv, 0.0);
+    for (i = 0; i < nv; i++)
         {
-            std::vector<double> code_innovations;
-            for (i = 0; i < nv; i++)
+            innovations_spp[i] = v[i];
+            for (k = 0; k < 3; k++)
                 {
-                    if (row_group[i] == k && (k >= NSYS || row_type[i] == 1))
-                        {
-                            code_innovations.push_back(v[i]);
-                        }
-                }
-            if (!code_innovations.empty())
-                {
-                    std::sort(code_innovations.begin(), code_innovations.end());
-                    const size_t middle = code_innovations.size() / 2;
-                    common[k] = code_innovations.size() % 2 ? code_innovations[middle] : 0.5 * (code_innovations[middle - 1] + code_innovations[middle]);
+                    innovations_spp[i] += H[k + nx * i] * (x[k] - rtk->sol.rr[k]);
                 }
         }
+    std::vector<double> common_spp(common.size(), 0.0);
+    ppp_common_innovations(innovations, row_group, row_type, row_clock, common);
+    ppp_common_innovations(innovations_spp, row_group, row_type, row_clock, common_spp);
 
     /* test innovation, with separate thresholds for phase (type 0) and code (type 1) */
     nrows = nv;
@@ -2623,7 +2684,8 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
         {
             const int type = row_type[i];
             sat = obs[row_obs[i]].sat;
-            if (opt->maxinno[type] > 0.0 && fabs(v[i] - common[row_group[i]]) > opt->maxinno[type] &&
+            if (opt->maxinno[type] > 0.0 && fabs(innovations[i] - common[row_group[i]]) > opt->maxinno[type] &&
+                fabs(innovations_spp[i] - common_spp[row_group[i]]) > opt->maxinno[type] &&
                 satsys(sat, nullptr) != SYS_GLO)
                 {
                     trace(2, "ppp outlier rejected %s sat=%2d type=%d v=%.3f common=%.3f\n",

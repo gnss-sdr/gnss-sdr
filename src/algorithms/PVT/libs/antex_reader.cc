@@ -36,7 +36,7 @@ std::string trim(const std::string& text)
     const std::size_t first = text.find_first_not_of(" \t\r\n");
     if (first == std::string::npos)
         {
-            return std::string();
+            return {};
         }
     const std::size_t last = text.find_last_not_of(" \t\r\n");
     return text.substr(first, last - first + 1);
@@ -97,18 +97,18 @@ std::string system_and_number(const std::string& text)
     const std::string code = trim(text);
     if (code.size() < 2 || code.size() > 3 || std::string("GRECJIS").find(code[0]) == std::string::npos)
         {
-            return std::string();
+            return {};
         }
     const std::string number = trim(code.substr(1));
     if (number.empty() || number.size() > 2)
         {
-            return std::string();
+            return {};
         }
     for (const char digit : number)
         {
             if (std::isdigit(static_cast<unsigned char>(digit)) == 0)
                 {
-                    return std::string();
+                    return {};
                 }
         }
     return std::string(1, code[0]) + (number.size() == 1 ? "0" : "") + number;
@@ -159,7 +159,7 @@ std::array<double, 19> resample(const std::vector<double>& values, double zen1, 
                 }
             else
                 {
-                    const std::size_t index = static_cast<std::size_t>(std::floor(position));
+                    const auto index = static_cast<std::size_t>(std::floor(position));
                     const double fraction = position - static_cast<double>(index);
                     output[i] = values[index] * (1.0 - fraction) + values[index + 1] * fraction;
                 }
@@ -185,7 +185,7 @@ int64_t read_sinex_time(const std::string& text)
         {
             return 0;
         }
-    int64_t year = static_cast<int64_t>(time[0]);
+    auto year = static_cast<int64_t>(time[0]);
     if (year < 100)
         {
             year += year <= 50 ? 2000 : 1900;
@@ -242,7 +242,7 @@ void Antex_Reader::add_receiver(const Antex_Antenna& antenna)
 {
     // calibration of the type (no serial number) before the ones of individual antennas
     const std::string key = receiver_key(antenna.type);
-    const std::map<std::string, Antex_Antenna>::const_iterator stored = d_receivers.find(key);
+    const auto stored = d_receivers.find(key);
     if (stored == d_receivers.cend() || (!stored->second.serial.empty() && antenna.serial.empty()))
         {
             d_receivers[key] = antenna;
@@ -618,7 +618,7 @@ bool Antex_Reader::read_satellite_metadata(const std::string& filename)
 
 std::string Antex_Reader::find_svn(const std::string& satellite, int64_t time_s) const
 {
-    const std::map<std::string, std::vector<Prn_Assignment>>::const_iterator assignments = d_prn_assignments.find(satellite);
+    const auto assignments = d_prn_assignments.find(satellite);
     if (assignments != d_prn_assignments.cend())
         {
             for (const Prn_Assignment& assignment : assignments->second)
@@ -629,13 +629,13 @@ std::string Antex_Reader::find_svn(const std::string& satellite, int64_t time_s)
                         }
                 }
         }
-    return std::string();
+    return {};
 }
 
 
 const Antex_Antenna* Antex_Reader::find_satellite(const std::string& satellite, int64_t time_s) const
 {
-    const std::map<std::string, std::vector<Antex_Antenna>>::const_iterator antennas = d_satellites.find(satellite);
+    const auto antennas = d_satellites.find(satellite);
     if (antennas != d_satellites.cend())
         {
             for (const Antex_Antenna& antenna : antennas->second)
@@ -647,7 +647,7 @@ const Antex_Antenna* Antex_Reader::find_satellite(const std::string& satellite, 
                 }
         }
     // Antennas identified by the SVN of the satellite
-    const std::map<std::string, std::vector<Antex_Antenna>>::const_iterator svn_antennas = d_satellites_by_svn.find(find_svn(satellite, time_s));
+    const auto svn_antennas = d_satellites_by_svn.find(find_svn(satellite, time_s));
     if (svn_antennas != d_satellites_by_svn.cend())
         {
             for (const Antex_Antenna& antenna : svn_antennas->second)
@@ -671,7 +671,7 @@ const Antex_Antenna* Antex_Reader::find_receiver(const std::string& antenna_type
         {
             return nullptr;
         }
-    std::map<std::string, Antex_Antenna>::const_iterator found = d_receivers.find(key);
+    auto found = d_receivers.find(key);
     if (found == d_receivers.cend() && radome != "NONE")
         {
             found = d_receivers.find(antenna + " NONE");

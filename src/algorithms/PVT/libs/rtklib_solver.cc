@@ -389,7 +389,7 @@ std::string antex_frequency_code(char system, unsigned char code)
     const char *observation = code2obs(code, nullptr);
     if (observation == nullptr || observation[0] == '\0')
         {
-            return std::string();
+            return {};
         }
     return std::string(1, system) + '0' + observation[0];
 }

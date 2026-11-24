@@ -1346,6 +1346,7 @@ int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
  *          var[i]        = obs[i] sat position and clock error variance (m^2)
  *          svh[i]        = obs[i] sat health flag
  *          if no navigation data, set 0 to rs[], dts[], var[] and svh[]
+ *          the first 2*MAXOBS observations are processed (rover and base)
  *          satellite position and clock are values at signal transmission time
  *          satellite position is referenced to antenna phase center
  *          satellite clock does not include code bias correction (tgd or bgd)
@@ -1356,7 +1357,9 @@ static void satposs_impl(gtime_t teph, const obsd_t *obs, int n, const nav_t *na
     int ephopt, double *rs, double *dts, double *var, int *svh,
     bool allow_bds_dnav_for_b1c)
 {
-    std::vector<gtime_t> time(MAXOBS);
+    /* MAXOBS observations per receiver: relpos() passes the rover and the
+       base observations together */
+    std::vector<gtime_t> time(2 * MAXOBS);
     double dt;
     double pr;
     int i;
@@ -1364,7 +1367,7 @@ static void satposs_impl(gtime_t teph, const obsd_t *obs, int n, const nav_t *na
 
     trace(3, "satposs : teph=%s n=%d ephopt=%d\n", time_str(teph, 3), n, ephopt);
 
-    for (i = 0; i < n && i < MAXOBS; i++)
+    for (i = 0; i < n && i < 2 * MAXOBS; i++)
         {
             for (j = 0; j < 6; j++)
                 {
@@ -1445,7 +1448,7 @@ static void satposs_impl(gtime_t teph, const obsd_t *obs, int n, const nav_t *na
                     *var = std::pow(STD_BRDCCLK, 2.0);
                 }
         }
-    for (i = 0; i < n && i < MAXOBS; i++)
+    for (i = 0; i < n && i < 2 * MAXOBS; i++)
         {
             trace(4, "%s sat=%2d rs=%13.3f %13.3f %13.3f dts=%12.3f var=%7.3f svh=%02X\n",
                 time_str(time[i], 6), obs[i].sat, rs[i * 6], rs[1 + i * 6], rs[2 + i * 6],

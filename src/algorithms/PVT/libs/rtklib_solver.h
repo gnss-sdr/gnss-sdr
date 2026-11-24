@@ -534,6 +534,7 @@ private:
     bool d_fixed_base_initialized = false;
     bool d_fixed_base_was_applied = false;
     bool d_duplicated_rover_observations_logged = false;
+    bool d_observation_limit_logged = false;
     bool d_solution_attempted = false;
     // Satellites (RTKLIB satellite number - 1) whose orbit and clock carry HAS
     // corrections in the last solution, and how many of them it used

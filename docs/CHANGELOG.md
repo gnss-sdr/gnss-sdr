@@ -282,6 +282,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   channel until the end of the run.
 - Fixed `TelemetryDecoder_XX.dump_crc_stats=true` in the GPS L2C and L5
   telemetry decoders, which never counted a failed CRC check.
+- Fixed a crash of the PVT block when more than 64 satellites were available in
+  one epoch. The solution now uses the first 64 and a warning is logged.
+- Fixed the RTK solution, which ignored base station observations when rover and
+  base observations added up to more than 64.
 
 ### Improvements in Reproducibility:
 

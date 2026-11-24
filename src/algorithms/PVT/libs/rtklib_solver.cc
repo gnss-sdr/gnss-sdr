@@ -2989,7 +2989,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     // records and ephemerides. MAXOBS limits satellites, not input channels.
     d_obs_data.assign(std::max(static_cast<size_t>(MAXOBS * 2), gnss_observables_map.size()), obsd_t{});
     std::vector<eph_t> eph_data(std::max(static_cast<size_t>(MAXOBS), gnss_observables_map.size()));
-    std::vector<geph_t> geph_data(MAXOBS);
+    std::vector<geph_t> geph_data(std::max(static_cast<size_t>(MAXOBS), gnss_observables_map.size()));
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
         gnss_observables_iter != gnss_observables_map.cend();
@@ -3578,6 +3578,19 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     reset_relative_filter();
                 }
             d_fixed_base_was_applied = fixed_base_applied;
+        }
+    if (!fixed_base_applied && rover_observation_count > MAXOBS)
+        {
+            // RTKLIB processes up to MAXOBS satellites per epoch. The fixed-base
+            // path applies the same limit to its own rover and base sets.
+            if (!d_observation_limit_logged)
+                {
+                    LOG(WARNING) << "Observations from " << rover_observation_count
+                                 << " satellites in one epoch: the PVT solution uses the first " << MAXOBS;
+                    d_observation_limit_logged = true;
+                }
+            std::fill(d_obs_data.begin() + MAXOBS, d_obs_data.begin() + rover_observation_count, obsd_t{});
+            rover_observation_count = MAXOBS;
         }
     const bool use_single_fallback = fixed_base != nullptr && !fixed_base_applied && d_conf.ntrip_fallback_to_single;
     const int nobs_total = rover_observation_count + base_observation_count;

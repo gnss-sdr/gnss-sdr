@@ -943,6 +943,23 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
 }
 
 
+/* chi-square threshold (alpha=0.001) ------------------------------------------
+ * tabulated up to 100 degrees of freedom, Wilson-Hilferty approximation beyond
+ * (within 0.06 of the exact quantile) */
+static double chisqr_threshold(int dof)
+{
+    const int table_size = static_cast<int>(sizeof(CHISQR) / sizeof(CHISQR[0]));
+    if (dof <= table_size)
+        {
+            return CHISQR[dof - 1];
+        }
+    const double z = 3.090232306167813; /* standard normal quantile for 1 - alpha */
+    const double a = 2.0 / (9.0 * dof);
+    const double t = 1.0 - a + z * std::sqrt(a);
+    return dof * t * t * t;
+}
+
+
 /* validate solution ---------------------------------------------------------*/
 int valsol(const double *azel, const int *vsat, int n,
     const prcopt_t *opt, const double *v, int nv, int nx,
@@ -958,13 +975,18 @@ int valsol(const double *azel, const int *vsat, int n,
 
     /* chi-square validation of residuals */
     vv = dot(v, v, nv);
-    if (nv > nx && vv > CHISQR[nv - nx - 1])
+    if (nv > nx)
         {
-            std::snprintf(msg, PNTPOS_MSG_LEN, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, CHISQR[nv - nx - 1]);
-            return 0;
+            const double cs = chisqr_threshold(nv - nx);
+            if (vv > cs)
+                {
+                    std::snprintf(msg, PNTPOS_MSG_LEN, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, cs);
+                    return 0;
+                }
         }
-    /* large gdop check */
-    for (i = ns = 0; i < n; i++)
+    /* large gdop check. rescode() flags the first MAXOBS observations only,
+       which is also what azels[] holds */
+    for (i = ns = 0; i < n && i < MAXOBS; i++)
         {
             if (!vsat[i])
                 {
@@ -1508,6 +1530,14 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
         {
             std::snprintf(msg, PNTPOS_MSG_LEN, "no observation data");
             return 0;
+        }
+    if (n > MAXOBS)
+        {
+            /* the satellite status arrays (vsat, svh, and azels in valsol())
+               hold MAXOBS entries, and rescode() and resdop() stop there: the
+               observations beyond that limit are not used */
+            trace(2, "pntpos  : n=%d, only the first %d observations are used\n", n, MAXOBS);
+            n = MAXOBS;
         }
 
     trace(3, "pntpos  : tobs=%s n=%d\n", time_str(obs[0].time, 3), n);

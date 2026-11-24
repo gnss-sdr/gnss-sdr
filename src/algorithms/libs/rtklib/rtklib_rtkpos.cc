@@ -3438,7 +3438,9 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     /* precise point positioning */
     if (opt->mode >= PMODE_PPP_KINEMA)
         {
-            pppos(rtk, obs, nu, nav);
+            /* as pntpos() above: the per-observation arrays of pppos() hold
+               MAXOBS entries */
+            pppos(rtk, obs, std::min(nu, static_cast<int>(MAXOBS)), nav);
             outsolstat(rtk);
             return 1;
         }

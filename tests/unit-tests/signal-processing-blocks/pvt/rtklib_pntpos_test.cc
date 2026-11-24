@@ -53,3 +53,48 @@ TEST(RtklibPntposTest, ValsolChiSquareThresholdCoversManyDegreesOfFreedom)
             EXPECT_EQ(valsol(azel.data(), vsat.data(), NS, &opt, v.data(), nv, NX, msg), 0);
         }
 }
+
+
+TEST(RtklibPntposTest, ValsolAcceptsMoreThanMaxobsSatellites)
+{
+    // More satellites than MAXOBS, as with all constellations tracked at once.
+    // The azimuth/elevation scratch array of valsol() used to hold MAXOBS entries.
+    constexpr int N = 2 * MAXOBS + 8;
+    std::vector<double> azel(2 * N);
+    std::vector<int> vsat(N, 1);
+    for (int i = 0; i < N; i++)
+        {
+            azel[2 * i] = 2.0 * M_PI * i / N;
+            azel[2 * i + 1] = (i % 2 == 0 ? 0.6 : 1.2);
+        }
+    prcopt_t opt{};
+    opt.elmin = 5.0 * M_PI / 180.0;
+    opt.maxgdop = 30.0;
+    const std::vector<double> v(N, 0.0);
+    char msg[128] = {0};
+
+    EXPECT_EQ(valsol(azel.data(), vsat.data(), N, &opt, v.data(), N, 8, msg), 1) << msg;
+}
+
+
+TEST(RtklibPntposTest, PntposHandlesMoreThanMaxobsObservations)
+{
+    // Without navigation data no satellite is usable: the call must fail
+    // gracefully and must not touch memory beyond its per-observation arrays.
+    constexpr int N = 2 * MAXOBS + 8;
+    std::vector<obsd_t> obs(N);
+    for (int i = 0; i < N; i++)
+        {
+            obs[i] = obsd_t{};
+            obs[i].sat = 1 + (i % 30);
+            obs[i].code[0] = CODE_L1C;
+            obs[i].P[0] = 22000000.0 + 1000.0 * i;
+        }
+    nav_t nav{};
+    prcopt_t opt{};
+    sol_t sol{};
+    std::vector<double> azel(2 * N, 0.0);
+    char msg[128] = {0};
+
+    EXPECT_EQ(pntpos(obs.data(), N, &nav, &opt, &sol, azel.data(), nullptr, msg), 0);
+}

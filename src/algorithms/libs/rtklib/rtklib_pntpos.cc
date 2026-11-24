@@ -780,7 +780,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
 
     ecef2pos(rr, pos);
 
-    for (i = *ns = 0; i < n && i < MAXOBS; i++)
+    for (i = *ns = 0; i < n; i++)
         {
             vsat[i] = 0;
             azel[i * 2] = azel[1 + i * 2] = resp[i] = 0.0;
@@ -791,7 +791,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                 }
 
             /* reject duplicated observation data */
-            if (i < n - 1 && i < MAXOBS - 1 && obs[i].sat == obs[i + 1].sat)
+            if (i < n - 1 && obs[i].sat == obs[i + 1].sat)
                 {
                     trace(2, "duplicated observation data %s sat=%2d\n",
                         time_str(obs[i].time, 3), obs[i].sat);
@@ -964,7 +964,7 @@ int valsol(const double *azel, const int *vsat, int n,
     const prcopt_t *opt, const double *v, int nv, int nx,
     char *msg)
 {
-    double azels[MAXOBS * 2] = {0};
+    std::vector<double> azels(2 * static_cast<size_t>(n > 0 ? n : 1), 0.0);
     double dop[4];
     double vv;
     int i;
@@ -990,7 +990,7 @@ int valsol(const double *azel, const int *vsat, int n,
             azels[1 + ns * 2] = azel[1 + i * 2];
             ns++;
         }
-    dops(ns, azels, opt->elmin, dop);
+    dops(ns, azels.data(), opt->elmin, dop);
     if (dop[0] <= 0.0 || dop[0] > opt->maxgdop)
         {
             std::snprintf(msg, PNTPOS_MSG_LEN, "gdop error nv=%d gdop=%.1f", nv, dop[0]);
@@ -1384,7 +1384,7 @@ int resdop(const obsd_t *obs, int n, const double *rs, const double *dts,
     ecef2pos(rr, pos);
     xyz2enu(pos, E);
 
-    for (i = 0; i < n && i < MAXOBS; i++)
+    for (i = 0; i < n; i++)
         {
             if (obs[i].code[0] != CODE_NONE)
                 {
@@ -1515,8 +1515,8 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     double *resp;
     int i;
     int stat;
-    std::vector<int> vsat(MAXOBS, 0);
-    std::vector<int> svh(MAXOBS, 0);
+    std::vector<int> vsat(n > 0 ? n : 1, 0);
+    std::vector<int> svh(n > 0 ? n : 1, 0);
 
     sol->stat = SOLQ_NONE;
 

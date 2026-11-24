@@ -607,7 +607,7 @@ bool Antex_Reader::read_satellite_metadata(const std::string& filename)
                                 {
                                     assignment.valid_from = read_sinex_time(valid_from);
                                     assignment.valid_until = read_sinex_time(valid_until);
-                                    d_prn_assignments[satellite].push_back(assignment);
+                                    d_prn_assignments[satellite].push_back(std::move(assignment));
                                 }
                         }
                 }

@@ -597,9 +597,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     /* Set whether the phase windup correction for PPP modes is applied or not. Only applicable to PPP‐* modes.*/
     const int phwindup = configuration->property(role + ".phwindup", 0);
 
-    /* Set whether the GPS Block IIA satellites in eclipse are excluded or not.
-    The eclipsing Block IIA satellites often degrade the PPP solutions due to unpredicted behavior of yaw‐attitude. Only applicable to PPP‐* modes.*/
-    const int reject_GPS_IIA = configuration->property(role + ".reject_GPS_IIA", 0);
+    /* Set whether the satellites in eclipse are excluded or not. Only applicable to PPP‐* modes.
+    The eclipsing GPS Block IIA satellites often degrade the PPP solutions due to unpredicted behavior of yaw‐attitude.
+    RTKLIB limits the exclusion to them when it knows the type of each satellite. The receiver does not hand
+    that type over, so every satellite in the shadow of the Earth is excluded, whatever its system. */
+    const int reject_GPS_IIA = configuration->property(role + ".reject_GPS_IIA", 1);
 
     /* Set whether RAIM (receiver autonomous integrity monitoring) FDE (fault detection and exclusion) feature is enabled or not.
     In case of RAIM FDE enabled, a satellite is excluded if SSE (sum of squared errors) of residuals is over a threshold.

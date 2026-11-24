@@ -160,7 +160,7 @@ class Gps_Ephemeris;
  *                      "Estimate_ZTD_Grad". Unsupported values include ZTD correction and ZTD+grad
  *                      correction
  *  .phwindup - phase windup correction for PPP modes (0)
- *  .reject_GPS_IIA - whether the GPS Block IIA satellites in eclipse are excluded (0). Only applies in PPP-* modes
+ *  .reject_GPS_IIA - whether the satellites in eclipse are excluded (1). Only applies in PPP-* modes
  *  .raim_fde - whether RAIM (receiver autonomous integrity monitoring) FDE (fault detection and exclusion) is enabled (0)
  *  .earth_tide - (0)
  *  .antex_file - ANTEX file, version 1.4 or 2.0, with the calibrations of the satellite antennas and,

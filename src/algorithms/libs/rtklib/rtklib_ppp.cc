@@ -40,6 +40,7 @@
 #include "rtklib_tides.h"
 #include <algorithm>
 #include <cstring>
+#include <utility>
 #include <vector>
 
 /* wave length of LC (m) -----------------------------------------------------*/
@@ -1500,7 +1501,7 @@ void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                             changes.push_back(change[j]);
                         }
                 }
-            const double common = changes.size() > 1 ? ppp_median(changes) : 0.0;
+            const double common = changes.size() > 1 ? ppp_median(std::move(changes)) : 0.0;
             if (fabs(change[i] - common) > rtk->opt.thresslip)
                 {
                     trace(3, "detslip_gf: slip detected sat=%2d change=%8.3f common=%8.3f\n",
@@ -1692,7 +1693,7 @@ void detslp_gf_est(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                                     changes.push_back(change[i * 2 + pair]);
                                 }
                         }
-                    common[s * 2 + pair] = changes.size() > 1 ? ppp_median(changes) : 0.0;
+                    common[s * 2 + pair] = changes.size() > 1 ? ppp_median(std::move(changes)) : 0.0;
                 }
         }
 
@@ -1882,7 +1883,7 @@ void udifb_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
                         {
                             continue;
                         }
-                    double median = ppp_median(bias);
+                    double median = ppp_median(std::move(bias));
                     if (median == 0.0)
                         {
                             median = 1E-6; /* a state at zero is not estimated */
@@ -2246,6 +2247,11 @@ double prectrop(gtime_t time, const double *pos, const double *azel,
 }
 
 
+/* GPS, GLONASS, Galileo, BeiDou and QZSS have a fixed place each in the tables
+ * with an entry per system (see ppp_clock_index() and ppp_system_index()) */
+static_assert(NSYS >= 5, "The PPP tables with an entry per system need room for five systems");
+
+
 /* receiver clock state of a system -------------------------------------------
  * Each system has the receiver clock state that udclk_ppp() initializes from
  * the single point solution, where the receiver clock of a system other than
@@ -2273,7 +2279,7 @@ int ppp_clock_index(int sys, const prcopt_t *opt)
         default:
             break;
         }
-    return index < NSYS ? index : 0;
+    return index;
 }
 
 
@@ -2298,7 +2304,7 @@ int ppp_system_index(int sys)
         default:
             break;
         }
-    return index < NSYS ? index : 0;
+    return index;
 }
 
 
@@ -2327,7 +2333,7 @@ void ppp_common_innovations(const std::vector<double> &innovations, const std::v
                 {
                     continue;
                 }
-            common[k] = (phases && values.size() == 1) ? common[clock] : ppp_median(values);
+            common[k] = (phases && values.size() == 1) ? common[clock] : ppp_median(std::move(values));
         }
 }
 

@@ -82,6 +82,7 @@ Kf_Conf::Kf_Conf() : item_type("gr_complex"),
                      high_dyn(false),
                      dump(false),
                      dump_mat(true),
+                     dump_every_code_period(false),
                      keep_phase_at_secondary_lock(false)
 {
     signal[0] = '1';
@@ -106,6 +107,7 @@ void Kf_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     dump = configuration->property(role + ".dump", dump);
     dump_filename = configuration->property(role + ".dump_filename", dump_filename);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);
+    dump_every_code_period = configuration->property(role + ".dump_every_code_period", dump_every_code_period);
     keep_phase_at_secondary_lock = configuration->property(role + ".keep_phase_at_secondary_lock", keep_phase_at_secondary_lock);
 
     pull_in_time_s = configuration->property(role + ".pull_in_time_s", pull_in_time_s);

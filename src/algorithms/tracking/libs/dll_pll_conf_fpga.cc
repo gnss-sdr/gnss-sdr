@@ -60,6 +60,7 @@ void Dll_Pll_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *confi
         }
     dump = configuration->property(role + ".dump", dump);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);
+    dump_every_code_period = configuration->property(role + ".dump_every_code_period", dump_every_code_period);
     keep_phase_at_secondary_lock = configuration->property(role + ".keep_phase_at_secondary_lock", keep_phase_at_secondary_lock);
     dump_filename = configuration->property(role + ".dump_filename", dump_filename);
     enable_fll_pull_in = configuration->property(role + ".enable_fll_pull_in", enable_fll_pull_in);

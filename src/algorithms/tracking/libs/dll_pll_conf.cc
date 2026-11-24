@@ -63,6 +63,7 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     f_error_dump = configuration->property(role + ".f_error_dump", f_error_dump);
     f_error_dump_filename = configuration->property(role + ".f_error_dump_filename", f_error_dump_filename);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);
+    dump_every_code_period = configuration->property(role + ".dump_every_code_period", dump_every_code_period);
     keep_phase_at_secondary_lock = configuration->property(role + ".keep_phase_at_secondary_lock", keep_phase_at_secondary_lock);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", pll_bw_hz);
 #if USE_GLOG_AND_GFLAGS

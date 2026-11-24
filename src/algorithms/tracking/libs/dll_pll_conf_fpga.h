@@ -105,6 +105,7 @@ public:
     bool high_dyn{false};
     bool dump{false};
     bool dump_mat{true};
+    bool dump_every_code_period{false};
     bool keep_phase_at_secondary_lock{false};
     bool bs_use_phase_dot_detector{true};
 };

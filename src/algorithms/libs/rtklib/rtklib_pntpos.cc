@@ -943,6 +943,22 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
 }
 
 
+/* chi-square threshold (alpha=0.001) for dof degrees of freedom --------------
+ * The table of chi-square values covers up to 300 degrees of freedom; beyond
+ * that, the Wilson-Hilferty approximation is used. */
+static double chisqr_threshold(int dof)
+{
+    constexpr int TABLE_SIZE = sizeof(CHISQR) / sizeof(CHISQR[0]);
+    if (dof <= TABLE_SIZE)
+        {
+            return CHISQR[dof - 1];
+        }
+    constexpr double Z_ALPHA = 3.0902323;  // upper 0.1% quantile of N(0,1)
+    const double a = 2.0 / (9.0 * dof);
+    return dof * std::pow(1.0 - a + Z_ALPHA * std::sqrt(a), 3.0);
+}
+
+
 /* validate solution ---------------------------------------------------------*/
 int valsol(const double *azel, const int *vsat, int n,
     const prcopt_t *opt, const double *v, int nv, int nx,
@@ -958,9 +974,9 @@ int valsol(const double *azel, const int *vsat, int n,
 
     /* chi-square validation of residuals */
     vv = dot(v, v, nv);
-    if (nv > nx && vv > CHISQR[nv - nx - 1])
+    if (nv > nx && vv > chisqr_threshold(nv - nx))
         {
-            std::snprintf(msg, PNTPOS_MSG_LEN, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, CHISQR[nv - nx - 1]);
+            std::snprintf(msg, PNTPOS_MSG_LEN, "chi-square error nv=%d vv=%.1f cs=%.1f", nv, vv, chisqr_threshold(nv - nx));
             return 0;
         }
     /* large gdop check */

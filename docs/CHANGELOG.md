@@ -381,6 +381,12 @@ All notable changes to GNSS-SDR will be documented in this file.
   acquired, instead of moving by half a cycle to the polarity of the pilot, and
   the half-cycle ambiguity is left to the telemetry decoder, as for signals
   without a pilot. The parameter is ignored for BeiDou B1C.
+- A new tracking parameter `Tracking_XX.dump_every_code_period` (default
+  `false`) makes the tracking dump (`Tracking_XX.dump=true`) keep one record per
+  code period once the channel has reached symbol synchronization, instead of
+  one record per symbol. This stores the prompt correlator output of the code
+  periods inside a symbol (for instance, each of the 20 periods of a GPS L1 C/A
+  bit). The record layout does not change.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

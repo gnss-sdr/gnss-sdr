@@ -81,7 +81,8 @@ Kf_Conf::Kf_Conf() : item_type("gr_complex"),
                      enable_doppler_correction(false),
                      high_dyn(false),
                      dump(false),
-                     dump_mat(true)
+                     dump_mat(true),
+                     keep_phase_at_secondary_lock(false)
 {
     signal[0] = '1';
     signal[1] = 'C';
@@ -105,6 +106,7 @@ void Kf_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     dump = configuration->property(role + ".dump", dump);
     dump_filename = configuration->property(role + ".dump_filename", dump_filename);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);
+    keep_phase_at_secondary_lock = configuration->property(role + ".keep_phase_at_secondary_lock", keep_phase_at_secondary_lock);
 
     pull_in_time_s = configuration->property(role + ".pull_in_time_s", pull_in_time_s);
     bit_synchronization_time_limit_s = pull_in_time_s + 60;

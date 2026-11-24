@@ -81,6 +81,7 @@ public:
     bool high_dyn;
     bool dump;
     bool dump_mat;
+    bool keep_phase_at_secondary_lock;
 };
 
 #endif

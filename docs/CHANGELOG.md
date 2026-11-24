@@ -375,6 +375,12 @@ All notable changes to GNSS-SDR will be documented in this file.
   latest antenna calibration (ANTEX) and satellite metadata (SINEX) files
   published by the International GNSS Service and the European GNSS Service
   Centre, for the antenna models of the PPP positioning modes.
+- A new tracking parameter `Tracking_XX.keep_phase_at_secondary_lock` (default
+  `false`) applies to signals tracked on a pilot with a secondary code. When set
+  to `true`, the carrier keeps the phase that it had when the secondary code was
+  acquired, instead of moving by half a cycle to the polarity of the pilot, and
+  the half-cycle ambiguity is left to the telemetry decoder, as for signals
+  without a pilot. The parameter is ignored for BeiDou B1C.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

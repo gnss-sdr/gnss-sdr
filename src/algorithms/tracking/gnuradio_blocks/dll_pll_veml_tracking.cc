@@ -551,6 +551,15 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                             d_secondary = true;
                             d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B1C_PILOT_SECONDARY_CODE_LENGTH);
                             d_signal_pretty_name = d_signal_pretty_name + "P";
+                            if (d_trk_parameters.keep_phase_at_secondary_lock)
+                                {
+                                    // The data prompt delivered to the telemetry decoder is referred
+                                    // to the pilot prompt (see assign_correlators_to_synchro), so the
+                                    // decoder cannot detect a carrier half a cycle away from the
+                                    // pilot: the PLL must lock to the polarity of the pilot
+                                    d_trk_parameters.keep_phase_at_secondary_lock = false;
+                                    LOG_FIRST_N(WARNING, 1) << "The keep_phase_at_secondary_lock tracking parameter is not available for BeiDou B1C and has been ignored";
+                                }
                         }
                     else
                         {
@@ -1604,7 +1613,16 @@ void dll_pll_veml_tracking::run_dll_pll()
     else
         {
             // Secondary code acquired. No symbols transition should be present in the signal
-            d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / TWO_PI;
+            if (d_trk_parameters.keep_phase_at_secondary_lock && !d_Flag_PLL_180_deg_phase_locked)
+                {
+                    // the wiped-off pilot comes out negative at the phase the Costas loop
+                    // held; take it with that sign instead of pulling the carrier half a cycle
+                    d_carr_phase_error_hz = pll_four_quadrant_atan(-d_P_accu) / TWO_PI;
+                }
+            else
+                {
+                    d_carr_phase_error_hz = pll_four_quadrant_atan(d_P_accu) / TWO_PI;
+                }
         }
 
     if ((d_pull_in_transitory == true && d_trk_parameters.enable_fll_pull_in == true) || d_trk_parameters.enable_fll_steady_state)

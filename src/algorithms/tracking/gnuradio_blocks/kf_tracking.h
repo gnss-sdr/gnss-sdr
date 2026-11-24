@@ -236,6 +236,8 @@ private:
     bool d_carrier_phase_discontinuity{true};  // pending report of a new carrier phase ambiguity
     bool d_enable_extended_integration;
     bool d_force_loss_of_lock{false};  // declare loss of lock at the next lock check, whatever the lock fail counters
+    // the wiped-off pilot was negative at the phase held when the secondary code was acquired
+    bool d_pilot_inverted_at_secondary_lock{false};
 };
 
 #endif  // GNSS_SDR_KF_TRACKING_H

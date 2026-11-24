@@ -1075,6 +1075,9 @@ bool kf_tracking::acquire_secondary()
 
     if (abs(corr_value) == static_cast<int32_t>(d_secondary_code_length))
         {
+            // a positive correlation means prompts with the sign opposite to the
+            // secondary code chips, so the wiped-off pilot comes out negative
+            d_pilot_inverted_at_secondary_lock = (corr_value > 0);
             return true;
         }
 
@@ -1197,7 +1200,16 @@ void kf_tracking::run_Kf()
     else
         {
             // Secondary code acquired. No symbols transition should be present in the signal
-            d_carr_phase_error_disc_hz = pll_four_quadrant_atan(d_P_accu) / TWO_PI;
+            if (d_trk_parameters.keep_phase_at_secondary_lock && d_pilot_inverted_at_secondary_lock)
+                {
+                    // the wiped-off pilot comes out negative at the phase the Costas loop
+                    // held; take it with that sign instead of pulling the carrier half a cycle
+                    d_carr_phase_error_disc_hz = pll_four_quadrant_atan(-d_P_accu) / TWO_PI;
+                }
+            else
+                {
+                    d_carr_phase_error_disc_hz = pll_four_quadrant_atan(d_P_accu) / TWO_PI;
+                }
         }
 
     // Code discriminator

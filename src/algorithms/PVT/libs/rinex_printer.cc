@@ -2495,7 +2495,8 @@ void add_obs_epoch_record(std::fstream& out, const boost::posix_time::ptime& sys
 
     line += rightJustify(std::to_string(number_satellites), 3);
 
-    if (version == 4 && std::isfinite(receiver_clock_offset_s))
+    // Receiver clock offset (optional): 6X,F15.12 in RINEX 3.02 and 4.02
+    if (version >= 3 && std::isfinite(receiver_clock_offset_s))
         {
             const std::string offset = asString(receiver_clock_offset_s, 12);
             if (offset.size() <= 15)
@@ -4478,7 +4479,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
     // -------- TIME OF FIRST OBS
     add_obs_time_first_obs(out, time_constellation, system_time, seconds);
 
-    if (d_version == 4)
+    // -------- RCV CLOCK OFFS APPL
+    // Required in RINEX 3.02 and 4.02 if the epoch records report the receiver
+    // clock offset
+    if (d_version >= 3)
         {
             std::string line = rightJustify(receiver_clock_offset_applied ? "1" : "0", 6);
             line.resize(60, ' ');

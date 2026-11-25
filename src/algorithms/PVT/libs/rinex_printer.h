@@ -118,7 +118,7 @@ public:
      */
     void set_tracked_components(uint32_t data_signals, uint32_t pilot_signals);
 
-    //! In RINEX 4, receiver_clock_offset_s is the estimated receiver clock
+    //! In RINEX 3 and 4, receiver_clock_offset_s is the estimated receiver clock
     //! offset in seconds. Set receiver_clock_offset_applied when that same
     //! offset was applied to the epoch, pseudoranges and carrier phases.
     //! A non-finite offset leaves the optional epoch field blank.

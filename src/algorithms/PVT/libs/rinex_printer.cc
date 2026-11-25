@@ -2482,7 +2482,7 @@ void add_obs_glonass_code_phase_bias(std::fstream& out,
 }
 
 
-void add_obs_epoch_record(std::fstream& out, const boost::posix_time::ptime& system_time, double seconds, int version, const Constellation_Observables_Map& constel_observables)
+void add_obs_epoch_record(std::fstream& out, const boost::posix_time::ptime& system_time, double seconds, int version, const Constellation_Observables_Map& constel_observables, double receiver_clock_offset_s)
 {
     std::string line = get_obs_epoch_record_lines(system_time, seconds, version);
 
@@ -2495,8 +2495,15 @@ void add_obs_epoch_record(std::fstream& out, const boost::posix_time::ptime& sys
 
     line += rightJustify(std::to_string(number_satellites), 3);
 
-    // Receiver clock offset (optional)
-    // line += rightJustify(asString(clockOffset, 12), 15);
+    if (version == 4 && std::isfinite(receiver_clock_offset_s))
+        {
+            const std::string offset = asString(receiver_clock_offset_s, 12);
+            if (offset.size() <= 15)
+                {
+                    line += std::string(6, ' ');
+                    line += rightJustify(offset, 15);
+                }
+        }
 
     if (version == 2)
         {
@@ -2790,7 +2797,9 @@ void Rinex_Printer::add_measured_components(const std::map<int, Gnss_Synchro>& g
 void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
     const std::map<int, Gnss_Synchro>& gnss_observables_map,
     double rx_time,
-    bool flag_write_RINEX_obs_output)
+    bool flag_write_RINEX_obs_output,
+    double receiver_clock_offset_s,
+    bool receiver_clock_offset_applied)
 {
     const auto galileo_ephemeris_iter = pvt_solver->galileo_ephemeris_map.cbegin();
     const auto gps_ephemeris_iter = pvt_solver->gps_ephemeris_map.cbegin();
@@ -3046,7 +3055,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                 }
 
             add_measured_components(gnss_observables_map);
-            rinex_obs_header(obsFile, system_time_str, system_time, seconds);
+            rinex_obs_header(obsFile, system_time_str, system_time, seconds, receiver_clock_offset_applied);
             rinex_nav_header(navFile, iono_lines, time_corr_lines, leap_second_line);
 
             if (has_gps_lnav_eph)
@@ -3098,7 +3107,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         {
             const auto schema = get_observation_schema(d_flags, d_version, d_data_component_signals, d_pilot_component_signals);
             const auto constel_observables = get_constellation_observables_map(schema, gnss_observables_map, d_version, d_undeclared_codes_reported);
-            add_obs_epoch_record(obsFile, system_time, seconds, d_version, constel_observables);
+            add_obs_epoch_record(obsFile, system_time, seconds, d_version, constel_observables, receiver_clock_offset_s);
             add_constellation_obs_sat_record_lines(obsFile, d_flags, constel_observables, d_version);
 
             if (!d_rinex_header_updated && d_version != 4)
@@ -4340,7 +4349,8 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out,
 void Rinex_Printer::rinex_obs_header(std::fstream& out,
     const std::string& time_constellation,
     const boost::posix_time::ptime& system_time,
-    double seconds)
+    double seconds,
+    bool receiver_clock_offset_applied)
 {
     std::string constellation_legend;
 
@@ -4467,6 +4477,14 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
 
     // -------- TIME OF FIRST OBS
     add_obs_time_first_obs(out, time_constellation, system_time, seconds);
+
+    if (d_version == 4)
+        {
+            std::string line = rightJustify(receiver_clock_offset_applied ? "1" : "0", 6);
+            line.resize(60, ' ');
+            line += leftJustify("RCV CLOCK OFFS APPL", 20);
+            out << line << '\n';
+        }
 
     // -------- SYS / PHASE SHIFT
     // Mandatory in RINEX 3.02 (section 9.1). Tracking and telemetry decoding

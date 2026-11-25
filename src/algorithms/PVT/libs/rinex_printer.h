@@ -44,10 +44,11 @@
 #include <cstdint>  // for int32_t
 #include <cstdlib>  // for strtol, strtod
 #include <fstream>  // for fstream
-#include <map>      // for map
-#include <set>      // for set
-#include <string>   // for string
-#include <vector>   // for vector
+#include <limits>
+#include <map>     // for map
+#include <set>     // for set
+#include <string>  // for string
+#include <vector>  // for vector
 
 
 /** \addtogroup PVT
@@ -117,10 +118,16 @@ public:
      */
     void set_tracked_components(uint32_t data_signals, uint32_t pilot_signals);
 
+    //! In RINEX 4, receiver_clock_offset_s is the estimated receiver clock
+    //! offset in seconds. Set receiver_clock_offset_applied when that same
+    //! offset was applied to the epoch, pseudoranges and carrier phases.
+    //! A non-finite offset leaves the optional epoch field blank.
     void print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         const std::map<int, Gnss_Synchro>& gnss_observables_map,
         double rx_time,
-        bool flag_write_RINEX_obs_output);
+        bool flag_write_RINEX_obs_output,
+        double receiver_clock_offset_s = std::numeric_limits<double>::quiet_NaN(),
+        bool receiver_clock_offset_applied = false);
 
     /*!
      * \brief Print RINEX annotation for GPS NAV message
@@ -214,7 +221,8 @@ private:
     void rinex_obs_header(std::fstream& out,
         const std::string& time_constellation,
         const boost::posix_time::ptime& system_time,
-        double seconds);
+        double seconds,
+        bool receiver_clock_offset_applied);
 
     /*
      * Generates the Navigation Data header

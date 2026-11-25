@@ -210,6 +210,14 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
 
     const Signal_Enabled_Flags flags(d_signal_enabled_flags);
 
+    // Time system of the RINEX observation files, in the same order of
+    // preference as Rinex_Printer::print_rinex_annotation()
+    const bool galileo_time = !flags.has_gps && flags.has_galileo &&
+                              (flags.check_any_enabled(GAL_1B, GAL_E5a, GAL_E5b) || flags.only_galileo);
+    const bool qzss_time = !flags.has_gps && !galileo_time && !flags.has_glonass && !flags.has_beidou && flags.has_qzss;
+    d_time_offset_ref_gps_clock = flags.has_gps || (qzss_time && !rtk.opt.estqzsisb);
+    d_time_offset_ref_galileo = galileo_time;
+
     // Prefer the ICD clock model for E1/E5b (I/NAV) or E1/E5a (F/NAV).
     // E5b takes priority; E1-only receivers use I/NAV.
     if (flags.check_any_enabled(GAL_E5b))
@@ -2984,6 +2992,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     d_solution_attempted = false;
     d_has_corrected_satellite.fill(false);
     d_has_corrected_satellites_used = 0;
+    d_time_offset_referenced = false;
 
     // Before merging, a multi-band satellite contributes several channel
     // records and ephemerides. MAXOBS limits satellites, not input channels.
@@ -3867,6 +3876,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     const bool filter_solution = pvt_sol.stat != SOLQ_SINGLE && pvt_sol.stat != SOLQ_SBAS;
                     unsigned int solution_sats = 0;
                     unsigned int has_corrected_sats = 0;
+                    bool gps_clock_used = false;
+                    bool galileo_used = false;
                     for (unsigned int i = 0; i < MAXSAT; i++)
                         {
                             d_has_corrected_satellite[i] = d_has_corrected_satellite[i] && !without_has_corrections[i];
@@ -3878,9 +3889,21 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         {
                                             has_corrected_sats++;
                                         }
+                                    // same system-to-clock-state mapping as rescode()
+                                    const int sys = satsys(static_cast<int>(i) + 1, nullptr);
+                                    if (sys == SYS_GPS || sys == SYS_SBS || (sys == SYS_QZS && !d_rtk.opt.estqzsisb))
+                                        {
+                                            gps_clock_used = true;
+                                        }
+                                    else if (sys == SYS_GAL)
+                                        {
+                                            galileo_used = true;
+                                        }
                                 }
                         }
                     d_has_corrected_satellites_used = static_cast<uint8_t>(std::min(has_corrected_sats, 255U));
+                    d_time_offset_referenced = (d_time_offset_ref_gps_clock && gps_clock_used) ||
+                                               (d_time_offset_ref_galileo && galileo_used);
 
                     std::vector<double> azel(used_sats * 2);
                     int index_aux = 0;
@@ -3941,16 +3964,21 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     rx_position_and_time[2] = pvt_sol.rr[2];  // [m]
 
                     const bool is_ppp_solution = d_rtk.opt.mode >= PMODE_PPP_KINEMA && pvt_sol.stat == SOLQ_PPP;
+                    // Receiver clock offset with respect to the GPS clock state, if
+                    // the reference time system uses it and the solution has
+                    // satellites on it. Otherwise, add the Galileo-GPS offset: without
+                    // GPS satellites, RTKLIB absorbs the receiver clock into it
+                    const double galileo_gps_offset_s = (d_time_offset_ref_gps_clock && gps_clock_used) ? 0.0 : pvt_sol.dtr[2];
                     if (!is_ppp_solution)
                         {
                             // SPP and relative-positioning solutions express dtr in seconds.
-                            rx_position_and_time[3] = pvt_sol.dtr[0] + pvt_sol.dtr[2];
+                            rx_position_and_time[3] = pvt_sol.dtr[0] + galileo_gps_offset_s;
                         }
                     else
                         {
                             // PPP stores its estimated receiver-clock state in metres. Inter-system
                             // offsets retained from the point solution remain in seconds.
-                            rx_position_and_time[3] = pvt_sol.dtr[2] + pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S;
+                            rx_position_and_time[3] = galileo_gps_offset_s + pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S;
                         }
                     this->set_rx_pos({rx_position_and_time[0], rx_position_and_time[1], rx_position_and_time[2]});  // save ECEF position for the next iteration
 

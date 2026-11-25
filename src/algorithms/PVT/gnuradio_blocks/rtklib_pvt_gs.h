@@ -209,7 +209,8 @@ private:
     void initialize_and_apply_carrier_phase_offset();
 
     void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
-        double rx_clock_offset_s);
+        double rx_clock_offset_s,
+        double rx_clock_drift_s_s);
 
     void update_HAS_corrections();
     void update_SSR_corrections();
@@ -373,6 +374,9 @@ private:
 
     const double d_rinex_version;
     double d_rx_time;
+    double d_rx_clock_offset_t0_s;
+    double d_rx_clock_offset_t1_s;
+    double d_rinex_clock_offset_s;
     uint64_t d_local_counter_ms;
     uint64_t d_timestamp_rx_clock_offset_correction_msg_ms;
 

@@ -233,6 +233,14 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed the TCP/IP server of RTCM messages (`PVT.flag_rtcm_server=true`), which
   since v0.0.19 delivered repeated ephemeris messages and no observation
   messages to its clients.
+- RINEX 4.02 observation files now report the receiver clock offset estimate in
+  the epoch records, and the `RCV CLOCK OFFS APPL` header record states whether
+  it was applied (`PVT.enable_rx_clock_correction=true`). The offset refers to
+  the time system of the file (GPS, Galileo, or QZSS time), and it is left blank
+  in epochs without satellites of that system and in GLONASS-only and
+  BeiDou-only receivers. In receivers with GPS and Galileo, the receiver clock
+  offset, and its correction if enabled, now refers to GPS time instead of
+  including the Galileo-GPS inter-system offset.
 
 ### Improvements in Maintainability:
 

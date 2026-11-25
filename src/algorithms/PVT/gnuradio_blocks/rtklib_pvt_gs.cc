@@ -93,6 +93,7 @@
 #include <iomanip>                      // for put_time, setprecision
 #include <iostream>                     // for operator<<
 #include <iterator>                     // for make_move_iterator
+#include <limits>                       // for numeric_limits
 #include <locale>                       // for locale
 #include <sstream>                      // for ostringstream
 #include <stdexcept>                    // for length_error
@@ -265,6 +266,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_galileo_has_data_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_HAS_data>).hash_code()),
       d_rinex_version(conf_.rinex_version),
       d_rx_time(0.0),
+      d_rx_clock_offset_t0_s(0.0),
+      d_rx_clock_offset_t1_s(0.0),
+      d_rinex_clock_offset_s(0.0),
       d_local_counter_ms(0ULL),
       d_timestamp_rx_clock_offset_correction_msg_ms(0LL),
       d_rinexobs_rate_ms(conf_.rinexobs_rate_ms),
@@ -2666,9 +2670,15 @@ void rtklib_pvt_gs::publish_latest_pvt()
 
 
 void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
-    double rx_clock_offset_s)
+    double rx_clock_offset_s,
+    double rx_clock_drift_s_s)
 {
-    // apply corrections according to Rinex 3.04, Table 1: Observation Corrections for Receiver Clock Offset
+    // apply corrections according to RINEX 4.02, Table 5: Observation Corrections for Receiver Clock Offset.
+    // The Doppler correction removes the receiver clock drift. Its sign follows from the
+    // RINEX sign conventions (the phase changes with the pseudorange, and the Doppler is
+    // positive for approaching satellites, so Doppler = -d(phase)/dt) and from the RTKLIB
+    // Doppler model (-lambda * D = range rate + c * drift): Doppler(corr) = Doppler(r) + drift * freq.
+    // Table 5 of RINEX 4.02 prints a minus sign, which contradicts those conventions.
     std::map<int, Gnss_Synchro>::iterator observables_iter;
 
     for (observables_iter = observables_map.begin(); observables_iter != observables_map.end(); observables_iter++)
@@ -2680,6 +2690,7 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
             if (it_freq_map != SIGNAL_FREQ_MAP.cend())
                 {
                     observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * it_freq_map->second * TWO_PI;
+                    observables_iter->second.Carrier_Doppler_hz += rx_clock_drift_s_s * it_freq_map->second;
                 }
         }
 }
@@ -2743,6 +2754,11 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
                           (GPS_WEEK_SECONDS + observables_map_t1.cbegin()->second.RX_time -
                               observables_map_t0.cbegin()->second.RX_time);
         }
+
+    // The corrected measurements are interpolated between two independently
+    // clock-corrected epochs. Interpolate their applied corrections as well.
+    d_rinex_clock_offset_s = d_rx_clock_offset_t0_s +
+                             (d_rx_clock_offset_t1_s - d_rx_clock_offset_t0_s) * time_factor;
 
     std::map<int, Gnss_Synchro>::const_iterator observables_iter;
     for (observables_iter = observables_map_t0.cbegin(); observables_iter != observables_map_t0.cend(); observables_iter++)
@@ -3446,7 +3462,12 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     if (d_enable_rx_clock_correction == true)
                                         {
                                             d_gnss_observables_map_t0 = d_gnss_observables_map_t1;
-                                            apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s);
+                                            d_rx_clock_offset_t0_s = d_rx_clock_offset_t1_s;
+                                            // NaN (blank RINEX field) when the offset has no clock
+                                            // reference; it propagates through the interpolation
+                                            d_rx_clock_offset_t1_s = d_internal_pvt_solver->time_offset_referenced() ? Rx_clock_offset_s : std::numeric_limits<double>::quiet_NaN();
+                                            apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s,
+                                                d_internal_pvt_solver->get_clock_drift_ppm() * 1e-6);
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
                                             // latch the slip flags of every epoch entering t1: with
                                             // output_rate_ms > observable_interval_ms most epochs are
@@ -3489,6 +3510,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     else
                                         {
+                                            d_rinex_clock_offset_s = d_internal_pvt_solver->time_offset_referenced() ? Rx_clock_offset_s : std::numeric_limits<double>::quiet_NaN();
                                             d_rx_time = d_gnss_observables_map.begin()->second.RX_time;
                                             current_RX_time_ms = static_cast<uint32_t>(d_rx_time * 1000.0);
                                             if (current_RX_time_ms % d_output_rate_ms == 0)
@@ -3758,7 +3780,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     if (d_rinex_output_enabled)
                                         {
-                                            d_rp->print_rinex_annotation(d_user_pvt_solver.get(), d_gnss_observables_map, d_rx_time, flag_write_RINEX_obs_output);
+                                            d_rp->print_rinex_annotation(d_user_pvt_solver.get(), d_gnss_observables_map, d_rx_time, flag_write_RINEX_obs_output,
+                                                d_rinex_clock_offset_s, d_enable_rx_clock_correction && d_internal_pvt_solver->time_offset_referenceable());
                                         }
                                     if (d_rtcm_enabled)
                                         {

@@ -247,8 +247,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   epochs without satellites of that system and in GLONASS-only and BeiDou-only
   receivers. In receivers with GPS and Galileo, the receiver clock offset, and
   its correction if enabled, now refers to GPS time instead of including the
-  Galileo-GPS inter-system offset. With RINEX 2.11 output, the applied offset
-  is rounded to the nearest nanosecond, the resolution of that format.
+  Galileo-GPS inter-system offset. With RINEX 2.11 output, the applied offset is
+  rounded to the nearest nanosecond, the resolution of that format.
 - Fixed the epoch records of RINEX 2.11 observation files
   (`PVT.rinex_version=2`), which since v0.0.21 were written with the RINEX 3
   record identifier and a four-digit year. Epochs with more than 12 satellites

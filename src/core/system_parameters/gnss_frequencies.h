@@ -19,6 +19,7 @@
 #ifndef GNSS_SDR_GNSS_FREQUENCIES_H
 #define GNSS_SDR_GNSS_FREQUENCIES_H
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 
@@ -63,6 +64,30 @@ const std::unordered_map<std::string, double> SIGNAL_FREQ_MAP = {
     {"J1", FREQ1},
     {"J5", FREQ5},
 };
+
+
+/*!
+ * \brief Carrier frequency of a signal in Hz, or 0.0 if the signal is not in
+ * SIGNAL_FREQ_MAP. GLONASS L1 C/A ("1G") and L2 C/A ("2G") are FDMA signals:
+ * freq_channel is the frequency channel number of the satellite.
+ */
+inline double signal_carrier_frequency_hz(const std::string& signal, int32_t freq_channel = 0)
+{
+    const auto it = SIGNAL_FREQ_MAP.find(signal);
+    if (it == SIGNAL_FREQ_MAP.cend())
+        {
+            return 0.0;
+        }
+    if (signal == "1G")
+        {
+            return it->second + freq_channel * DFRQ1_GLO;
+        }
+    if (signal == "2G")
+        {
+            return it->second + freq_channel * DFRQ2_GLO;
+        }
+    return it->second;
+}
 
 
 /** \} */

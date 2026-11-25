@@ -102,14 +102,6 @@ public:
     ~Rinex_Printer() noexcept;
 
     /*!
-     * \brief Print RINEX annotation. If it is the first annotation, it also
-     * prints the RINEX headers for navigation and observation files. If it is
-     * not the first annotation, it only annotates the observation, and updates
-     * the navigation header if UTC data was not available when writing it for
-     * the first time.
-     *
-     */
-    /*!
      * \brief Sets the signals (signal_flag) whose channels track the data
      * component and those whose channels track the pilot one. The observation
      * file header then declares only those observation types, plus any other
@@ -118,10 +110,18 @@ public:
      */
     void set_tracked_components(uint32_t data_signals, uint32_t pilot_signals);
 
-    //! In RINEX 3 and 4, receiver_clock_offset_s is the estimated receiver clock
-    //! offset in seconds. Set receiver_clock_offset_applied when that same
-    //! offset was applied to the epoch, pseudoranges and carrier phases.
-    //! A non-finite offset leaves the optional epoch field blank.
+    /*!
+     * \brief Print RINEX annotation. If it is the first annotation, it also
+     * prints the RINEX headers for navigation and observation files. If it is
+     * not the first annotation, it only annotates the observation, and updates
+     * the navigation header if UTC data was not available when writing it for
+     * the first time.
+     *
+     * receiver_clock_offset_s is the estimated receiver clock offset in
+     * seconds. Set receiver_clock_offset_applied when that same offset was
+     * applied to the epoch, pseudoranges and carrier phases. A non-finite
+     * offset leaves the optional epoch field blank.
+     */
     void print_rinex_annotation(const Rtklib_Solver* pvt_solver,
         const std::map<int, Gnss_Synchro>& gnss_observables_map,
         double rx_time,
@@ -204,6 +204,16 @@ public:
     inline std::string get_obsfilename() const
     {
         return obsfilename;
+    }
+
+    /*!
+     * \brief Returns the RINEX version of the files (2 for 2.11, 3 for 3.02,
+     * 4 for 4.02). It is higher than the requested one when the enabled
+     * signals require it
+     */
+    inline int get_rinex_version() const
+    {
+        return d_version;
     }
 
 

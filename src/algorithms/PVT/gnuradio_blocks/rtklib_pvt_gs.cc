@@ -16,6 +16,7 @@
 
 #include "rtklib_pvt_gs.h"
 #include "Beidou_CNAV2.h"
+#include "GLONASS_L1_L2_CA.h"
 #include "GNSS_MATH_CONSTANTS.h"
 #include "Galileo_CNAV.h"
 #include "an_packet_printer.h"
@@ -135,6 +136,16 @@ namespace wht = std;
 
 namespace
 {
+// Carrier frequency of an observable in Hz, or 0.0 if unknown. GLONASS FDMA
+// signals have their own carrier per satellite: the frequency channel is the
+// one of the slot, as in the tracking blocks
+double carrier_frequency_hz(const Gnss_Synchro& observable)
+{
+    const int32_t freq_channel = (observable.System == 'R') ? glonass_freq_channel(observable.PRN) : 0;
+    return signal_carrier_frequency_hz(std::string(observable.Signal, 2), freq_channel);
+}
+
+
 /* console tag for the RTKLIB solution status; empty for single-point and
    no-solution so that the default output is unchanged */
 std::string solution_status_tag(int solution_status)
@@ -2689,11 +2700,11 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
             // all observables in the map are valid
             observables_iter->second.RX_time -= rx_clock_offset_s;
             observables_iter->second.Pseudorange_m -= rx_clock_offset_s * SPEED_OF_LIGHT_M_S;
-            const auto it_freq_map = SIGNAL_FREQ_MAP.find(std::string(observables_iter->second.Signal, 2));
-            if (it_freq_map != SIGNAL_FREQ_MAP.cend())
+            const double carrier_freq_hz = carrier_frequency_hz(observables_iter->second);
+            if (carrier_freq_hz > 0.0)
                 {
-                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * it_freq_map->second * TWO_PI;
-                    observables_iter->second.Carrier_Doppler_hz += rx_clock_drift_s_s * it_freq_map->second;
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * carrier_freq_hz * TWO_PI;
+                    observables_iter->second.Carrier_Doppler_hz += rx_clock_drift_s_s * carrier_freq_hz;
                 }
         }
 }
@@ -2792,10 +2803,10 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
                                 {
                                     // same frequency as in apply_rx_clock_offset()
                                     interpolated.Pseudorange_m += clock_offset_remainder_s * SPEED_OF_LIGHT_M_S;
-                                    const auto it_freq_map = SIGNAL_FREQ_MAP.find(std::string(interpolated.Signal, 2));
-                                    if (it_freq_map != SIGNAL_FREQ_MAP.cend())
+                                    const double carrier_freq_hz = carrier_frequency_hz(interpolated);
+                                    if (carrier_freq_hz > 0.0)
                                         {
-                                            interpolated.Carrier_phase_rads += clock_offset_remainder_s * it_freq_map->second * TWO_PI;
+                                            interpolated.Carrier_phase_rads += clock_offset_remainder_s * carrier_freq_hz * TWO_PI;
                                         }
                                 }
                             // consume the slip flags latched from the epochs
@@ -2835,10 +2846,10 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
             if (d_channel_initialized.at(observables_iter->second.Channel_ID) == false)
                 {
                     double wavelength_m = 1.0;
-                    const auto it_freq_map = SIGNAL_FREQ_MAP.find(std::string(observables_iter->second.Signal, 2));
-                    if (it_freq_map != SIGNAL_FREQ_MAP.cend())
+                    const double carrier_freq_hz = carrier_frequency_hz(observables_iter->second);
+                    if (carrier_freq_hz > 0.0)
                         {
-                            wavelength_m = SPEED_OF_LIGHT_M_S / it_freq_map->second;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / carrier_freq_hz;
                         }
                     const double wrap_carrier_phase_rad = fmod(observables_iter->second.Carrier_phase_rads, TWO_PI);
                     d_initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = TWO_PI * round(observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads + wrap_carrier_phase_rad;

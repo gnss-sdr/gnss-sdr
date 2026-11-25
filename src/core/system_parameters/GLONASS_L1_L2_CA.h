@@ -258,6 +258,17 @@ const std::map<uint32_t, int32_t> GLONASS_PRN = {
         7,
     }};
 
+
+/*!
+ * \brief Frequency channel number of a GLONASS slot according to GLONASS_PRN,
+ * or 0 if the slot is not listed there.
+ */
+inline int32_t glonass_freq_channel(uint32_t slot)
+{
+    const auto it = GLONASS_PRN.find(slot);
+    return (it != GLONASS_PRN.cend()) ? it->second : 0;
+}
+
 const std::vector<int32_t> GLONASS_GNAV_CRC_I_INDEX{9, 10, 12, 13, 15, 17, 19, 20, 22, 24, 26, 28, 30, 32, 34, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
 const std::vector<int32_t> GLONASS_GNAV_CRC_J_INDEX{9, 11, 12, 14, 15, 18, 19, 21, 22, 25, 26, 29, 30, 33, 34, 36, 37, 40, 41, 44, 45, 48, 49, 52, 53, 56, 57, 60, 61, 64, 65, 67, 68, 71, 72, 75, 76, 79, 80, 83, 84};
 const std::vector<int32_t> GLONASS_GNAV_CRC_K_INDEX{10, 11, 12, 16, 17, 18, 19, 23, 24, 25, 26, 31, 32, 33, 34, 38, 39, 40, 41, 46, 47, 48, 49, 54, 55, 56, 57, 62, 63, 64, 65, 69, 70, 71, 72, 77, 78, 79, 80, 85};

@@ -16,6 +16,7 @@
  */
 
 #include "hybrid_observables_gs.h"
+#include "GLONASS_L1_L2_CA.h"     // for glonass_freq_channel
 #include "GNSS_MATH_CONSTANTS.h"  // for SPEED_OF_LIGHT_M_S, TWO_PI
 #include "gnss_circular_deque.h"
 #include "gnss_frequencies.h"
@@ -801,12 +802,14 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
         {
             if (it->Flag_valid_pseudorange)
                 {
-                    // 0. get wavelength for the current signal
+                    // 0. get wavelength for the current signal. GLONASS FDMA
+                    //    signals have their own carrier per satellite
                     double wavelength_m = 0.0;
-                    const auto it_freq_map = SIGNAL_FREQ_MAP.find(std::string(it->Signal, 2));
-                    if (it_freq_map != SIGNAL_FREQ_MAP.cend())
+                    const int32_t freq_channel = (it->System == 'R') ? glonass_freq_channel(it->PRN) : 0;
+                    const double carrier_freq_hz = signal_carrier_frequency_hz(std::string(it->Signal, 2), freq_channel);
+                    if (carrier_freq_hz > 0.0)
                         {
-                            wavelength_m = SPEED_OF_LIGHT_M_S / it_freq_map->second;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / carrier_freq_hz;
                         }
 
                     // 1. restart the filter unless the channel was already producing

@@ -88,6 +88,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   satellite alone in its constellation or frequency pair, and resets both
   candidate ambiguities when a returning band lacks a previous measurement to
   identify which band slipped.
+- Fixed the GLONASS L1 and L2 C/A carrier phase and Doppler measurements when
+  the receiver clock correction is applied
+  (`PVT.enable_rx_clock_correction=true`), and the GLONASS pseudoranges when the
+  carrier smoothing is enabled (`Observables.enable_carrier_smoothing=true`).
+  Both used the center frequency of the band instead of the frequency channel of
+  each satellite. The carrier phases are now also aligned with their
+  pseudoranges, as the RTCM MSM messages require.
 
 ### Improvements in Availability:
 

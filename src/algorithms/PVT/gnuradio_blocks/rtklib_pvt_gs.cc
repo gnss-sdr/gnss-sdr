@@ -2669,9 +2669,15 @@ void rtklib_pvt_gs::publish_latest_pvt()
 
 
 void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
-    double rx_clock_offset_s)
+    double rx_clock_offset_s,
+    double rx_clock_drift_s_s)
 {
-    // apply corrections according to Rinex 3.04, Table 1: Observation Corrections for Receiver Clock Offset
+    // apply corrections according to RINEX 4.02, Table 5: Observation Corrections for Receiver Clock Offset.
+    // The Doppler correction removes the receiver clock drift. Its sign follows from the
+    // RINEX sign conventions (the phase changes with the pseudorange, and the Doppler is
+    // positive for approaching satellites, so Doppler = -d(phase)/dt) and from the RTKLIB
+    // Doppler model (-lambda * D = range rate + c * drift): Doppler(corr) = Doppler(r) + drift * freq.
+    // Table 5 of RINEX 4.02 prints a minus sign, which contradicts those conventions.
     std::map<int, Gnss_Synchro>::iterator observables_iter;
 
     for (observables_iter = observables_map.begin(); observables_iter != observables_map.end(); observables_iter++)
@@ -2683,6 +2689,7 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
             if (it_freq_map != SIGNAL_FREQ_MAP.cend())
                 {
                     observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * it_freq_map->second * TWO_PI;
+                    observables_iter->second.Carrier_Doppler_hz += rx_clock_drift_s_s * it_freq_map->second;
                 }
         }
 }
@@ -3456,7 +3463,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             d_gnss_observables_map_t0 = d_gnss_observables_map_t1;
                                             d_rx_clock_offset_t0_s = d_rx_clock_offset_t1_s;
                                             d_rx_clock_offset_t1_s = Rx_clock_offset_s;
-                                            apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s);
+                                            apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s,
+                                                d_internal_pvt_solver->get_clock_drift_ppm() * 1e-6);
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
                                             // latch the slip flags of every epoch entering t1: with
                                             // output_rate_ms > observable_interval_ms most epochs are

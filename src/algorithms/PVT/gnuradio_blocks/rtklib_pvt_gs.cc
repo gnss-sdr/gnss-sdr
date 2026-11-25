@@ -265,6 +265,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_galileo_has_data_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_HAS_data>).hash_code()),
       d_rinex_version(conf_.rinex_version),
       d_rx_time(0.0),
+      d_rx_clock_offset_t0_s(0.0),
+      d_rx_clock_offset_t1_s(0.0),
+      d_rinex_clock_offset_s(0.0),
       d_local_counter_ms(0ULL),
       d_timestamp_rx_clock_offset_correction_msg_ms(0LL),
       d_rinexobs_rate_ms(conf_.rinexobs_rate_ms),
@@ -2744,6 +2747,11 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
                               observables_map_t0.cbegin()->second.RX_time);
         }
 
+    // The corrected measurements are interpolated between two independently
+    // clock-corrected epochs. Interpolate their applied corrections as well.
+    d_rinex_clock_offset_s = d_rx_clock_offset_t0_s +
+                             (d_rx_clock_offset_t1_s - d_rx_clock_offset_t0_s) * time_factor;
+
     std::map<int, Gnss_Synchro>::const_iterator observables_iter;
     for (observables_iter = observables_map_t0.cbegin(); observables_iter != observables_map_t0.cend(); observables_iter++)
         {
@@ -3446,6 +3454,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     if (d_enable_rx_clock_correction == true)
                                         {
                                             d_gnss_observables_map_t0 = d_gnss_observables_map_t1;
+                                            d_rx_clock_offset_t0_s = d_rx_clock_offset_t1_s;
+                                            d_rx_clock_offset_t1_s = Rx_clock_offset_s;
                                             apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s);
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
                                             // latch the slip flags of every epoch entering t1: with
@@ -3489,6 +3499,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     else
                                         {
+                                            d_rinex_clock_offset_s = Rx_clock_offset_s;
                                             d_rx_time = d_gnss_observables_map.begin()->second.RX_time;
                                             current_RX_time_ms = static_cast<uint32_t>(d_rx_time * 1000.0);
                                             if (current_RX_time_ms % d_output_rate_ms == 0)
@@ -3758,7 +3769,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     if (d_rinex_output_enabled)
                                         {
-                                            d_rp->print_rinex_annotation(d_user_pvt_solver.get(), d_gnss_observables_map, d_rx_time, flag_write_RINEX_obs_output);
+                                            d_rp->print_rinex_annotation(d_user_pvt_solver.get(), d_gnss_observables_map, d_rx_time, flag_write_RINEX_obs_output,
+                                                d_rinex_clock_offset_s, d_enable_rx_clock_correction);
                                         }
                                     if (d_rtcm_enabled)
                                         {

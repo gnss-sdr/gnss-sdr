@@ -423,6 +423,7 @@ private:
     const bool d_flag_monitor_ephemeris_enabled;
     const bool d_show_local_time_zone;
     const bool d_enable_rx_clock_correction;
+    bool d_round_rx_clock_offset_to_ns;  // RINEX 2.11 reports the applied receiver clock offset in nanoseconds
     const bool d_ntrip_client_enabled;
     const bool d_ntrip_ssr_corrections;
     bool d_enable_has_messages;

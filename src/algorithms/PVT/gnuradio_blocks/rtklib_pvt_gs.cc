@@ -87,6 +87,7 @@
 #include <pmt/pmt_sugar.h>              // for mp
 #include <algorithm>                    // for sort, unique
 #include <cerrno>                       // for errno
+#include <cmath>                        // for isfinite, round
 #include <cstring>                      // for strerror
 #include <exception>                    // for exception
 #include <fstream>                      // for ofstream
@@ -301,6 +302,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_flag_monitor_ephemeris_enabled(conf_.monitor_ephemeris_enabled),
       d_show_local_time_zone(conf_.show_local_time_zone),
       d_enable_rx_clock_correction(conf_.enable_rx_clock_correction || (conf_.ntrip_client_enabled && !conf_.ntrip_ssr_corrections)),
+      d_round_rx_clock_offset_to_ns(false),
       d_ntrip_client_enabled(conf_.ntrip_client_enabled),
       d_ntrip_ssr_corrections(conf_.ntrip_ssr_corrections),
       d_an_printer_enabled(conf_.an_output_enabled),
@@ -552,6 +554,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         {
             d_rp = std::make_unique<Rinex_Printer>(d_signal_enabled_flags, d_rinex_version, conf_.rinex_output_path, conf_.rinex_name, conf_.ref_gps_week);
             d_rp->set_tracked_components(conf_.data_component_signals, conf_.pilot_component_signals);
+            d_round_rx_clock_offset_to_ns = d_enable_rx_clock_correction && d_rp->get_rinex_version() == 2;
         }
     else
         {
@@ -2760,6 +2763,19 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
     d_rinex_clock_offset_s = d_rx_clock_offset_t0_s +
                              (d_rx_clock_offset_t1_s - d_rx_clock_offset_t0_s) * time_factor;
 
+    // RINEX 2.11 reports the receiver clock offset in nanoseconds, and asks to
+    // round it to the nearest nanosecond before correcting the observables, so
+    // that the uncorrected ones can be reconstructed (section 5.5). The
+    // remainder, below 0.5 ns, is returned to the pseudoranges and the carrier
+    // phases. The epoch is left as is: it is written with a 100 ns resolution.
+    double clock_offset_remainder_s = 0.0;
+    if (d_round_rx_clock_offset_to_ns && std::isfinite(d_rinex_clock_offset_s))
+        {
+            const double rounded_clock_offset_s = std::round(d_rinex_clock_offset_s * 1.0e9) / 1.0e9;
+            clock_offset_remainder_s = d_rinex_clock_offset_s - rounded_clock_offset_s;
+            d_rinex_clock_offset_s = rounded_clock_offset_s;
+        }
+
     std::map<int, Gnss_Synchro>::const_iterator observables_iter;
     for (observables_iter = observables_map_t0.cbegin(); observables_iter != observables_map_t0.cend(); observables_iter++)
         {
@@ -2772,6 +2788,16 @@ std::map<int, Gnss_Synchro> rtklib_pvt_gs::interpolate_observables(const std::ma
                             Gnss_Synchro interpolated = interpolate_observable(observables_iter->second,
                                 observables_map_t1.at(observables_iter->first),
                                 time_factor, rx_time_s);
+                            if (clock_offset_remainder_s != 0.0)
+                                {
+                                    // same frequency as in apply_rx_clock_offset()
+                                    interpolated.Pseudorange_m += clock_offset_remainder_s * SPEED_OF_LIGHT_M_S;
+                                    const auto it_freq_map = SIGNAL_FREQ_MAP.find(std::string(interpolated.Signal, 2));
+                                    if (it_freq_map != SIGNAL_FREQ_MAP.cend())
+                                        {
+                                            interpolated.Carrier_phase_rads += clock_offset_remainder_s * it_freq_map->second * TWO_PI;
+                                        }
+                                }
                             // consume the slip flags latched from the epochs
                             // that streamed through t1 since the last output
                             auto& pending_slip = d_interp_pending_cycle_slip[observables_iter->first];

@@ -1854,7 +1854,8 @@ void write_two_digits_string(const std::string& two_digit_string, bool remove_le
 void add_svclk_to_line(const boost::posix_time::ptime& system_time, bool log_seconds, int version, std::string& line)
 {
     const std::string timestring = boost::posix_time::to_iso_string(system_time);
-    const std::string year(timestring, 0, 4);
+    // RINEX 2.11 writes two-digit years
+    const std::string year = (version == 2) ? std::string(timestring, 2, 2) : std::string(timestring, 0, 4);
     const std::string month(timestring, 4, 2);
     const std::string day(timestring, 6, 2);
     const std::string hour(timestring, 9, 2);
@@ -1884,7 +1885,9 @@ void add_svclk_to_line(const boost::posix_time::ptime& system_time, bool log_sec
 std::string get_obs_epoch_record_lines(const boost::posix_time::ptime& system_time, double seconds, int version)
 {
     // -------- EPOCH record
-    std::string line = std::string(1, '>');
+    // RINEX 2.11: 1X,I2.2,4(1X,I2),F11.7,2X,I1
+    // RINEX 3.02 and 4.02: A1,1X,I4,4(1X,I2.2),F11.7,2X,I1
+    std::string line = (version == 2) ? std::string() : std::string(1, '>');
 
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
     // const double gps_t = eph.sv_clock_correction(obs_time);
@@ -2495,31 +2498,62 @@ void add_obs_epoch_record(std::fstream& out, const boost::posix_time::ptime& sys
 
     line += rightJustify(std::to_string(number_satellites), 3);
 
-    // Receiver clock offset (optional): 6X,F15.12 in RINEX 3.02 and 4.02
-    if (version >= 3 && std::isfinite(receiver_clock_offset_s))
+    // Receiver clock offset (optional): F12.9 in RINEX 2.11, F15.12 in RINEX
+    // 3.02 and 4.02. Left blank if it is not available or does not fit
+    const std::string::size_type offset_width = (version == 2) ? 12 : 15;
+    std::string offset;
+    if (std::isfinite(receiver_clock_offset_s))
         {
-            const std::string offset = asString(receiver_clock_offset_s, 12);
-            if (offset.size() <= 15)
+            offset = asString(receiver_clock_offset_s, (version == 2) ? 9 : 12);
+            if (offset.size() > offset_width)
                 {
-                    line += std::string(6, ' ');
-                    line += rightJustify(offset, 15);
+                    offset.clear();
                 }
         }
 
     if (version == 2)
         {
+            // List of satellites, 12(A1,I2) per line, with the receiver clock
+            // offset closing the first line. Continuation lines: 32X,12(A1,I2)
+            std::vector<std::string> lines;
+            int32_t satellites_in_line = 0;
             for (const auto& it : constel_observables)
                 {
                     for (const auto& observables_iter : it.second)
                         {
+                            if (satellites_in_line == 12)
+                                {
+                                    lines.push_back(line);
+                                    line = std::string(32, ' ');
+                                    satellites_in_line = 0;
+                                }
                             line += it.first;
                             if (static_cast<int32_t>(observables_iter.first) < 10)
                                 {
                                     line += std::string(1, '0');
                                 }
                             line += std::to_string(static_cast<int32_t>(observables_iter.first));
+                            satellites_in_line++;
                         }
                 }
+            lines.push_back(line);
+            if (!offset.empty())
+                {
+                    lines.front().resize(68, ' ');
+                    lines.front() += rightJustify(offset, offset_width);
+                }
+            for (auto& epoch_line : lines)
+                {
+                    epoch_line.resize(80, ' ');
+                    out << epoch_line << '\n';
+                }
+            return;
+        }
+
+    if (!offset.empty())
+        {
+            line += std::string(6, ' ');
+            line += rightJustify(offset, offset_width);
         }
 
     line += std::string(80 - line.size(), ' ');
@@ -4480,15 +4514,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out,
     add_obs_time_first_obs(out, time_constellation, system_time, seconds);
 
     // -------- RCV CLOCK OFFS APPL
-    // Required in RINEX 3.02 and 4.02 if the epoch records report the receiver
-    // clock offset
-    if (d_version >= 3)
-        {
-            std::string line = rightJustify(receiver_clock_offset_applied ? "1" : "0", 6);
-            line.resize(60, ' ');
-            line += leftJustify("RCV CLOCK OFFS APPL", 20);
-            out << line << '\n';
-        }
+    // Required if the epoch records report the receiver clock offset
+    std::string clock_offset_line = rightJustify(receiver_clock_offset_applied ? "1" : "0", 6);
+    clock_offset_line.resize(60, ' ');
+    clock_offset_line += leftJustify("RCV CLOCK OFFS APPL", 20);
+    out << clock_offset_line << '\n';
 
     // -------- SYS / PHASE SHIFT
     // Mandatory in RINEX 3.02 (section 9.1). Tracking and telemetry decoding

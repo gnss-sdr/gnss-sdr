@@ -93,6 +93,7 @@
 #include <iomanip>                      // for put_time, setprecision
 #include <iostream>                     // for operator<<
 #include <iterator>                     // for make_move_iterator
+#include <limits>                       // for numeric_limits
 #include <locale>                       // for locale
 #include <sstream>                      // for ostringstream
 #include <stdexcept>                    // for length_error
@@ -3462,7 +3463,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             d_gnss_observables_map_t0 = d_gnss_observables_map_t1;
                                             d_rx_clock_offset_t0_s = d_rx_clock_offset_t1_s;
-                                            d_rx_clock_offset_t1_s = Rx_clock_offset_s;
+                                            // NaN (blank RINEX field) when the offset has no clock
+                                            // reference; it propagates through the interpolation
+                                            d_rx_clock_offset_t1_s = d_internal_pvt_solver->time_offset_referenced() ? Rx_clock_offset_s : std::numeric_limits<double>::quiet_NaN();
                                             apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s,
                                                 d_internal_pvt_solver->get_clock_drift_ppm() * 1e-6);
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
@@ -3507,7 +3510,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     else
                                         {
-                                            d_rinex_clock_offset_s = Rx_clock_offset_s;
+                                            d_rinex_clock_offset_s = d_internal_pvt_solver->time_offset_referenced() ? Rx_clock_offset_s : std::numeric_limits<double>::quiet_NaN();
                                             d_rx_time = d_gnss_observables_map.begin()->second.RX_time;
                                             current_RX_time_ms = static_cast<uint32_t>(d_rx_time * 1000.0);
                                             if (current_RX_time_ms % d_output_rate_ms == 0)
@@ -3778,7 +3781,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     if (d_rinex_output_enabled)
                                         {
                                             d_rp->print_rinex_annotation(d_user_pvt_solver.get(), d_gnss_observables_map, d_rx_time, flag_write_RINEX_obs_output,
-                                                d_rinex_clock_offset_s, d_enable_rx_clock_correction);
+                                                d_rinex_clock_offset_s, d_enable_rx_clock_correction && d_internal_pvt_solver->time_offset_referenceable());
                                         }
                                     if (d_rtcm_enabled)
                                         {

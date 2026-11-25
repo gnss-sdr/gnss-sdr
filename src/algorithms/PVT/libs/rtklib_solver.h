@@ -163,6 +163,25 @@ public:
         return d_has_corrected_satellites_used;
     }
 
+    //! true if the receiver clock offset can be referenced to the time system
+    //! of the RINEX observation files: GPS time if GPS signals are enabled,
+    //! Galileo time if RINEX files use it, or QZSS time for QZSS-only receivers
+    //! sharing the GPS clock state. Not yet for GLONASS and BeiDou time
+    inline bool time_offset_referenceable() const
+    {
+        return d_time_offset_ref_gps_clock || d_time_offset_ref_galileo;
+    }
+
+    //! true if the last solution used a satellite of that reference time
+    //! system, so that get_time_offset_s() is the receiver clock offset with
+    //! respect to it. Otherwise RTKLIB absorbs the receiver clock into an
+    //! inter-system bias state, and the offset is referenced to another
+    //! system (or is about zero)
+    inline bool time_offset_referenced() const
+    {
+        return d_time_offset_referenced;
+    }
+
     /*!
      * \brief true if a solution rests on precise orbits and clocks: precise
      * products are loaded, or every satellite in the solution carries Galileo
@@ -540,6 +559,9 @@ private:
     // corrections in the last solution, and how many of them it used
     std::array<bool, MAXSAT> d_has_corrected_satellite{};
     uint8_t d_has_corrected_satellites_used{};
+    bool d_time_offset_referenced{};
+    bool d_time_offset_ref_gps_clock{};  // reference: the GPS clock state (dtr[0])
+    bool d_time_offset_ref_galileo{};    // reference: the Galileo clock (dtr[0] + dtr[2])
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
 };

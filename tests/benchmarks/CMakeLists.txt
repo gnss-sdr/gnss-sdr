@@ -115,6 +115,7 @@ add_benchmark(benchmark_copy)
 add_benchmark(benchmark_crypto core_libs Boost::headers ${EXTRA_BENCHMARK_DEPENDENCIES})
 # add_benchmark(benchmark_osnma core_libs Boost::headers ${EXTRA_BENCHMARK_DEPENDENCIES})
 add_benchmark(benchmark_detector core_system_parameters ${EXTRA_BENCHMARK_DEPENDENCIES})
+add_benchmark(benchmark_labsat_source signal_source_gr_blocks core_libs Gnuradio::blocks Gnuradio::runtime Boost::headers ${EXTRA_BENCHMARK_DEPENDENCIES})
 add_benchmark(benchmark_preamble core_system_parameters ${EXTRA_BENCHMARK_DEPENDENCIES})
 add_benchmark(benchmark_reed_solomon core_system_parameters ${EXTRA_BENCHMARK_DEPENDENCIES})
 # CPU baseline of the PCPS acquisition grid; adds the CUDA engine when ENABLE_CUDA=ON

@@ -79,7 +79,7 @@ private:
         double seconds_to_skip);
 
     static std::vector<double> generate_mapping(int qua);
-    static void write_samples_from_bitset(const std::bitset<64> &bs, int bit_offset, int qua, gr_complex &out);
+    static void write_samples_from_bytes(uint64_t bytes, uint64_t bit_offset, int qua, gr_complex &out);
     static void write_samples_ls4(uint64_t data_index, int out_index, int sample_count, int32_t qua, std::vector<uint64_t> &data, gr_complex *out_samples);
     static void read_file_register_to_local_endian(std::ifstream &binary_input_file, uint64_t &read_register);
     static bool are_equal_ignore_nonpositive(const std::vector<int32_t> &values);

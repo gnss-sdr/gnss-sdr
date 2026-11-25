@@ -239,6 +239,7 @@ class Gps_Ephemeris;
  *  .show_local_time_zone - (false)
  *  .enable_rx_clock_correction - (false)
  *  .max_clock_offset_ms - (40)
+ *  .disable_rx_time_correction - (false)
  */
 class Rtklib_Pvt : public PvtInterface
 {

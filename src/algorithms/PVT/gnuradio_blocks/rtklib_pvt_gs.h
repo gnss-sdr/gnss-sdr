@@ -398,6 +398,7 @@ private:
     const int32_t d_display_rate_ms;
     const int32_t d_report_rate_ms;
     const int32_t d_max_obs_block_rx_clock_offset_ms;
+    const bool d_disable_rx_time_correction;
 
     const uint32_t d_nchannels;
     const uint32_t d_signal_enabled_flags;

@@ -83,6 +83,7 @@ public:
     int32_t rinexobs_rate_ms = 0;
     int32_t an_rate_ms = 20;
     int32_t max_obs_block_rx_clock_offset_ms = 40;
+    bool disable_rx_time_correction = false;
     int32_t ref_gps_week = 0;  // reference GPS week to resolve the mod-1024 week rollover in post-processing (0: use system clock)
     int udp_eph_port = 0;
     int rtk_trace_level = 0;

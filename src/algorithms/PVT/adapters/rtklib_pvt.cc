@@ -940,6 +940,9 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // Set maximum clock offset allowed if pvt_output_parameters.enable_rx_clock_correction = false
     pvt_output_parameters.max_obs_block_rx_clock_offset_ms = configuration->property(role + ".max_clock_offset_ms", pvt_output_parameters.max_obs_block_rx_clock_offset_ms);
 
+    // Keep the receiver time set from the telemetry TOW, even if it is off the Time solution
+    pvt_output_parameters.disable_rx_time_correction = configuration->property(role + ".disable_rx_time_correction", pvt_output_parameters.disable_rx_time_correction);
+
     // Source timetag
     pvt_output_parameters.log_source_timetag = configuration->property(role + ".log_timetag", pvt_output_parameters.log_source_timetag);
     pvt_output_parameters.log_source_timetag_file = configuration->property(role + ".log_source_timetag_file", pvt_output_parameters.log_source_timetag_file);

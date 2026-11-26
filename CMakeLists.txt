@@ -1849,7 +1849,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     if("${GNSSSDR_ARMADILLO_LOCAL_VERSION}" MATCHES "12.8")
         ExternalProject_Add(armadillo-${armadillo_RELEASE}
             PREFIX ${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-            GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
+            GIT_REPOSITORY https://gitlab.com/armadillo-lib/armadillo-code
             GIT_TAG ${armadillo_BRANCH}
             UPDATE_COMMAND ""
             SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
@@ -1868,7 +1868,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     else()
         ExternalProject_Add(armadillo-${armadillo_RELEASE}
             PREFIX ${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-            GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
+            GIT_REPOSITORY https://gitlab.com/armadillo-lib/armadillo-code
             GIT_TAG ${armadillo_BRANCH}
             UPDATE_COMMAND ""
             SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}

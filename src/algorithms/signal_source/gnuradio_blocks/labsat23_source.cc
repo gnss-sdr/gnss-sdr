@@ -237,15 +237,10 @@ std::vector<double> labsat23_source::generate_mapping(int qua)
 }
 
 
-void labsat23_source::write_samples_from_bitset(const std::bitset<64> &bs, int bit_offset, int qua, gr_complex &out)
+void labsat23_source::write_samples_from_bytes(uint64_t bytes, uint64_t bit_offset, int qua, gr_complex &out)
 {
-    const auto extract_bits = [&](int start, int count) {
-        unsigned val = 0;
-        for (int i = 0; i < count; ++i)
-            {
-                val = (val << 1) | bs[63 - start - i];
-            }
-        return val;
+    const auto extract_bits = [&](uint64_t start, uint64_t count) {
+        return (bytes >> (64 - start - count)) & ((1 << count) - 1);
     };
 
     const auto i_bits = extract_bits(bit_offset, qua);
@@ -273,9 +268,8 @@ void labsat23_source::write_samples_ls4(uint64_t data_index, int out_index, int 
             // For 12 bit QUA, write 48 (MSBs) bits (2x IQ samples) and then shift left and add new data for next write (read 3 registers of 64 bits)
 
             const auto write_value = [qua, out_samples](uint64_t value, uint64_t index) {
-                std::bitset<64> bs(value);
-                write_samples_from_bitset(bs, 0, qua, out_samples[index]);
-                write_samples_from_bitset(bs, 24, qua, out_samples[index + 1]);
+                write_samples_from_bytes(value, 0, qua, out_samples[index]);
+                write_samples_from_bytes(value, 24, qua, out_samples[index + 1]);
             };
 
             uint64_t value = data[buffer_index];
@@ -297,11 +291,10 @@ void labsat23_source::write_samples_ls4(uint64_t data_index, int out_index, int 
     else
         {
             const auto buffer_index = data_index % data.size();
-            const std::bitset<64> bs(data[buffer_index]);
 
             for (int32_t i = 0; i < sample_count; ++i)
                 {
-                    write_samples_from_bitset(bs, i * qua * 2, qua, out_samples[out_index + i]);
+                    write_samples_from_bytes(data[buffer_index], i * qua * 2, qua, out_samples[out_index + i]);
                 }
         }
 }
@@ -1195,8 +1188,6 @@ int labsat23_source::number_of_samples_per_ls3w_register() const
 
 void labsat23_source::decode_ls3w_register(uint64_t input, std::vector<gr_complex *> &out, size_t output_pointer) const
 {
-    std::bitset<64> bs(input);  // Earlier samples are written in the MSBs of the register
-
     int output_chan = 0;
     for (const auto channel_offset : d_ls3w_selected_channel_offset)
         {
@@ -1205,7 +1196,7 @@ void labsat23_source::decode_ls3w_register(uint64_t input, std::vector<gr_comple
             for (int i = 0; i < d_ls3w_samples_per_register; i++)
                 {
                     const int bit_offset = d_ls3w_spare_bits + i * d_ls3w_SFT + channel_offset;
-                    write_samples_from_bitset(bs, bit_offset, d_sample_quantization_bits, aux[output_pointer + i]);
+                    write_samples_from_bytes(input, bit_offset, d_sample_quantization_bits, aux[output_pointer + i]);
                 }
             output_chan++;
         }

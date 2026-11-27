@@ -89,7 +89,6 @@ bool build_rotated_bpsk_frame_from_iq(
     const std::vector<float>& history_i,
     const std::vector<float>& history_q,
     int32_t start_offset,
-    bool invert,
     std::vector<float>& frame_out)
 {
     if (history_i.size() < static_cast<size_t>(BEIDOU_CNAV1_FRAME_SYMBOLS) ||
@@ -114,50 +113,45 @@ bool build_rotated_bpsk_frame_from_iq(
     frame_out.resize(static_cast<size_t>(n));
     for (int32_t i = 0; i < n; i++)
         {
-            float sample = (z[static_cast<size_t>(i)] * rot).real();
-            if (invert)
-                {
-                    sample = -sample;
-                }
-            frame_out[static_cast<size_t>(i)] = sample;
+            frame_out[static_cast<size_t>(i)] = (z[static_cast<size_t>(i)] * rot).real();
         }
     return true;
 }
 
 
-bool probe_frame_from_iq_window(
-    const std::vector<float>& history_i,
-    const std::vector<float>& history_q,
-    const Beidou_Cnav1_Navigation_Message& nav,
-    int32_t expected_prn,
-    int32_t start_offset,
-    bool invert)
+// At the first valid symbol G0, the rotated window uses G0 in place of F0.
+// Both carry the first PRN BCH bit. Only the preceding, pre-lock prompts
+// still carry the pilot secondary-code sign.
+bool build_prelock_wrapped_frame(const Gnss_Synchro* window, int32_t prn, std::vector<float>& frame)
 {
-    std::vector<float> frame;
-    if (!build_rotated_bpsk_frame_from_iq(history_i, history_q, start_offset, invert, frame))
+    const int32_t n = BEIDOU_CNAV1_FRAME_SYMBOLS;
+    const auto& current = window[n - 1];
+    if (prn < 1 || prn > static_cast<int32_t>(BEIDOU_B1C_NUMBER_OF_PRNS) ||
+        current.PRN != static_cast<uint32_t>(prn) || current.fs <= 0 ||
+        !std::isfinite(current.Prompt_I))
         {
             return false;
         }
-    return nav.probe_subframe1_prn(frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, expected_prn);
-}
-
-
-bool decode_frame_from_iq_window(
-    const std::vector<float>& history_i,
-    const std::vector<float>& history_q,
-    Beidou_Cnav1_Navigation_Message& nav,
-    int32_t expected_prn,
-    int32_t start_offset,
-    bool invert,
-    int32_t* fail_stage = nullptr)
-{
-    std::vector<float> frame;
-    if (!build_rotated_bpsk_frame_from_iq(history_i, history_q, start_offset, invert, frame))
+    const auto* secondary = BEIDOU_B1C_PILOT_SECONDARY_CODE[prn - 1];
+    const double expected_samples = static_cast<double>(current.fs) * BEIDOU_B1C_CODE_PERIOD_MS / 1000.0;
+    const double tolerance = std::max(2.0, expected_samples * 0.01);
+    frame.resize(n);
+    frame[0] = current.Prompt_I;
+    for (int32_t i = 1; i < n; ++i)
         {
-            return false;
+            const auto& symbol = window[i - 1];
+            const auto& next = window[i];
+            if (symbol.PRN != current.PRN || symbol.fs != current.fs ||
+                symbol.Flag_valid_symbol_output || !std::isfinite(symbol.Prompt_I) ||
+                next.Tracking_sample_counter <= symbol.Tracking_sample_counter ||
+                std::abs(static_cast<double>(next.Tracking_sample_counter - symbol.Tracking_sample_counter) -
+                         expected_samples) > tolerance)
+                {
+                    return false;
+                }
+            frame[i] = secondary[i] == '0' ? symbol.Prompt_I : -symbol.Prompt_I;
         }
-    // LLR scaling is done in Beidou_Cnav1_Navigation_Message::decode_frame().
-    return nav.decode_frame_symbols(frame.data(), BEIDOU_CNAV1_FRAME_SYMBOLS, expected_prn, fail_stage);
+    return true;
 }
 
 
@@ -440,6 +434,7 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                 {
                     bool invert = false;
                     int32_t matched_offset = -1;
+                    bool preceding_frame = false;
                     if (d_stat == 0 && (just_locked_event || periodic_reacq))
                         {
                             const int32_t expected_prn_scan = d_satellite.get_PRN();
@@ -466,27 +461,47 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                                                         }
                                                     const int32_t start_offset =
                                                         (candidate_offset + delta + BEIDOU_CNAV1_FRAME_SYMBOLS) % BEIDOU_CNAV1_FRAME_SYMBOLS;
+                                                    const bool preceding_candidate = just_locked_event && start_offset == hist - 1;
+                                                    std::vector<float> frame;
+                                                    if (preceding_candidate)
+                                                        {
+                                                            // Require the pilot match itself to identify G0,
+                                                            // rather than a nearby offset from the loose scan.
+                                                            if (candidate_offset != start_offset ||
+                                                                !build_prelock_wrapped_frame(frame_window, expected_prn_scan, frame))
+                                                                {
+                                                                    continue;
+                                                                }
+                                                        }
+                                                    else if (!build_rotated_bpsk_frame_from_iq(history_i, history_q, start_offset, frame))
+                                                        {
+                                                            continue;
+                                                        }
+
                                                     for (int inv_i = 0; inv_i < 2; ++inv_i)
                                                         {
                                                             if (full_decode_attempts >= B1C_SCAN_MAX_FULL_DECODES)
                                                                 {
                                                                     break;
                                                                 }
-                                                            const bool inv = (inv_i != 0);
-                                                            if (!probe_frame_from_iq_window(
-                                                                    history_i, history_q, d_nav, expected_prn_scan, start_offset, inv))
+                                                            if (inv_i != 0)
+                                                                {
+                                                                    for (auto& symbol : frame)
+                                                                        {
+                                                                            symbol = -symbol;
+                                                                        }
+                                                                }
+                                                            if (!d_nav.probe_subframe1_prn(frame.data(), hist, expected_prn_scan))
                                                                 {
                                                                     continue;
                                                                 }
-                                                            int32_t fail_stage = -1;
                                                             ++full_decode_attempts;
-                                                            if (decode_frame_from_iq_window(
-                                                                    history_i, history_q, d_nav, expected_prn_scan, start_offset, inv,
-                                                                    &fail_stage))
+                                                            if (d_nav.decode_frame_symbols(frame.data(), hist, expected_prn_scan))
                                                                 {
                                                                     frame_decoded = true;
-                                                                    invert = inv;
-                                                                    matched_offset = start_offset;
+                                                                    invert = inv_i != 0;
+                                                                    preceding_frame = preceding_candidate;
+                                                                    matched_offset = preceding_frame ? 0 : start_offset;
                                                                     break;
                                                                 }
                                                         }
@@ -543,10 +558,15 @@ int beidou_b1c_telemetry_decoder_gs::general_work(
                         {
                             d_CRC_error_counter = 0;
                             d_flag_PLL_180_deg_phase_locked = invert;
-                            d_frame_sync_index = d_sample_counter;
+                            // A first-lock wrap decodes F at G0, one symbol after F ended.
+                            d_frame_sync_index = d_sample_counter - (preceding_frame ? 1U : 0U);
                             const int32_t frame_soh_offset = (matched_offset >= 0) ? matched_offset : 0;
                             d_TOW_at_current_symbol_ms = compute_b1c_tow_ms_at_current_symbol(
                                 d_nav.get_tow_s(), frame_soh_offset, d_symbol_duration_ms);
+                            if (preceding_frame)
+                                {
+                                    d_TOW_at_current_symbol_ms = (d_TOW_at_current_symbol_ms + d_symbol_duration_ms) % 604800000U;
+                                }
                             d_flag_valid_word = true;
                             if (d_dump_crc_stats && d_Tlm_CRC_Stats)
                                 {

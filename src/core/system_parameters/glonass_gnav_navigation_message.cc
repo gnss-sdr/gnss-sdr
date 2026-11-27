@@ -468,6 +468,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
                     gnav_utc_model.d_tau_c = static_cast<double>(read_navigation_signed(string_bits, TAU_C)) * TWO_N31;
                     gnav_utc_model.d_N_4 = static_cast<double>(read_navigation_unsigned(string_bits, N_4));
                     gnav_utc_model.d_tau_gps = static_cast<double>(read_navigation_signed(string_bits, TAU_GPS)) * TWO_N30;
+                    gnav_utc_model.valid = true;
                     gnav_ephemeris.d_l5th_n = read_navigation_bool(string_bits, ALM_L_N);
 
                     flag_utc_model_str_5 = true;

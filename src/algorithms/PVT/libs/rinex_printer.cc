@@ -443,6 +443,57 @@ int32_t expand_truncated_week(int32_t week, int32_t reference_week, int32_t modu
 }
 
 
+/*
+ * Changes the sign of a value, keeping a zero positive so that it is not
+ * written as a negative zero
+ */
+double negated(double value)
+{
+    return value == 0.0 ? 0.0 : -value;
+}
+
+
+/*
+ * Continuous Galileo week number as used in RINEX files, which is aligned to
+ * the continuous GPS week number (GAL week = GST week + 1024 + n * 4096)
+ */
+int32_t galileo_continuous_week(int32_t gst_week)
+{
+    return gst_week + 1024 + 4096 * ((gst_week + 1024) / 4096);
+}
+
+
+/*
+ * Continuous GPS week number of an epoch
+ */
+int32_t continuous_gps_week(const boost::posix_time::ptime& epoch)
+{
+    return static_cast<int32_t>((epoch.date() - boost::gregorian::date(1980, 1, 6)).days() / 7);
+}
+
+
+/*
+ * Number of weeks from the week in which a navigation message was transmitted
+ * to the week of one of its reference times (toe, toc), both given in seconds
+ * of week. The reference time is within half a week of the transmission time
+ * (see IS-GPS-200, Section 20.3.3.4.3)
+ */
+int32_t reference_week_offset(double reference_tow_s, double transmission_tow_s)
+{
+    const double half_week_s = 302400.0;
+    const double dt = reference_tow_s - transmission_tow_s;
+    if (dt < -half_week_s)
+        {
+            return 1;
+        }
+    if (dt > half_week_s)
+        {
+            return -1;
+        }
+    return 0;
+}
+
+
 Constellation_Observables_Map get_constellation_observables_map(
     const Observation_Schema& schema,
     const std::map<int32_t, Gnss_Synchro>& observables,
@@ -1296,19 +1347,40 @@ void add_obs_observer_agency(std::fstream& out)
 }
 
 
+/*
+ * Fits a GNSS-SDR version string into the 20 characters of the receiver
+ * version field. Development builds are named <release>.git-<branch>-<commit>:
+ * if that is too long, the branch name is dropped, since the commit already
+ * identifies the build
+ */
+std::string get_receiver_version(std::string version)
+{
+    const std::string::size_type field_width = 20;
+    if (version.length() > field_width)
+        {
+            const std::string git_tag(".git-");
+            const auto git_pos = version.find(git_tag);
+            const auto commit_pos = version.rfind('-');
+            if (git_pos != std::string::npos && commit_pos >= git_pos + git_tag.length())
+                {
+                    version = version.substr(0, git_pos + git_tag.length()) + version.substr(commit_pos + 1);
+                }
+            if (version.length() > field_width)
+                {
+                    version.resize(field_width);
+                }
+        }
+    return version;
+}
+
+
 void add_obs_rec_type(std::fstream& out)
 {
     std::string line;
-    std::string gnss_sdr_version(GNSS_SDR_VERSION);
     // -------- Line  REC / TYPE VERS
     line += leftJustify("GNSS-SDR", 20);           // add flag and property
     line += leftJustify("Software Receiver", 20);  // add flag and property
-    // line += leftJustify(google::VersionString(), 20); // add flag and property
-    if (gnss_sdr_version.length() > 20)
-        {
-            gnss_sdr_version.resize(9, ' ');
-        }
-    line += leftJustify(gnss_sdr_version, 20);
+    line += leftJustify(get_receiver_version(GNSS_SDR_VERSION), 20);
     line += leftJustify("REC # / TYPE / VERS", 20);
     lengthCheck(line);
     out << line << '\n';
@@ -1721,9 +1793,11 @@ std::string get_gps_time_corr_line(const Gps_CNAV_Utc_Model& utc_model)
 }
 
 
-std::string get_galileo_time_corr_line(const Galileo_Utc_Model& utc_model)
+std::string get_galileo_time_corr_line(const Galileo_Utc_Model& utc_model, int32_t ref_week)
 {
-    return get_time_corr_line("GAUT", utc_model.A0, utc_model.A1, &utc_model.tot, &utc_model.WNot);
+    // The reference week is broadcast modulo 256; RINEX requires a continuous number
+    const int32_t wn_ot = expand_truncated_week(utc_model.WNot, ref_week, 256);
+    return get_time_corr_line("GAUT", utc_model.A0, utc_model.A1, &utc_model.tot, &wn_ot);
 }
 
 
@@ -1742,20 +1816,26 @@ std::string get_beidou_time_corr_line(const Beidou_Cnav1_Utc_Model& utc_model)
 
 std::string get_glonass_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
 {
-    // The GLUT correction is defined as -TauC (see RINEX specification, Table A5)
-    return get_time_corr_line("GLUT", -utc_model.d_tau_c, 0.0, nullptr, nullptr);
+    // TauC is stored as -TauC (see RINEX 3.02, Section 8.3.1), and T and W
+    // are zero for GLONASS (Table A5)
+    const int32_t zero = 0;
+    return get_time_corr_line("GLUT", negated(utc_model.d_tau_c), 0.0, &zero, &zero);
 }
 
 
-std::string get_gps_to_galileo_time_corr_line(const Galileo_Utc_Model& utc_model)
+std::string get_gps_to_galileo_time_corr_line(const Galileo_Utc_Model& utc_model, int32_t ref_week)
 {
-    return get_time_corr_line("GPGA", utc_model.A_0G, utc_model.A_1G, &utc_model.t_0G, &utc_model.WN_0G);
+    // The reference week is broadcast modulo 64; RINEX requires a continuous number
+    const int32_t wn_0g = expand_truncated_week(utc_model.WN_0G, ref_week, 64);
+    return get_time_corr_line("GPGA", utc_model.A_0G, utc_model.A_1G, &utc_model.t_0G, &wn_0g);
 }
 
 
 std::string get_glonass_to_gps_time_corr_line(const Glonass_Gnav_Utc_Model& utc_model)
 {
-    return get_time_corr_line("GLGP", utc_model.d_tau_gps, 0.0, nullptr, nullptr);
+    // T and W are zero for GLONASS (see RINEX 3.02, Table A5)
+    const int32_t zero = 0;
+    return get_time_corr_line("GLGP", utc_model.d_tau_gps, 0.0, &zero, &zero);
 }
 
 
@@ -1773,7 +1853,7 @@ std::string get_glonass_time_corr_line_v2(const Glonass_Gnav_Utc_Model& utc_mode
     line += rightJustify(month, 6);
     line += rightJustify(day, 6);
     line += std::string(3, ' ');
-    line += rightJustify(doub2for(-utc_model.d_tau_c, 19, 2), 19);
+    line += rightJustify(doub2for(negated(utc_model.d_tau_c), 18, 2), 19);
     line += std::string(20, ' ');
     line += leftJustify("CORR TO SYSTEM TIME", 20);
     lengthCheck(line);
@@ -1806,9 +1886,11 @@ std::string get_leap_second_line(const Gps_CNAV_Utc_Model& utc_model)
 }
 
 
-std::string get_leap_second_line(const Galileo_Utc_Model& utc_model)
+std::string get_leap_second_line(const Galileo_Utc_Model& utc_model, int32_t ref_week)
 {
-    return get_leap_second_line(utc_model.Delta_tLS, utc_model.Delta_tLSF, utc_model.WN_LSF, utc_model.DN);
+    // WN_LSF is broadcast modulo 256; RINEX requires a continuous number
+    const int32_t wn_lsf = expand_truncated_week(utc_model.WN_LSF, ref_week, 256);
+    return get_leap_second_line(utc_model.Delta_tLS, utc_model.Delta_tLSF, wn_lsf, utc_model.DN);
 }
 
 
@@ -2959,6 +3041,10 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
             return;
         }
 
+    // Continuous week number used to expand the truncated week numbers of the
+    // Galileo UTC and GGTO parameters
+    const int32_t galileo_ref_week = has_galileo_eph ? galileo_continuous_week(galileo_ephemeris_iter->second.WN) : continuous_gps_week(system_time);
+
     if (!d_rinex_header_written)  // & we have utc data in nav message!
         {
             std::vector<std::string> iono_lines;
@@ -3026,32 +3112,39 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                         }
                     if (d_version == 3 && pvt_solver->galileo_utc_model.flag_utc_model)
                         {
-                            time_corr_lines.emplace_back(get_galileo_time_corr_line(pvt_solver->galileo_utc_model));
+                            time_corr_lines.emplace_back(get_galileo_time_corr_line(pvt_solver->galileo_utc_model, galileo_ref_week));
                             if (pvt_solver->galileo_utc_model.flag_GGTO)
                                 {
-                                    time_corr_lines.emplace_back(get_gps_to_galileo_time_corr_line(pvt_solver->galileo_utc_model));
+                                    time_corr_lines.emplace_back(get_gps_to_galileo_time_corr_line(pvt_solver->galileo_utc_model, galileo_ref_week));
                                 }
                         }
 
                     if (system_time_str == "GAL" && pvt_solver->galileo_utc_model.flag_utc_model)
                         {
-                            leap_second_line = get_leap_second_line(pvt_solver->galileo_utc_model);
+                            leap_second_line = get_leap_second_line(pvt_solver->galileo_utc_model, galileo_ref_week);
                         }
                 }
             if (d_flags.has_glonass)
                 {
-                    if (d_version == 2 && pvt_solver->glonass_gnav_utc_model.valid)
+                    if (d_version == 2)
                         {
-                            auto time_corr_line = get_glonass_time_corr_line_v2(pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                            std::vector<std::string> glonass_time_corr_lines;
+                            if (pvt_solver->glonass_gnav_utc_model.valid)
+                                {
+                                    glonass_time_corr_lines.emplace_back(get_glonass_time_corr_line_v2(pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second));
+                                }
 
                             if (navfilename != navGlofilename)
                                 {
-                                    rinex_nav_header(navGloFile, {}, {std::move(time_corr_line)}, {});
+                                    // GPS + GLONASS: the GLONASS navigation data go to a file
+                                    // of their own, which needs its header whether or not the
+                                    // system time correction has been received
+                                    rinex_nav_header(navGloFile, {}, glonass_time_corr_lines, {});
                                     output_navfilename.push_back(navGlofilename);
                                 }
                             else
                                 {
-                                    time_corr_lines.emplace_back(std::move(time_corr_line));
+                                    time_corr_lines.insert(time_corr_lines.end(), glonass_time_corr_lines.cbegin(), glonass_time_corr_lines.cend());
                                 }
                         }
                     else if (d_version == 3 && pvt_solver->glonass_gnav_utc_model.valid)
@@ -3182,24 +3275,39 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                     if (!d_rinex_header_galileo_updated && pvt_solver->galileo_utc_model.flag_utc_model && pvt_solver->galileo_iono.valid)
                         {
                             nav_header_info.emplace_back("GAL", "IONOSPHERIC CORR", get_galileo_iono_alpha_line(pvt_solver->galileo_iono));
-                            nav_header_info.emplace_back("GAUT", "TIME SYSTEM CORR", get_galileo_time_corr_line(pvt_solver->galileo_utc_model));
+                            nav_header_info.emplace_back("GAUT", "TIME SYSTEM CORR", get_galileo_time_corr_line(pvt_solver->galileo_utc_model, galileo_ref_week));
                             if (pvt_solver->galileo_utc_model.flag_GGTO)
                                 {
-                                    nav_header_info.emplace_back("GPGA", "TIME SYSTEM CORR", get_gps_to_galileo_time_corr_line(pvt_solver->galileo_utc_model));
+                                    nav_header_info.emplace_back("GPGA", "TIME SYSTEM CORR", get_gps_to_galileo_time_corr_line(pvt_solver->galileo_utc_model, galileo_ref_week));
                                 }
                             d_rinex_header_galileo_updated = true;
 
                             if (system_time_str == "GAL")
                                 {
-                                    leap_second_line = get_leap_second_line(pvt_solver->galileo_utc_model);
+                                    leap_second_line = get_leap_second_line(pvt_solver->galileo_utc_model, galileo_ref_week);
                                 }
                         }
+                    bool glonass_nav_file_updated = false;
                     if (!d_rinex_header_glonass_updated && pvt_solver->glonass_gnav_utc_model.valid)
                         {
-                            if (d_version == 3)  // TODO handle version 2
+                            if (d_version == 3)
                                 {
                                     nav_header_info.emplace_back("GLUT", "TIME SYSTEM CORR", get_glonass_time_corr_line(pvt_solver->glonass_gnav_utc_model));
                                     nav_header_info.emplace_back("GLGP", "TIME SYSTEM CORR", get_glonass_to_gps_time_corr_line(pvt_solver->glonass_gnav_utc_model));
+                                }
+                            else
+                                {
+                                    const NavHeaderInfo info("", "CORR TO SYSTEM TIME", get_glonass_time_corr_line_v2(pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second));
+                                    if (navfilename != navGlofilename)
+                                        {
+                                            // GPS + GLONASS: the GLONASS navigation data are in a file of their own
+                                            update_nav_header_from_info(navGloFile, navGlofilename, {info});
+                                            glonass_nav_file_updated = true;
+                                        }
+                                    else
+                                        {
+                                            nav_header_info.push_back(info);
+                                        }
                                 }
                             d_rinex_header_glonass_updated = true;
                         }
@@ -3230,18 +3338,21 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver,
                                 }
                         }
 
-                    if (nav_header_info.empty())
+                    if (nav_header_info.empty() && !glonass_nav_file_updated)
                         {
                             return;
                         }
 
-                    if (!leap_second_line.empty())
+                    if (!nav_header_info.empty())
                         {
-                            update_obs_header(obsFile, leap_second_line);
-                            nav_header_info.emplace_back("", "LEAP SECONDS", std::move(leap_second_line));
-                        }
+                            if (!leap_second_line.empty())
+                                {
+                                    update_obs_header(obsFile, leap_second_line);
+                                    nav_header_info.emplace_back("", "LEAP SECONDS", std::move(leap_second_line));
+                                }
 
-                    update_nav_header_from_info(navFile, navfilename, nav_header_info);
+                            update_nav_header_from_info(navFile, navfilename, nav_header_info);
+                        }
                     std::cout << "The RINEX Navigation file header has been updated with UTC and IONO info.\n";
                     d_rinex_header_updated = d_rinex_header_gps_updated && d_rinex_header_galileo_updated && d_rinex_header_glonass_updated &&
                                              d_rinex_header_beidou_iono_updated && d_rinex_header_beidou_time_updated;
@@ -3360,8 +3471,9 @@ void Rinex_Printer::log_rinex_nav_v4_aux_records(const Rtklib_Solver* pvt_solver
                             d_last_gps_cnav_sto_signature = signature;
                             records_written = true;
                         }
-                    if (system_time_str == "GPS" && !d_flags.check_any_enabled(GPS_1C))
+                    if (system_time_str == "GPS")
                         {
+                            // Preferred over LNAV, which truncates the week of the leap second event
                             leap_second_line = get_leap_second_line(utc_model);
                         }
                 }
@@ -3454,8 +3566,9 @@ void Rinex_Printer::log_rinex_nav_v4_aux_records(const Rtklib_Solver* pvt_solver
                             d_last_qzss_cnav_sto_signature = signature;
                             records_written = true;
                         }
-                    if (system_time_str == "QZS" && !d_flags.check_any_enabled(QZS_J1))
+                    if (system_time_str == "QZS")
                         {
+                            // Preferred over LNAV, which truncates the week of the leap second event
                             leap_second_line = get_leap_second_line(utc_model);
                         }
                 }
@@ -3495,7 +3608,7 @@ void Rinex_Printer::log_rinex_nav_v4_aux_records(const Rtklib_Solver* pvt_solver
                     if (signature != d_last_galileo_sto_signature)
                         {
                             // The continuous GAL week number is aligned to the continuous GPS week number.
-                            const int32_t gal_continuous_week = eph.WN + 1024 + 4096 * ((eph.WN + 1024) / 4096);
+                            const int32_t gal_continuous_week = galileo_continuous_week(eph.WN);
                             const int32_t wn_ot = expand_truncated_week(utc_model.WNot, gal_continuous_week, 256);
                             add_sto_record(out, satelliteSystem.at("Galileo"), "IFNV", gps_time_to_ptime(wn_ot, utc_model.tot),
                                 "GAUT", "UTCGAL", tow, utc_model.A0, utc_model.A1, 0.0);
@@ -3510,7 +3623,7 @@ void Rinex_Printer::log_rinex_nav_v4_aux_records(const Rtklib_Solver* pvt_solver
                         }
                     if (system_time_str == "GAL")
                         {
-                            leap_second_line = get_leap_second_line(utc_model);
+                            leap_second_line = get_leap_second_line(utc_model, galileo_continuous_week(eph.WN));
                         }
                 }
         }
@@ -3526,9 +3639,9 @@ void Rinex_Printer::log_rinex_nav_v4_aux_records(const Rtklib_Solver* pvt_solver
                     const double utc_tow = static_cast<double>(p_utc_time.date().day_of_week()) * 86400.0 +
                                            static_cast<double>(p_utc_time.time_of_day().total_seconds());
                     add_sto_record(out, satelliteSystem.at("GLONASS"), "FDMA", day_start,
-                        "GLUT", "UTC(SU)", utc_tow, -utc_model.d_tau_c, 0.0, 0.0);
+                        "GLUT", "UTC(SU)", utc_tow, negated(utc_model.d_tau_c), 0.0, 0.0);
                     add_sto_record(out, satelliteSystem.at("GLONASS"), "FDMA", day_start,
-                        "GLGP", "", utc_tow, -utc_model.d_tau_gps, 0.0, 0.0);
+                        "GLGP", "", utc_tow, negated(utc_model.d_tau_gps), 0.0, 0.0);
                     d_last_glonass_sto_signature = signature;
                     records_written = true;
                 }
@@ -3657,8 +3770,15 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
                                  << " in RINEX output; reconstructed block as " << satellite_block;
                 }
 
+            // The broadcast week number is that of the transmission. Toc and Toe
+            // may belong to the next or to the previous week
+            const int32_t tx_week = adjgpsweek(eph.WN, d_ref_gps_week);
+            const auto tx_tow = static_cast<double>(eph.tow);
+            const int32_t toc_week = tx_week + reference_week_offset(static_cast<double>(eph.toc), tx_tow);
+            const int32_t toe_week = tx_week + reference_week_offset(static_cast<double>(eph.toe), tx_tow);
+
             // -------- SV / EPOCH / SV CLK
-            const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(eph, eph.toc);
+            const boost::posix_time::ptime p_utc_time = gps_time_to_ptime(toc_week, static_cast<double>(eph.toc));
 
             if (d_version == 2)
                 {
@@ -3720,12 +3840,8 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
 
             // -------- BROADCAST ORBIT - 5
 
-            auto GPS_week_continuous_number = static_cast<double>(adjgpsweek(eph.WN, d_ref_gps_week));
             // This week goes with Toe. This is different from the GPS week in the original satellite message!
-            if (eph.toe < 7200.0)
-                {
-                    GPS_week_continuous_number += 1.0;
-                }
+            const auto GPS_week_continuous_number = static_cast<double>(toe_week);
 
             const auto codes_on_l2 = static_cast<double>(eph.code_on_L2);
             const auto l2_p_data_flag = is_qzss_prn(eph.PRN) ? 1.0 : static_cast<double>(eph.L2_P_data_flag);
@@ -3739,11 +3855,8 @@ void Rinex_Printer::log_rinex_nav_gps_nav(const std::map<int32_t, Gps_Ephemeris>
             out << get_nav_broadcast_orbit(&aux1, &aux2, &eph.TGD, &aux3, d_version) << '\n';
 
             // -------- BROADCAST ORBIT - 7
-            double tx_time_of_message = eph.tow;
-            if (eph.toe < 7200.0)
-                {
-                    tx_time_of_message -= 604800.0;  // see RINEX 3.03 section 6.13
-                }
+            // Referred to the week reported in BROADCAST ORBIT - 5 (see RINEX 3.02, Table A6)
+            const double tx_time_of_message = tx_tow + 604800.0 * static_cast<double>(tx_week - toe_week);
 
             const double fit_d = is_qzss_prn(eph.PRN) ? static_cast<double>(eph.fit_interval_flag) : gps_fit_interval_hours(eph, satellite_block);
             out << get_nav_broadcast_orbit(&tx_time_of_message, &fit_d, nullptr, nullptr, d_version) << '\n';
@@ -4003,34 +4116,37 @@ void Rinex_Printer::log_rinex_nav_glo_gnav(const std::map<int32_t, Glonass_Gnav_
             // -------- SV / EPOCH / SV CLK
             const boost::posix_time::ptime p_utc_time = eph.glot_to_utc(eph.d_t_b, 0.0);
 
+            // Message frame time in UTC (tk is given in seconds of the GLONASS
+            // day, which is offset 3 h from UTC)
+            const boost::posix_time::ptime p_frame_time_utc = eph.glot_to_utc(eph.d_t_k, 0.0);
+            const auto frame_seconds_of_day = static_cast<double>(p_frame_time_utc.time_of_day().total_seconds());
+
             if (d_version == 2)
                 {
                     line += rightJustify(std::to_string(eph.PRN), 2);
                     line += std::string(1, ' ');
                     line += get_datetime_v2(p_utc_time);
                     line += std::string(1, ' ');
-                    line += doub2for(-eph.d_tau_n, 18, 2);
+                    line += doub2for(negated(eph.d_tau_n), 18, 2);
                     line += std::string(1, ' ');
                     line += doub2for(eph.d_gamma_n, 18, 2);
                     line += std::string(1, ' ');
-                    line += doub2for(eph.d_t_k, 18, 2);
+                    // Seconds of the UTC day (see RINEX 2.11, Table A11)
+                    line += doub2for(frame_seconds_of_day, 18, 2);
                     line += std::string(1, ' ');
                     lengthCheck(line);
                     out << line << '\n';
                 }
             if (d_version >= 3)
                 {
-                    // Message frame time in seconds of the UTC week (tk is given in
-                    // seconds of the GLONASS day, which is offset 3 h from UTC)
-                    const boost::posix_time::ptime p_frame_time_utc = eph.glot_to_utc(eph.d_t_k, 0.0);
+                    // Seconds of the UTC week
                     const auto frame_day_of_week = static_cast<double>(p_frame_time_utc.date().day_of_week());
-                    const auto frame_seconds_of_day = static_cast<double>(p_frame_time_utc.time_of_day().total_seconds());
                     const double message_frame_time = frame_day_of_week * 86400.0 + frame_seconds_of_day;
                     if (d_version == 4)
                         {
                             out << get_nav_record_header_line("EPH", sys_char, eph.PRN, "FDMA") << '\n';
                         }
-                    out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, -eph.d_tau_n, +eph.d_gamma_n, message_frame_time, d_version) << '\n';
+                    out << get_nav_sv_epoch_svclk_line(p_utc_time, sys_char, eph.PRN, negated(eph.d_tau_n), +eph.d_gamma_n, message_frame_time, d_version) << '\n';
                 }
             line.clear();
 
@@ -4345,6 +4461,13 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out,
         {
             type = "M: MIXED";
             constellation = "GNSS";
+        }
+
+    if (d_version == 2 && !d_flags.only_gps && !d_flags.only_glonass)
+        {
+            // A RINEX 2.11 navigation file holds a single constellation: in a
+            // GPS + GLONASS receiver, the GLONASS data go to a file of their own
+            constellation = (&out == &navGloFile) ? "GLONASS" : "GPS";
         }
 
     add_navigation_header_start(out, type, constellation, d_version, d_stringVersion);

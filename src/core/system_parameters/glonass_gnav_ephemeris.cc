@@ -21,6 +21,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/time_formatters.hpp>
 #include <cmath>
+#include <cstdint>
 #include <string>
 
 
@@ -44,7 +45,7 @@ boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(double off
             J = 4;
         }
 
-    const boost::posix_time::time_duration t(0, 0, offset_time + d_tau_c + d_tau_n);
+    const boost::posix_time::time_duration t = boost::posix_time::microseconds(static_cast<int64_t>(std::llround(offset_time * 1.0e6)));
     const boost::gregorian::date d1(d_yr - J + 1.0, 1, 1);
     const boost::gregorian::days d2(d_N_T - 1);
     boost::posix_time::ptime glonass_time(d1 + d2, t);
@@ -74,8 +75,8 @@ boost::posix_time::ptime Glonass_Gnav_Ephemeris::glot_to_utc(double offset_time,
             J = 4;
         }
 
-    const double tod = offset_time - glot2utc + glot2utc_corr + d_tau_n;
-    const boost::posix_time::time_duration t(0, 0, tod);
+    const double tod = offset_time - glot2utc + glot2utc_corr;
+    const boost::posix_time::time_duration t = boost::posix_time::microseconds(static_cast<int64_t>(std::llround(tod * 1.0e6)));
     const boost::gregorian::date d1(d_yr - J + 1.0, 1, 1);
     const boost::gregorian::days d2(d_N_T - 1);
     boost::posix_time::ptime utc_time(d1 + d2, t);

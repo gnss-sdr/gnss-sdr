@@ -208,6 +208,41 @@ uint16_t pack_single_2bit(const std::vector<gr_complex>& samples)
     return word;
 }
 
+uint64_t pack_ls4_2bit(const std::vector<std::pair<uint8_t, uint8_t>>& samples)
+{
+    uint64_t word = 0;
+    for (size_t i = 0; i < samples.size(); ++i)
+        {
+            const int offset = static_cast<int>(4 * i);
+            set_msb_bit(word, offset, (samples[i].first & 0x2U) != 0U);
+            set_msb_bit(word, offset + 1, (samples[i].first & 0x1U) != 0U);
+            set_msb_bit(word, offset + 2, (samples[i].second & 0x2U) != 0U);
+            set_msb_bit(word, offset + 3, (samples[i].second & 0x1U) != 0U);
+        }
+    return word;
+}
+
+std::array<uint64_t, 3> pack_ls4_12bit(const std::vector<std::pair<uint16_t, uint16_t>>& samples)
+{
+    std::array<uint64_t, 3> words{};
+    const auto write_component = [&words](int bit_offset, uint16_t value) {
+        for (int bit = 0; bit < 12; ++bit)
+            {
+                const int absolute_bit_offset = bit_offset + bit;
+                const bool is_set = (value & static_cast<uint16_t>(1U << (11 - bit))) != 0U;
+                set_msb_bit(words[absolute_bit_offset / 64], absolute_bit_offset % 64, is_set);
+            }
+    };
+
+    for (size_t i = 0; i < samples.size(); ++i)
+        {
+            const int bit_offset = static_cast<int>(24 * i);
+            write_component(bit_offset, samples[i].first);
+            write_component(bit_offset + 12, samples[i].second);
+        }
+    return words;
+}
+
 uint16_t pack_dual_1bit(const std::vector<gr_complex>& channel_a, const std::vector<gr_complex>& channel_b)
 {
     uint16_t word = 0;
@@ -304,8 +339,8 @@ void expect_complex_vector_eq(const std::vector<gr_complex>& expected, const std
     ASSERT_GE(actual.size(), expected.size());
     for (size_t i = 0; i < expected.size(); ++i)
         {
-            EXPECT_FLOAT_EQ(expected[i].real(), actual[i].real()) << "sample " << i;
-            EXPECT_FLOAT_EQ(expected[i].imag(), actual[i].imag()) << "sample " << i;
+            ASSERT_FLOAT_EQ(expected[i].real(), actual[i].real()) << "sample " << i;
+            ASSERT_FLOAT_EQ(expected[i].imag(), actual[i].imag()) << "sample " << i;
         }
 }
 
@@ -476,6 +511,215 @@ TEST(LabSat23SourceTest, DecodesLs3WidebandFromCorrectMsbOffset)
     expect_complex_vector_eq(channel_a, result.outputs[0]);
     expect_complex_vector_eq(channel_b, result.outputs[1]);
     expect_complex_vector_eq(channel_c, result.outputs[2]);
+
+    expect_remove(path);
+    expect_remove(ini_path);
+}
+
+
+TEST(LabSat23SourceTest, DecodesLs4TwoBitSamples)
+{
+    fs::path path = temp_path("labsat4_two_bit");
+    path.replace_extension(".LS4");
+    fs::path ini_path(path);
+    ini_path.replace_extension(".ini");
+
+    const std::vector<std::pair<uint8_t, uint8_t>> codes = {
+        {0, 0}, {1, 2}, {2, 3}, {3, 1}, {0, 2}, {1, 3}, {2, 0}, {3, 1},
+        {0, 3}, {1, 0}, {2, 1}, {3, 2}, {0, 1}, {1, 1}, {2, 2}, {3, 3}};
+    const std::vector<gr_complex> expected = {
+        gr_complex(0.5F, 0.5F), gr_complex(1.0F, -1.0F), gr_complex(-1.0F, -0.5F), gr_complex(-0.5F, 1.0F),
+        gr_complex(0.5F, -1.0F), gr_complex(1.0F, -0.5F), gr_complex(-1.0F, 0.5F), gr_complex(-0.5F, 1.0F),
+        gr_complex(0.5F, -0.5F), gr_complex(1.0F, 0.5F), gr_complex(-1.0F, 1.0F), gr_complex(-0.5F, -1.0F),
+        gr_complex(0.5F, 1.0F), gr_complex(1.0F, 1.0F), gr_complex(-1.0F, -1.0F), gr_complex(-0.5F, -0.5F)};
+
+    std::vector<uint8_t> bytes;
+    const uint64_t packed_register = pack_ls4_2bit(codes);
+    for (int register_index = 0; register_index < 2048; ++register_index)
+        {
+            append_le64(bytes, packed_register);
+        }
+    write_bytes(path, bytes);
+
+    std::ofstream ini(ini_path.string().c_str());
+    ASSERT_TRUE(ini.is_open());
+    ini << "[config]\n"
+        << "OSC=TCXO\n"
+        << "SMP=4000000\n"
+        << "QUA=2\n"
+        << "CHN=1\n"
+        << "SFT=4\n"
+        << "BW_MAX=4000000\n"
+        << "BW_DIV_A=1\n"
+        << "BW_DIV_B=1\n"
+        << "BW_DIV_C=1\n"
+        << "[channel A]\n"
+        << "CFA=1575420000\n"
+        << "BWA=4000000\n"
+        << "BUF_SIZE_A=16384\n"
+        << "[channel B]\n"
+        << "CFB=1227600000\n"
+        << "BWB=0\n"
+        << "BUF_SIZE_B=0\n"
+        << "[channel C]\n"
+        << "CFC=1176450000\n"
+        << "BWC=0\n"
+        << "BUF_SIZE_C=0\n";
+    ini.close();
+
+    const auto result = run_labsat_source(path.string(), {1});
+
+    ASSERT_EQ(1U, result.outputs.size());
+    expect_complex_vector_eq(expected, result.outputs[0]);
+
+    expect_remove(path);
+    expect_remove(ini_path);
+}
+
+
+TEST(LabSat23SourceTest, DecodesLs4TwelveBitSamplesAcrossRegisters)
+{
+    fs::path path = temp_path("labsat4_twelve_bit");
+    path.replace_extension(".LS4");
+    fs::path ini_path(path);
+    ini_path.replace_extension(".ini");
+
+    constexpr float quantization_step = 1.0F / 2048.0F;
+    const std::vector<std::pair<uint16_t, uint16_t>> codes = {
+        {0, 0}, {1, 2047}, {2048, 4095}, {4095, 2048},
+        {2047, 1}, {0, 4095}, {2048, 2047}, {1, 0}};
+    const std::vector<gr_complex> expected = {
+        gr_complex(quantization_step, quantization_step), gr_complex(2.0F * quantization_step, 1.0F),
+        gr_complex(-1.0F, -quantization_step), gr_complex(-quantization_step, -1.0F),
+        gr_complex(1.0F, 2.0F * quantization_step), gr_complex(quantization_step, -quantization_step),
+        gr_complex(-1.0F, 1.0F), gr_complex(2.0F * quantization_step, quantization_step)};
+
+    std::vector<uint8_t> bytes;
+    const auto packed_registers = pack_ls4_12bit(codes);
+    for (int register_index = 0; register_index < 2048; ++register_index)
+        {
+            for (const auto packed_register : packed_registers)
+                {
+                    append_le64(bytes, packed_register);
+                }
+        }
+    write_bytes(path, bytes);
+
+    std::ofstream ini(ini_path.string().c_str());
+    ASSERT_TRUE(ini.is_open());
+    ini << "[config]\n"
+        << "OSC=OCXO\n"
+        << "SMP=20460000\n"
+        << "QUA=12\n"
+        << "CHN=1\n"
+        << "SFT=24\n"
+        << "BW_MAX=20000000\n"
+        << "BW_DIV_A=2\n"
+        << "BW_DIV_B=2\n"
+        << "BW_DIV_C=1\n"
+        << "[channel A]\n"
+        << "CFA=1575420000\n"
+        << "BWA=10000000\n"
+        << "BUF_SIZE_A=49152\n"
+        << "[channel B]\n"
+        << "CFB=1593322500\n"
+        << "BWB=0\n"
+        << "BUF_SIZE_B=0\n"
+        << "[channel C]\n"
+        << "CFC=1190516250\n"
+        << "BWC=0\n"
+        << "BUF_SIZE_C=0\n";
+    ini.close();
+
+    const auto result = run_labsat_source(path.string(), {1});
+
+    ASSERT_EQ(1U, result.outputs.size());
+    expect_complex_vector_eq(expected, result.outputs[0]);
+
+    expect_remove(path);
+    expect_remove(ini_path);
+}
+
+
+TEST(LabSat23SourceTest, DecodesLs4TwoChannelTwelveBitCombinedLayout)
+{
+    fs::path path = temp_path("labsat4_combined_twelve_bit");
+    path.replace_extension(".LS4");
+    fs::path ini_path(path);
+    ini_path.replace_extension(".ini");
+
+    constexpr float quantization_step = 1.0F / 2048.0F;
+    const std::vector<std::pair<uint16_t, uint16_t>> channel_a_codes = {
+        {0, 2047}, {1, 2048}, {2048, 0}, {4095, 4095},
+        {2047, 1}, {0, 2048}, {1, 4095}, {2048, 2047}};
+    const std::vector<std::pair<uint16_t, uint16_t>> channel_b_codes = {
+        {4095, 0}, {2048, 1}, {1, 2047}, {0, 2048},
+        {2047, 4095}, {1, 0}, {2048, 2047}, {4095, 2048}};
+    const std::vector<gr_complex> channel_a_expected = {
+        gr_complex(quantization_step, 1.0F), gr_complex(2.0F * quantization_step, -1.0F),
+        gr_complex(-1.0F, quantization_step), gr_complex(-quantization_step, -quantization_step),
+        gr_complex(1.0F, 2.0F * quantization_step), gr_complex(quantization_step, -1.0F),
+        gr_complex(2.0F * quantization_step, -quantization_step), gr_complex(-1.0F, 1.0F)};
+    const std::vector<gr_complex> channel_b_expected = {
+        gr_complex(-quantization_step, quantization_step), gr_complex(-1.0F, 2.0F * quantization_step),
+        gr_complex(2.0F * quantization_step, 1.0F), gr_complex(quantization_step, -1.0F),
+        gr_complex(1.0F, -quantization_step), gr_complex(2.0F * quantization_step, quantization_step),
+        gr_complex(-1.0F, 1.0F), gr_complex(-quantization_step, -1.0F)};
+
+    std::vector<uint8_t> bytes;
+    const auto channel_a_registers = pack_ls4_12bit(channel_a_codes);
+    const auto channel_b_registers = pack_ls4_12bit(channel_b_codes);
+    for (const auto& channel_registers : {channel_a_registers, channel_b_registers})
+        {
+            for (int register_index = 0; register_index < 2048; ++register_index)
+                {
+                    for (const auto packed_register : channel_registers)
+                        {
+                            append_le64(bytes, packed_register);
+                        }
+                }
+        }
+    write_bytes(path, bytes);
+
+    std::ofstream ini(ini_path.string().c_str());
+    ASSERT_TRUE(ini.is_open());
+    ini << "[config]\n"
+        << "OSC=OCXO\n"
+        << "OP_MODE=LS4\n"
+        << "BW_MAX=20000000\n"
+        << "QUA=12\n"
+        << "CHN=2\n"
+        << "SFT=48\n"
+        << "BW_DIV_A=1\n"
+        << "BW_DIV_B=1\n"
+        << "BW_DIV_C=1\n"
+        << "SMP=20460000\n"
+        << "[channel A]\n"
+        << "CFA=1584000000\n"
+        << "BWA=20000000\n"
+        << "BUF_SIZE_A=49152\n"
+        << "[channel B]\n"
+        << "CFB=1190516250\n"
+        << "BWB=20000000\n"
+        << "BUF_SIZE_B=49152\n"
+        << "[channel C]\n"
+        << "CFC=-1\n"
+        << "BWC=-1\n"
+        << "BUF_SIZE_C=0\n";
+    ini.close();
+
+    const auto result = run_labsat_source(path.string(), {1, 2});
+
+    ASSERT_EQ(2U, result.outputs.size());
+    expect_complex_vector_eq(channel_a_expected, result.outputs[0]);
+    expect_complex_vector_eq(channel_b_expected, result.outputs[1]);
+
+    const auto duplicate_channel_result = run_labsat_source(path.string(), {1, 1, 2});
+
+    ASSERT_EQ(3U, duplicate_channel_result.outputs.size());
+    expect_complex_vector_eq(channel_a_expected, duplicate_channel_result.outputs[0]);
+    expect_complex_vector_eq(channel_a_expected, duplicate_channel_result.outputs[1]);
+    expect_complex_vector_eq(channel_b_expected, duplicate_channel_result.outputs[2]);
 
     expect_remove(path);
     expect_remove(ini_path);

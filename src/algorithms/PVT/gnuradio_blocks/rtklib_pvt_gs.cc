@@ -746,6 +746,15 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             d_user_pvt_solver = d_internal_pvt_solver;
         }
 
+    if (d_osnma_strict)
+        {
+            // Galileo HAS and SSR corrections can refer to the ephemeris replaced by
+            // the current one, which only the solver gets to select
+            const auto is_verified = [this](const Galileo_Ephemeris& ephemeris) { return is_verified_by_osnma(ephemeris); };
+            d_internal_pvt_solver->set_galileo_osnma_test(is_verified);
+            d_user_pvt_solver->set_galileo_osnma_test(is_verified);
+        }
+
     // set the RTKLIB trace (debug) level
     tracelevel(conf_.rtk_trace_level);
 
@@ -2274,6 +2283,26 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
 }
 
 
+bool rtklib_pvt_gs::is_verified_by_osnma(const Galileo_Ephemeris& ephemeris) const
+{
+    // The ephemeris is authenticated only if it was decoded from the very bits
+    // that OSNMA verified
+    const auto auth_nav_data_list = d_auth_nav_data_map.find(ephemeris.PRN);
+    if (auth_nav_data_list == d_auth_nav_data_map.cend())
+        {
+            return false;
+        }
+    const auto auth_it = auth_nav_data_list->second.find(ephemeris.osnma_nav_bits);
+    if (auth_it == auth_nav_data_list->second.cend())
+        {
+            return false;
+        }
+    const auto eph_gst = osnma::galileo_gst_seconds(osnma::galileo_week_to_uint(ephemeris.WN),
+        osnma::galileo_tow_to_uint(ephemeris.tow));
+    return osnma::auth_gst_matches_nav_data(auth_it->second, eph_gst);
+}
+
+
 void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
 {
     try
@@ -3298,11 +3327,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                         }
 
-                                                    // The ephemeris is authenticated only if it was decoded from
-                                                    // the very bits that OSNMA verified
-                                                    const auto auth_it = auth_nav_data_list->second.find(selected_galileo_ephemeris.osnma_nav_bits);
-                                                    if (auth_it != auth_nav_data_list->second.cend() &&
-                                                        osnma::auth_gst_matches_nav_data(auth_it->second, eph_gst))
+                                                    if (is_verified_by_osnma(selected_galileo_ephemeris))
                                                         {
                                                             store_valid_observable = true;
                                                         }

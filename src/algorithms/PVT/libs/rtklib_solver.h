@@ -82,6 +82,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -277,9 +278,20 @@ public:
      * ephemeris for all the signals of the satellite, whatever the primary
      * Galileo navigation service.
      * \return false if the satellite has no HAS corrections, or no usable
-     * I/NAV ephemeris with the issue of data they correct
+     * I/NAV ephemeris with the issue of data they correct. In the Galileo OSNMA
+     * strict mode, also if that ephemeris does not pass the test set with
+     * set_galileo_osnma_test()
      */
     bool select_galileo_has_ephemeris(uint32_t prn, uint32_t observation_tow, Galileo_Ephemeris& ephemeris) const;
+
+    /*!
+     * \brief Sets the test that tells whether a Galileo I/NAV ephemeris was
+     * decoded from navigation bits verified by OSNMA. In the Galileo OSNMA
+     * strict mode, the corrections of a satellite can refer to an ephemeris
+     * other than the current one, and it is used only if it passes this test.
+     * No ephemeris passes if the test is not set.
+     */
+    void set_galileo_osnma_test(std::function<bool(const Galileo_Ephemeris&)> is_verified_by_osnma);
 
     sol_t pvt_sol{};
     std::array<ssat_t, MAXSAT> pvt_ssat{};
@@ -527,6 +539,9 @@ private:
     // Orbit and clock corrections of the satellites selected by get_has_biases() in the current epoch
     std::map<std::string, std::map<int, HAS_orbit_corrections>> d_has_orbit_corrections_applied_map;  // first key is system, second key is PRN
     std::map<std::string, std::map<int, HAS_clock_corrections>> d_has_clock_corrections_applied_map;  // first key is system, second key is PRN
+
+    // Whether a Galileo I/NAV ephemeris was decoded from bits verified by OSNMA
+    std::function<bool(const Galileo_Ephemeris&)> d_is_verified_by_osnma;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;

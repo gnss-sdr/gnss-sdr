@@ -206,6 +206,9 @@ private:
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
 
+    // Whether a Galileo I/NAV ephemeris was decoded from navigation bits verified by OSNMA
+    bool is_verified_by_osnma(const Galileo_Ephemeris& ephemeris) const;
+
     void initialize_and_apply_carrier_phase_offset();
 
     void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,

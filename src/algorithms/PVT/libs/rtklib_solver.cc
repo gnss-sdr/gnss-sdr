@@ -2002,8 +2002,21 @@ bool Rtklib_Solver::select_galileo_has_ephemeris(uint32_t prn, uint32_t observat
         {
             return false;
         }
+    // OSNMA does not authenticate the corrections. In its strict mode they
+    // apply only to an ephemeris that OSNMA verified: the PVT block checks the
+    // current one before passing the observables, but not the one it replaced
+    if (d_conf.osnma_strict && (!d_is_verified_by_osnma || !d_is_verified_by_osnma(*inav_ephemeris)))
+        {
+            return false;
+        }
     ephemeris = *inav_ephemeris;
     return true;
+}
+
+
+void Rtklib_Solver::set_galileo_osnma_test(std::function<bool(const Galileo_Ephemeris &)> is_verified_by_osnma)
+{
+    d_is_verified_by_osnma = std::move(is_verified_by_osnma);
 }
 
 

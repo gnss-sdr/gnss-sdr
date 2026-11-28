@@ -20,3 +20,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         message(STATUS " You could build them by setting -DENABLE_UNIT_TESTING=ON or -DENABLE_SYSTEM_TESTING=ON")
     endif()
 endif()
+
+if(ENABLE_GNSS_SDR_TUI)
+    add_subdirectory(gnss-sdr-tui)
+endif()

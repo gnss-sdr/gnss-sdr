@@ -23,6 +23,7 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/version.hpp>
 #include <cstdint>
+#include <string>
 
 /** \addtogroup Core
  * \{ */
@@ -81,6 +82,8 @@ public:
     Galileo_Nav_Message_Type nav_message_type{Galileo_Nav_Message_Type::Unknown};
     //! Signal from which this navigation record was decoded
     Galileo_Nav_Message_Source nav_message_source{Galileo_Nav_Message_Source::Unknown};
+    //! Bits of I/NAV Words 1 to 5 from which this record was decoded, as authenticated by OSNMA (empty if not decoded from them)
+    std::string osnma_nav_bits{};
 
     bool flag_all_ephemeris{};
 

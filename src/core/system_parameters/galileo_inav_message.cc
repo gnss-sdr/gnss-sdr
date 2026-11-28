@@ -500,6 +500,10 @@ Galileo_Ephemeris Galileo_Inav_Message::get_ephemeris() const
 
     ephemeris.satClkDrift = Galileo_satClkDrift;
 
+    // Bits from which this record was decoded, in the layout that OSNMA
+    // authenticates with ADKD 0 and 12 (Words 1 to 5 without WN and TOW)
+    ephemeris.osnma_nav_bits = eph_nav_bits_word_1 + eph_nav_bits_word_2 + eph_nav_bits_word_3 + eph_nav_bits_word_4 + eph_nav_bits_word_5;
+
     return ephemeris;
 }
 
@@ -526,6 +530,49 @@ Galileo_Iono Galileo_Inav_Message::get_iono() const
     iono.Region5_flag = Region5_flag_5;  // Ionospheric Disturbance Flag for region 5
 
     return iono;
+}
+
+
+Galileo_Iono Galileo_Inav_Message::get_iono_from_osnma_nav_bits(const std::string& nav_bits_adkd_0_12)
+{
+    // Words 1 to 4 take 120 + 120 + 122 + 120 bits, and Word 5 the last 67
+    const size_t word_5_start = 482;
+    const size_t word_5_bits = 67;
+    if (nav_bits_adkd_0_12.size() != word_5_start + word_5_bits)
+        {
+            return {};
+        }
+    // Word 5 as broadcast, without the WN and TOW that follow the authenticated bits
+    std::string word_5 = "000101" + nav_bits_adkd_0_12.substr(word_5_start, word_5_bits);
+    word_5.resize(GALILEO_DATA_JK_BITS, '0');
+
+    Galileo_Inav_Message message;
+    message.page_jk_decoder(word_5.c_str());
+    return message.get_iono();
+}
+
+
+Galileo_Utc_Model Galileo_Inav_Message::get_utc_model_from_osnma_nav_bits(const std::string& nav_bits_adkd_4)
+{
+    // Word 6 takes the first 99 bits, and Word 10 the last 42
+    const size_t word_6_bits = 99;
+    const size_t word_10_bits = 42;
+    if (nav_bits_adkd_4.size() != word_6_bits + word_10_bits)
+        {
+            return {};
+        }
+    // Words 6 and 10 as broadcast, without the TOW of Word 6 and the almanac data
+    // of Word 10, which are not part of the authenticated bits
+    std::string word_6 = "000110" + nav_bits_adkd_4.substr(0, word_6_bits);
+    word_6.resize(GALILEO_DATA_JK_BITS, '0');
+    std::string word_10 = "001010";
+    word_10.resize(GALILEO_DATA_JK_BITS - word_10_bits, '0');
+    word_10 += nav_bits_adkd_4.substr(word_6_bits, word_10_bits);
+
+    Galileo_Inav_Message message;
+    message.page_jk_decoder(word_6.c_str());
+    message.page_jk_decoder(word_10.c_str());
+    return message.get_utc_model();
 }
 
 
@@ -652,6 +699,7 @@ void Galileo_Inav_Message::read_page_1(const std::bitset<GALILEO_DATA_JK_BITS>& 
     flag_ephemeris_1 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
     nav_bits_word_1 = data_bits.to_string().substr(6, 120);
+    eph_nav_bits_word_1 = nav_bits_word_1;
 }
 
 
@@ -674,6 +722,7 @@ void Galileo_Inav_Message::read_page_2(const std::bitset<GALILEO_DATA_JK_BITS>& 
     flag_ephemeris_2 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
     nav_bits_word_2 = data_bits.to_string().substr(6, 120);
+    eph_nav_bits_word_2 = nav_bits_word_2;
 }
 
 
@@ -704,6 +753,7 @@ void Galileo_Inav_Message::read_page_3(const std::bitset<GALILEO_DATA_JK_BITS>& 
     flag_ephemeris_3 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
     nav_bits_word_3 = data_bits.to_string().substr(6, 122);
+    eph_nav_bits_word_3 = nav_bits_word_3;
 }
 
 
@@ -738,6 +788,7 @@ void Galileo_Inav_Message::read_page_4(const std::bitset<GALILEO_DATA_JK_BITS>& 
     flag_ephemeris_4 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
     nav_bits_word_4 = data_bits.to_string().substr(6, 120);
+    eph_nav_bits_word_4 = nav_bits_word_4;
 }
 
 
@@ -1068,6 +1119,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             flag_TOW_set = true;  // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             nav_bits_word_5 = data_jk_bits.to_string().substr(6, 67);
+            eph_nav_bits_word_5 = nav_bits_word_5;
             break;
 
         case 6:  // Word type 6: GST-UTC conversion parameters

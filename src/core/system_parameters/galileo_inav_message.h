@@ -140,6 +140,20 @@ public:
     Galileo_ISM get_galileo_ism() const;
 
     /*
+     * \brief Returns the ionospheric model carried by the navigation data that OSNMA
+     * authenticates with ADKD 0 and 12 (I/NAV Words 1 to 5). It is not valid if the
+     * bits are not such a data set. WN and TOW are not part of those bits.
+     */
+    static Galileo_Iono get_iono_from_osnma_nav_bits(const std::string& nav_bits_adkd_0_12);
+
+    /*
+     * \brief Returns the GST-UTC and GST-GPS conversion parameters carried by the
+     * navigation data that OSNMA authenticates with ADKD 4 (I/NAV Words 6 and 10).
+     * They are not valid if the bits are not such a data set.
+     */
+    static Galileo_Utc_Model get_utc_model_from_osnma_nav_bits(const std::string& nav_bits_adkd_4);
+
+    /*
      * \brief Returns an OSNMA_msg object filled with the latest NMA message received. Resets msg buffer.
      */
     OSNMA_msg get_osnma_msg();
@@ -477,6 +491,13 @@ private:
     std::string nav_bits_word_3{};
     std::string nav_bits_word_4{};
     std::string nav_bits_word_5{};
+    // Bits of Words 1 to 5 behind the decoded ephemeris. Unlike nav_bits_word_*,
+    // which follow the OSNMA subframe, they last as long as the decoded fields
+    std::string eph_nav_bits_word_1{};
+    std::string eph_nav_bits_word_2{};
+    std::string eph_nav_bits_word_3{};
+    std::string eph_nav_bits_word_4{};
+    std::string eph_nav_bits_word_5{};
 
     uint8_t IODnav_LSB17{};
     uint8_t IODnav_LSB18{};

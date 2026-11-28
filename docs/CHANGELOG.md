@@ -306,6 +306,16 @@ All notable changes to GNSS-SDR will be documented in this file.
   one epoch. The solution now uses the first 64 and a warning is logged.
 - Fixed the RTK solution, which ignored base station observations when rover and
   base observations added up to more than 64.
+- Fixed the Galileo OSNMA strict mode (`GNSS-SDR.osnma_mode=strict`), which
+  accepted any I/NAV ephemeris with the satellite and issue of data of an
+  authenticated one. An ephemeris is now used only if it was decoded from the
+  very navigation bits that OSNMA verified, and the Galileo ionospheric and UTC
+  models are taken from those bits. Also, the authentication of the timing
+  parameters of a satellite no longer extends to its ephemeris. Reported by Ugur
+  Celik.
+- In the Galileo OSNMA strict mode, `PVT.iono_model=Broadcast` no longer uses
+  the Klobuchar coefficients broadcast by GPS or QZSS, which OSNMA does not
+  authenticate, but default ones.
 
 ### Improvements in Reproducibility:
 

@@ -49,6 +49,7 @@
 #include "unit-tests/signal-processing-blocks/resampler/mmse_resampler_test.cc"
 #include "unit-tests/signal-processing-blocks/sources/gnss_sdr_valve_test.cc"
 #include "unit-tests/signal-processing-blocks/sources/unpack_2bit_samples_test.cc"
+#include "unit-tests/signal-processing-blocks/telemetry_decoder/beidou_b1c_telemetry_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/beidou_dnav_telemetry_decoder_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/deterministic_telemetry_fault_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/galileo_fnav_inav_decoder_test.cc"

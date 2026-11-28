@@ -397,6 +397,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   the receiver computed no position and wrote no RINEX files. When only some
   constellations provide a band pair, the log names those whose satellites are
   left out of the solution.
+- A new PVT parameter `PVT.disable_rx_time_correction` (default `false`) stops
+  the PVT block from sending clock offset corrections to the Observables block.
+  By default, when the receiver clock offset with respect to the Time solution
+  exceeds `PVT.max_clock_offset_ms`, the receiver time is shifted by that offset
+  (rounded to the observables interval), which shifts the pseudoranges by the
+  same amount times the speed of light. With the parameter set to `true`, the
+  receiver time stays as set from the telemetry TOW, and the raw observables
+  (pseudorange, Doppler, carrier phase) are kept unshifted.
 - Added the option to write the receiver's GNU Radio flow graph to a file in
   Graphviz DOT format. Set `GNSS-SDR.dump_flowgraph=true` and, optionally,
   `GNSS-SDR.flowgraph_dump_filename` (default `flowgraph.dot`). Contributed by

@@ -294,6 +294,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_display_rate_ms(conf_.display_rate_ms),
       d_report_rate_ms(1000),
       d_max_obs_block_rx_clock_offset_ms(conf_.max_obs_block_rx_clock_offset_ms),
+      d_disable_rx_time_correction(conf_.disable_rx_time_correction),
       d_nchannels(nchannels),
       d_signal_enabled_flags(conf_.signal_enabled_flags),
       d_observable_interval_ms(conf_.observable_interval_ms),
@@ -3561,7 +3562,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             // **********************************************
 
-                            if (fabs(Rx_clock_offset_s) * 1000.0 > d_max_obs_block_rx_clock_offset_ms)
+                            if (!d_disable_rx_time_correction && fabs(Rx_clock_offset_s) * 1000.0 > d_max_obs_block_rx_clock_offset_ms)
                                 {
                                     // check if the message was just sent to not duplicate it while it is being applied
                                     if ((d_local_counter_ms - d_timestamp_rx_clock_offset_correction_msg_ms) > 1000)

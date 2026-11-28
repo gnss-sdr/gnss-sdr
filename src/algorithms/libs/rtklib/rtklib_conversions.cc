@@ -235,30 +235,30 @@ unsigned char has_signal_obs_code(char system, const std::string& has_signal)
 {
     struct Has_Signal_Code
     {
-        char system;
         const char* has_signal;
+        char system;
         unsigned char code;
     };
     static const Has_Signal_Code codes[] = {
-        {'G', "L1 C/A", CODE_L1C},
-        {'G', "L2 CM", CODE_L2S},
-        {'G', "L2 CL", CODE_L2L},
-        {'G', "L2 CM+CL", CODE_L2X},
-        {'G', "L5 I", CODE_L5I},
-        {'G', "L5 Q", CODE_L5Q},
-        {'G', "L5 I + L5 Q", CODE_L5X},
-        {'E', "E1-B I/NAV OS", CODE_L1B},
-        {'E', "E1-C", CODE_L1C},
-        {'E', "E1-B + E1-C", CODE_L1X},
-        {'E', "E5a-I F/NAV OS", CODE_L5I},
-        {'E', "E5a-Q", CODE_L5Q},
-        {'E', "E5a-I+E5a-Q", CODE_L5X},
-        {'E', "E5b-I I/NAV OS", CODE_L7I},
-        {'E', "E5b-Q", CODE_L7Q},
-        {'E', "E5b-I+E5b-Q", CODE_L7X},
-        {'E', "E6-B C/NAV HAS", CODE_L6B},
-        {'E', "E6-C", CODE_L6C},
-        {'E', "E6-B + E6-C", CODE_L6X}};
+        {"L1 C/A", 'G', CODE_L1C},
+        {"L2 CM", 'G', CODE_L2S},
+        {"L2 CL", 'G', CODE_L2L},
+        {"L2 CM+CL", 'G', CODE_L2X},
+        {"L5 I", 'G', CODE_L5I},
+        {"L5 Q", 'G', CODE_L5Q},
+        {"L5 I + L5 Q", 'G', CODE_L5X},
+        {"E1-B I/NAV OS", 'E', CODE_L1B},
+        {"E1-C", 'E', CODE_L1C},
+        {"E1-B + E1-C", 'E', CODE_L1X},
+        {"E5a-I F/NAV OS", 'E', CODE_L5I},
+        {"E5a-Q", 'E', CODE_L5Q},
+        {"E5a-I+E5a-Q", 'E', CODE_L5X},
+        {"E5b-I I/NAV OS", 'E', CODE_L7I},
+        {"E5b-Q", 'E', CODE_L7Q},
+        {"E5b-I+E5b-Q", 'E', CODE_L7X},
+        {"E6-B C/NAV HAS", 'E', CODE_L6B},
+        {"E6-C", 'E', CODE_L6C},
+        {"E6-B + E6-C", 'E', CODE_L6X}};
     for (const auto& entry : codes)
         {
             if (entry.system == system && has_signal == entry.has_signal)

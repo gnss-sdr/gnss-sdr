@@ -963,6 +963,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             if (enable_osnma && osnma_mode == "strict")
                 {
                     pvt_output_parameters.osnma_strict = true;
+                    if (iono_model == IONOOPT_BRDC)
+                        {
+                            LOG(INFO) << "Galileo OSNMA strict mode: the broadcast ionospheric model uses its default coefficients, since OSNMA does not authenticate the ones broadcast by GPS and QZSS";
+                        }
                 }
         }
 

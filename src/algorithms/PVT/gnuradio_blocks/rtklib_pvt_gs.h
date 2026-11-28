@@ -206,6 +206,9 @@ private:
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
 
+    // Whether a Galileo I/NAV ephemeris was decoded from navigation bits verified by OSNMA
+    bool is_verified_by_osnma(const Galileo_Ephemeris& ephemeris) const;
+
     void initialize_and_apply_carrier_phase_offset();
 
     void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
@@ -331,7 +334,9 @@ private:
     std::map<int, Gnss_Synchro> d_gnss_observables_map;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
-    std::map<uint32_t, std::map<uint32_t, uint64_t>> d_auth_nav_data_map;
+    std::map<uint32_t, std::map<std::string, uint64_t>> d_auth_nav_data_map;  // [PRN][I/NAV bits verified by OSNMA] -> GST of the verified data
+    uint64_t d_auth_galileo_iono_gst{0};                                      // GST of the verified data that hold the ionospheric model in use
+    uint64_t d_auth_galileo_utc_model_gst{0};                                 // GST of the verified data that hold the UTC model in use
 
     std::queue<GnssTime> d_TimeChannelTagTimestamps;
 

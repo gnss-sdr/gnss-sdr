@@ -49,7 +49,16 @@ public:
     std::vector<OSNMA_NavData> get_verified_data();
 
 private:
-    std::map<uint32_t, std::map<uint64_t, OSNMA_NavData>> d_satellite_nav_data{};  // NavData sorted by [PRNd][GST_start_seconds]
+    using Nav_Data_Map = std::map<uint32_t, std::map<uint64_t, OSNMA_NavData>>;  // NavData sorted by [PRNd][GST_start_seconds]
+
+    Nav_Data_Map* nav_data_map_for_adkd(uint8_t adkd);
+    const Nav_Data_Map* nav_data_map_for_adkd(uint8_t adkd) const;
+    Nav_Data_Map* nav_data_map_for_bits(const std::string& nav_bits);
+
+    // The two data sets are stored apart, so that a verified tag only
+    // accounts for the bits it was computed over
+    Nav_Data_Map d_satellite_nav_data{};     // I/NAV Words 1 to 5, authenticated by ADKD 0 and 12
+    Nav_Data_Map d_satellite_timing_data{};  // I/NAV Words 6 and 10, authenticated by ADKD 4
     const uint32_t L_t_min{40};
     const uint16_t EPH_SIZE{549};
     const uint16_t UTC_SIZE{141};

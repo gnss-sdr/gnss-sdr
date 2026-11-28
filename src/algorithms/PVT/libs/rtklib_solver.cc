@@ -2002,8 +2002,21 @@ bool Rtklib_Solver::select_galileo_has_ephemeris(uint32_t prn, uint32_t observat
         {
             return false;
         }
+    // OSNMA does not authenticate the corrections. In its strict mode they
+    // apply only to an ephemeris that OSNMA verified: the PVT block checks the
+    // current one before passing the observables, but not the one it replaced
+    if (d_conf.osnma_strict && (!d_is_verified_by_osnma || !d_is_verified_by_osnma(*inav_ephemeris)))
+        {
+            return false;
+        }
     ephemeris = *inav_ephemeris;
     return true;
+}
+
+
+void Rtklib_Solver::set_galileo_osnma_test(std::function<bool(const Galileo_Ephemeris &)> is_verified_by_osnma)
+{
+    d_is_verified_by_osnma = std::move(is_verified_by_osnma);
 }
 
 
@@ -3638,7 +3651,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             d_nav_data.n = navigation_ephemerides;
             d_nav_data.ng = glo_valid_obs;
             d_sbas_corrections.copy_to(d_nav_data);
-            if (gps_iono.valid)
+            // OSNMA does not authenticate the Klobuchar coefficients of GPS and QZSS.
+            // In strict mode they are left out, so the broadcast ionospheric model
+            // falls back to its default coefficients
+            const bool use_klobuchar_coefficients = !d_conf.osnma_strict;
+            if (use_klobuchar_coefficients && gps_iono.valid)
                 {
                     d_nav_data.ion_gps[0] = gps_iono.alpha0;
                     d_nav_data.ion_gps[1] = gps_iono.alpha1;
@@ -3649,7 +3666,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_gps[6] = gps_iono.beta2;
                     d_nav_data.ion_gps[7] = gps_iono.beta3;
                 }
-            if (!(gps_iono.valid) && gps_cnav_iono.valid)
+            if (use_klobuchar_coefficients && !(gps_iono.valid) && gps_cnav_iono.valid)
                 {
                     d_nav_data.ion_gps[0] = gps_cnav_iono.alpha0;
                     d_nav_data.ion_gps[1] = gps_cnav_iono.alpha1;
@@ -3660,7 +3677,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_nav_data.ion_gps[6] = gps_cnav_iono.beta2;
                     d_nav_data.ion_gps[7] = gps_cnav_iono.beta3;
                 }
-            if (qzss_iono.valid || qzss_cnav_iono.valid)
+            if (use_klobuchar_coefficients && (qzss_iono.valid || qzss_cnav_iono.valid))
                 {
                     const Gps_Iono &qzss_iono_ref = qzss_iono.valid ? static_cast<const Gps_Iono &>(qzss_iono) : static_cast<const Gps_Iono &>(qzss_cnav_iono);
                     d_nav_data.ion_qzs[0] = qzss_iono_ref.alpha0;
